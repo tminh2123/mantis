@@ -319,18 +319,11 @@ def parse_args():
     p.add_argument('--stage',  required=True, choices=['pretrain', 'train', 'eval'])
     p.add_argument('--config', default='configs/qata.yaml')
     p.add_argument('--pretrained', default=None, help='Path to pretrained ckpt for stage II')
-    p.add_argument('--no-text', action='store_true', help='Disable text fusion (ablation study)')
-    p.add_argument('--no-bcam', action='store_true', help='Disable BCAM (ablation study)')
-    p.add_argument('--no-kgate', action='store_true', help='Disable K-Gate (ablation study)')
-    p.add_argument('--no-kan', action='store_true', help='Use MLP instead of KAN (ablation study)')
-    p.add_argument('--deep-sup', action='store_true', help='Enable deep supervision')
     p.add_argument('--epochs', type=int, default=None, help='Override number of epochs')
     p.add_argument('--lr', type=float, default=None, help='Override learning rate')
-    p.add_argument('--image-size', type=int, default=None, help='Override image size')
     p.add_argument('--batch-size', type=int, default=None, help='Override batch size')
-    p.add_argument('--tag', type=str, default=None, help='Experiment tag for checkpoint naming (e.g., "v1", "simple_kan")')
-    p.add_argument('--channel-scale', type=float, default=1.0, help='Channel width scale (0.5=half, 0.25=quarter)')
-    p.add_argument('--accum-steps', type=int, default=1, help='Gradient accumulation steps (effective_batch = batch_size * accum_steps)')
+    p.add_argument('--tag', type=str, default=None, help='Experiment tag for checkpoint naming')
+    p.add_argument('--accum-steps', type=int, default=1, help='Gradient accumulation steps')
     return p.parse_args()
 
 
@@ -338,18 +331,14 @@ if __name__ == '__main__':
     args = parse_args()
     cfg  = load_config(args.config)
     
-    # Add ablation flags to model config
-    cfg['model']['use_text'] = not getattr(args, 'no_text', False)
-    cfg['model']['use_bcam'] = not getattr(args, 'no_bcam', False)
-    cfg['model']['use_kgate'] = not getattr(args, 'no_kgate', False)
-    cfg['model']['use_kan'] = not getattr(args, 'no_kan', False)
-    cfg['model']['deep_supervision'] = getattr(args, 'deep_sup', False)
-    
-    # Apply channel scaling (use base_channel instead)
-    base_channel = 64
-    scale = getattr(args, 'channel_scale', 1.0)
-    cfg['model']['base_channel'] = base_channel
-    cfg['model']['channel_scale'] = scale
+    # Model config from yaml (no ablation args)
+    cfg['model']['use_text'] = True
+    cfg['model']['use_bcam'] = True
+    cfg['model']['use_kgate'] = True
+    cfg['model']['use_kan'] = True
+    cfg['model']['deep_supervision'] = True  # Always use deep supervision
+    cfg['model']['base_channel'] = 64
+    cfg['model']['channel_scale'] = 1.0
     
     # Pass image size to model
     cfg['model']['img_size'] = cfg['data']['image_size']
@@ -365,8 +354,6 @@ if __name__ == '__main__':
     if args.lr:
         cfg['train']['lr'] = args.lr
         cfg['pretrain']['lr'] = args.lr
-    if args.image_size:
-        cfg['data']['image_size'] = args.image_size
     if args.batch_size:
         cfg['train']['batch_size'] = args.batch_size
         cfg['pretrain']['batch_size'] = args.batch_size
@@ -391,9 +378,6 @@ if __name__ == '__main__':
     
     # Log settings
     stage = args.stage
-    channel_scale = cfg['model']['channel_scale']
-    base_channels = [64, 128, 256, 512, 512]
-    scaled_channels = [max(16, int(c * channel_scale)) for c in base_channels]
     
     print("=" * 60)
     print(f"Stage: {stage.upper()}")
@@ -401,14 +385,6 @@ if __name__ == '__main__':
     print(f"Config file: {args.config}")
     if args.tag:
         print(f"Experiment tag: {args.tag}")
-    print("-" * 60)
-    print("Model Config:")
-    print(f"  use_text: {cfg['model']['use_text']}")
-    print(f"  use_bcam: {cfg['model']['use_bcam']}")
-    print(f"  use_kan: {cfg['model']['use_kan']}")
-    print(f"  deep_supervision: {cfg['model']['deep_supervision']}")
-    print(f"  channel_scale: {channel_scale} -> {scaled_channels}")
-    print(f"  img_size: {cfg['model']['img_size']}")
     print("-" * 60)
     print("Data Config:")
     print(f"  train_dir: {cfg['data']['train_dir']}")
