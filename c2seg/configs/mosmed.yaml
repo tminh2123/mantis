@@ -5,10 +5,10 @@ project:
   seed: 922
 
 data:
-  root: "../../../dataset/MosMedData+/c2seg"
-  train_dir: "../../../dataset/MosMedData+/c2seg/train"
-  val_dir: "../../../dataset/MosMedData+/c2seg/val"
-  test_dir: "../../../dataset/MosMedData+/c2seg/test"
+  root: "../../../dataset/MosMedDataPlus/c2seg"
+  train_dir: "../../../dataset/MosMedDataPlus/c2seg/train"
+  val_dir: "../../../dataset/MosMedDataPlus/c2seg/val"
+  test_dir: "../../../dataset/MosMedDataPlus/c2seg/test"
   image_size: 224
   num_workers: 4
 
