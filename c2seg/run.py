@@ -213,7 +213,7 @@ def train(cfg, pretrained_ckpt: str = None):
 
         for batch_idx, (images, masks, texts) in enumerate(train_loader):
             images = images.to(device)
-            masks  = masks.to(device)
+            masks  = masks.to(device).float()  # Convert long to float for loss computation
 
             outputs = model(images, texts)
             
@@ -276,7 +276,7 @@ def evaluate(model, loader, device, threshold=0.5):
     with torch.no_grad():
         for images, masks, texts in loader:
             images = images.to(device)
-            masks  = masks.to(device)
+            masks  = masks.to(device).float()  # Convert long to float
             outputs = model(images, texts)
             
             # Handle deep supervision output (tuple) vs single output

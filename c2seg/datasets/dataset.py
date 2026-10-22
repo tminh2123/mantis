@@ -1,5 +1,7 @@
 """
 Dataset for C2Seg segmentation task.
+Synced with c2seg-origin logic.
+
 Supports both folder structures:
     1. QaTa-COV19 style:
         root/
@@ -17,14 +19,12 @@ Supports both folder structures:
 import json
 import os
 from pathlib import Path
+import random
 
+import cv2
 import numpy as np
 import torch
-from PIL import Image
 from torch.utils.data import Dataset
-import torchvision.transforms.functional as TF
-import torchvision.transforms as T
-import random
 
 
 class C2SegDataset(Dataset):
@@ -102,7 +102,8 @@ class C2SegDataset(Dataset):
     def _get_text(self, img_name: str, mask_name: str) -> str:
         """Get text for image, trying multiple key formats."""
         # Try different key formats
-        for key in [img_name, mask_name, f"mask_{img_name}", img_name.replace('.png', ''), mask_name.replace('.png', '')]:
+        for key in [img_name, mask_name, f"mask_{img_name}", 
+                    img_name.replace('.png', ''), mask_name.replace('.png', '')]:
             if key in self.texts:
                 return self.texts[key]
         return ""
@@ -113,50 +114,59 @@ class C2SegDataset(Dataset):
     def __getitem__(self, idx):
         img_path, mask_path, text = self.samples[idx]
 
-        image = Image.open(img_path).convert('RGB')
-        mask = Image.open(mask_path).convert('L')
+        # Load image with cv2 (matches c2seg-origin)
+        image = cv2.imread(str(img_path))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, (self.size, self.size))
+        
+        # Load mask
+        mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize(mask, (self.size, self.size))
+        
+        # Binarize mask (matches c2seg-origin)
+        mask[mask <= 0] = 0
+        mask[mask > 0] = 1
 
-        image, mask = self._transform(image, mask)
-        return image, mask, text
+        # Convert to tensors
+        image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0  # [C, H, W], 0-1
+        mask = torch.from_numpy(mask).long()  # [H, W], 0 or 1
 
-    def _transform(self, image, mask):
-        # resize
-        image = TF.resize(image, [self.size, self.size], interpolation=Image.Resampling.BILINEAR)
-        mask = TF.resize(mask, [self.size, self.size], interpolation=Image.Resampling.NEAREST)
-
+        # Augmentation (matches c2seg-origin)
         if self.augment:
-            # random 90/180/270 rotation + random flip (like ref/c2seg)
             if random.random() > 0.5:
                 image, mask = self._random_rot_flip(image, mask)
-            # random small-angle rotation [-30, 30] (like ref/c2seg)
             if random.random() > 0.5:
-                angle = random.uniform(-30, 30)
-                image = TF.rotate(image, angle, interpolation=TF.InterpolationMode.BILINEAR)
-                mask = TF.rotate(mask, angle, interpolation=TF.InterpolationMode.NEAREST)
+                image, mask = self._random_rotate(image, mask)
 
-        # to tensor
-        image = TF.to_tensor(image)
-        image = TF.normalize(image,
-                             mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-        mask = torch.from_numpy(np.array(mask)).float() / 255.0
-        mask = mask.unsqueeze(0)  # [1, H, W]
-        return image, mask
+        return image, mask, text
 
-    def _random_rot_flip(self, image, mask):
-        """Random rotation by 0/90/180/270 + random flip (matches ref/c2seg)"""
+    def _random_rot_flip(self, image: torch.Tensor, mask: torch.Tensor):
+        """Random rotation by 0/90/180/270 + random flip (matches c2seg-origin)"""
         # Random 90-degree rotation
         k = random.randint(0, 3)
-        for _ in range(k):
-            image = TF.rotate(image, 90)
-            mask = TF.rotate(mask, 90)
+        image = torch.rot90(image, k, dims=[1, 2])  # [C, H, W]
+        mask = torch.rot90(mask, k, dims=[0, 1])    # [H, W]
 
         # Random flip (horizontal or vertical)
         if random.random() > 0.5:
-            if random.random() > 0.5:
-                image = TF.hflip(image)
-                mask = TF.hflip(mask)
-            else:
-                image = TF.vflip(image)
-                mask = TF.vflip(mask)
+            axis = random.choice([1, 2])  # 1=vertical, 2=horizontal for image
+            image = torch.flip(image, dims=[axis])
+            mask = torch.flip(mask, dims=[axis - 1])  # 0=vertical, 1=horizontal for mask
+        
+        return image, mask
+
+    def _random_rotate(self, image: torch.Tensor, mask: torch.Tensor):
+        """Random small-angle rotation [-30, 30] (matches c2seg-origin)"""
+        import torchvision.transforms.functional as TF
+        
+        angle = random.uniform(-30, 30)
+        
+        # Rotate image
+        image = TF.rotate(image, angle, interpolation=TF.InterpolationMode.BILINEAR)
+        
+        # Rotate mask (need to add channel dim for TF.rotate)
+        mask = mask.unsqueeze(0).float()  # [1, H, W]
+        mask = TF.rotate(mask, angle, interpolation=TF.InterpolationMode.NEAREST)
+        mask = mask.squeeze(0).long()  # [H, W]
+        
         return image, mask
