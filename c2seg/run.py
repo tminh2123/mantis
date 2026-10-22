@@ -385,8 +385,15 @@ if __name__ == '__main__':
         cfg['train']['batch_size'] = args.batch_size
         cfg['pretrain']['batch_size'] = args.batch_size
     
-    # Gradient accumulation
-    cfg['accum_steps'] = getattr(args, 'accum_steps', 1)
+    # Gradient accumulation - auto-divide batch size if not explicitly set
+    accum = getattr(args, 'accum_steps', 1)
+    cfg['accum_steps'] = accum
+    
+    if accum > 1 and not args.batch_size:
+        # Auto-divide: keep effective batch same, reduce actual batch
+        cfg['train']['batch_size'] = cfg['train']['batch_size'] // accum
+        cfg['pretrain']['batch_size'] = cfg['pretrain']['batch_size'] // accum
+        print(f"Auto-adjusted batch_size: {cfg['train']['batch_size']} (effective: {cfg['train']['batch_size'] * accum})")
     
     # Apply experiment tag to checkpoint and log paths
     if args.tag:
