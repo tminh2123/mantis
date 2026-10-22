@@ -13,7 +13,7 @@ data:
   num_workers: 4
 
 model:
-  clip_model: "ViT-B/32"
+  clip_model: "openai/clip-vit-base-patch32"
   base_channel: 64
   kan_grid_size: 5  # KAN B-spline grid intervals (c2seg-origin default)
   kan_spline_order: 3  # KAN B-spline order (cubic, c2seg-origin default)
