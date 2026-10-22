@@ -237,8 +237,10 @@ def train(cfg, pretrained_ckpt: str = None):
         model.train()
         loss_meter = AverageMeter()
         optimizer.zero_grad()
+        epoch_start = time.time()
 
-        for batch_idx, (images, masks, texts) in enumerate(train_loader):
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{tcfg['epochs']}", leave=False)
+        for batch_idx, (images, masks, texts) in enumerate(pbar):
             images = images.to(device)
             masks  = masks.to(device).float()  # Convert long to float for loss computation
 
@@ -266,15 +268,18 @@ def train(cfg, pretrained_ckpt: str = None):
                 optimizer.zero_grad()
             
             loss_meter.update(loss.item() * accum_steps, images.size(0))
+            pbar.set_postfix({'loss': f'{loss.item() * accum_steps:.4f}', 'avg': f'{loss_meter.avg:.4f}'})
 
         scheduler.step()
+        epoch_time = time.time() - epoch_start
 
         # validation
         metrics = evaluate(model, val_loader, device, cfg['eval']['threshold'])
         logger.info(
             f"Epoch [{epoch+1}/{tcfg['epochs']}] Loss: {loss_meter.avg:.4f} | "
             f"Dice: {metrics['dice']:.2f}% | mIoU: {metrics['miou']:.2f}% | "
-            f"HD95: {metrics['hd95']:.2f} | ASSD: {metrics['assd']:.2f}"
+            f"HD95: {metrics['hd95']:.2f} | ASSD: {metrics['assd']:.2f} | "
+            f"Time: {epoch_time:.1f}s"
         )
 
         if metrics['dice'] > best_dice:
