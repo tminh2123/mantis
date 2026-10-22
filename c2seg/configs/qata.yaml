@@ -1,0 +1,57 @@
+# C2Seg Configuration - QaTa-COV19 Dataset
+
+project:
+  name: c2seg
+  seed: 922
+
+data:
+  root: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg"
+  train_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train"
+  val_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val"
+  test_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test"
+  image_size: 224
+  num_workers: 4
+
+model:
+  clip_model: "ViT-B/32"
+  base_channel: 64
+  kan_grid_size: 3
+  kan_spline_order: 2
+  max_token_len: 18
+  dropout: 0.5
+  text_mask_rate: 0.3
+  img_mask_rate: 0.3
+  mask_mode: "dist"
+  pool_mode: "max_pool"
+  frozen_clip: true
+
+pretrain:
+  epochs: 100
+  batch_size: 256
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  temperature: 0.07
+  eps: 0.8
+  checkpoint: "output/checkpoints/c2seg_pretrain.pth"
+
+train:
+  epochs: 500
+  batch_size: 32
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  bce_weight: 0.5
+  grad_clip: 1.0
+  loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+  early_stopping: true
+  es_patience: 50
+  save_after: 50
+
+eval:
+  batch_size: 16
+  threshold: 0.5
+  checkpoint: "output/checkpoints/c2seg_best.pth"
+
+logging:
+  log_dir: "output/logs"
+  checkpoint_dir: "output/checkpoints"
+  save_every: 10

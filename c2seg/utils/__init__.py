@@ -13,7 +13,12 @@ def set_seed(seed: int):
 
 
 def load_config(path: str) -> dict:
-    with open(path, 'r') as f:
+    """Load YAML config file. Supports both .yaml and .yml extensions."""
+    from pathlib import Path
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"Config file not found: {path}")
+    with open(p, 'r') as f:
         return yaml.safe_load(f)
 
 

@@ -2,14 +2,10 @@
 Training script for C2Seg.
 Usage:
   # QaTa-COV19 dataset
-  python run.py --stage pretrain --config configs/qata.yaml --tag qata_nokan --no-kan
-  python run.py --stage train --config configs/qata.yaml --tag qata_nokan --no-kan
-  python run.py --stage eval --config configs/qata.yaml --tag qata_nokan --no-kan
-
-  # MosMedData+ dataset
-  python run.py --stage pretrain --config configs/mosmed.yaml --tag mosmed_nokan --no-kan
-  python run.py --stage train --config configs/mosmed.yaml --tag mosmed_nokan --no-kan
-  python run.py --stage eval --config configs/mosmed.yaml --tag mosmed_nokan --no-kan
+  python run.py --stage train --config configs/qata.yaml --tag qata_exp1
+  
+  # MosMedData+ dataset  
+  python run.py --stage train --config configs/mosmed.yaml --tag mosmed_exp1
 """
 
 import argparse
@@ -19,8 +15,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from configs import load_config
-from utils import set_seed, get_device, save_checkpoint, load_checkpoint
+from utils import set_seed, get_device, save_checkpoint, load_checkpoint, load_config
 from utils.logger import get_logger
 from utils.metrics import AverageMeter
 from utils.seg_metrics import dice_score, miou_score, hd95, assd
@@ -363,13 +358,13 @@ if __name__ == '__main__':
         accum = getattr(args, 'accum_steps', 1)
         if accum > 1:
             tag = f"{tag}_accum{accum}"
-        cfg['logging']['checkpoint_dir'] = f"checkpoints/{tag}"
-        cfg['logging']['log_dir'] = f"logs/{tag}"
-        cfg['pretrain']['checkpoint'] = f"checkpoints/{tag}/c2seg_pretrain.pth"
-        cfg['eval']['checkpoint'] = f"checkpoints/{tag}/c2seg_best.pth"
+        cfg['logging']['checkpoint_dir'] = f"output/checkpoints/{tag}"
+        cfg['logging']['log_dir'] = f"output/logs/{tag}"
+        cfg['pretrain']['checkpoint'] = f"output/checkpoints/{tag}/c2seg_pretrain.pth"
+        cfg['eval']['checkpoint'] = f"output/checkpoints/{tag}/c2seg_best.pth"
         print(f"Experiment tag: {tag}")
-        print(f"Checkpoints: checkpoints/{tag}/")
-        print(f"Logs: logs/{tag}/")
+        print(f"Checkpoints: output/checkpoints/{tag}/")
+        print(f"Logs: output/logs/{tag}/")
     
     # Log settings
     stage = args.stage

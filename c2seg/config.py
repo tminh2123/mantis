@@ -7,7 +7,7 @@ from typing import Optional
 
 @dataclass
 class DataConfig:
-    root: str = "../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg"
+    root: str = "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg"
     image_size: int = 224
     batch_size: int = 16
     num_workers: int = 4

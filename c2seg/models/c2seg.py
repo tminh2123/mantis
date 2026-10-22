@@ -148,6 +148,7 @@ class KCGate(nn.Module):
     """
     KAN-based Channel Gate.
     g = tanh(KAN(ReLU(KAN(x))))
+    Output: x * g (element-wise gating)
     """
     def __init__(self, in_channels: int, grid_size: int = 5, spline_order: int = 3, use_kan: bool = True):
         super().__init__()
@@ -170,12 +171,58 @@ class KCGate(nn.Module):
 
 
 # ---------------------------------------------------------------------------
+# K-Gate Module: Full KAN-based Attention Gating (per diagram)
+# ---------------------------------------------------------------------------
+class KGateModule(nn.Module):
+    """
+    K-Gate: KAN-based Attention Gating module.
+    
+    Architecture (from paper diagram):
+        F_l → KAN → ReLU → KAN → Tanh → ⊙ F_l → a_l
+        F_v → KAN → ReLU → KAN → Tanh → ⊙ F_v → a_v
+        Concat(a_l, a_v) → Conv → F_out
+    """
+    def __init__(self, in_channels: int, grid_size: int = 5, spline_order: int = 3, 
+                 use_kan: bool = True, dropout: float = 0.0):
+        super().__init__()
+        self.gate_l = KCGate(in_channels, grid_size, spline_order, use_kan)
+        self.gate_v = KCGate(in_channels, grid_size, spline_order, use_kan)
+        
+        # Concat (2*C) → Conv → C
+        self.fuse_conv = nn.Sequential(
+            nn.Conv1d(in_channels * 2, in_channels, kernel_size=1),
+            nn.InstanceNorm1d(in_channels),
+            nn.GELU(),
+            nn.Dropout(dropout)
+        )
+    
+    def forward(self, f_l: torch.Tensor, f_v: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            f_l: language features [B, HW, C]
+            f_v: vision features [B, HW, C]
+        Returns:
+            fused features [B, C, HW]
+        """
+        a_l = self.gate_l(f_l)  # [B, HW, C]
+        a_v = self.gate_v(f_v)  # [B, HW, C]
+        
+        # Concat and fuse
+        concat = torch.cat([a_l, a_v], dim=-1)  # [B, HW, 2C]
+        concat = concat.permute(0, 2, 1)         # [B, 2C, HW]
+        out = self.fuse_conv(concat)             # [B, C, HW]
+        
+        return out
+
+
+# ---------------------------------------------------------------------------
 # BCAM: Bidirectional Cross Attention Module (from ref/c2seg)
 # ---------------------------------------------------------------------------
 class BCAModule(nn.Module):
     """
     Bidirectional Cross Attention (BCA) module.
     Performs cross-attention between image and text features.
+    Uses K-Gate for fusion: Concat(a_l, a_v) → Conv → F_out
     """
     def __init__(
         self, 
@@ -200,11 +247,10 @@ class BCAModule(nn.Module):
         self.l_key = self._make_conv(512, in_channels)  # CLIP text dim = 512
         self.l_value = self._make_conv(512, in_channels)
 
-        # KAN-based gating
-        self.gate_v = KCGate(in_channels, grid_size, spline_order, use_kan)
-        self.gate_l = KCGate(in_channels, grid_size, spline_order, use_kan)
+        # K-Gate module (per paper diagram: concat + conv)
+        self.kgate = KGateModule(in_channels, grid_size, spline_order, use_kan, dropout)
 
-        # Output projection
+        # Output projection (residual path)
         self.project = nn.Sequential(
             nn.Conv1d(in_channels, in_channels, kernel_size=1),
             nn.InstanceNorm1d(in_channels),
@@ -253,24 +299,22 @@ class BCAModule(nn.Module):
         attn_v2l = F.softmax(sim_map, dim=-1)                               # [B, H, HW, N]
         attn_l2v = F.softmax(sim_map.transpose(-1, -2), dim=-1)             # [B, H, N, HW]
 
-        # Cross attention
-        # v_out: vision attended by language
+        # Cross attention outputs
+        # f_v: vision attended by language
         v_out = torch.matmul(attn_v2l, l_value)                             # [B, H, HW, D]
-        v_out = v_out.permute(0, 2, 1, 3).reshape(b, hw, c)                 # [B, HW, C]
-        a_v = self.gate_v(v_out).permute(0, 2, 1)                           # [B, C, HW]
+        f_v = v_out.permute(0, 2, 1, 3).reshape(b, hw, c)                   # [B, HW, C]
 
-        # l_out: language attended by vision (following ref/c2seg exactly)
-        # einsum "b h i j, b h j k -> b h j k" equivalent but memory-efficient:
-        # = v_value * sum(attn_l2v over N text tokens)
-        attn_sum = attn_l2v.sum(dim=2, keepdim=True)                            # [B, H, 1, HW]
-        l_out = v_value * attn_sum.transpose(-1, -2)                            # [B, H, HW, D]
-        l_out = l_out.permute(0, 2, 1, 3).reshape(b, hw, c)                     # [B, HW, C]
-        a_l = self.gate_l(l_out).permute(0, 2, 1)                               # [B, C, HW]
+        # f_l: language attended by vision (einsum from original)
+        l_out = torch.einsum("b h i j, b h j k -> b h j k", attn_l2v, v_value)  # [B, H, HW, D]
+        f_l = l_out.permute(0, 2, 1, 3).reshape(b, hw, c)                        # [B, HW, C]
 
-        # Fuse and project
-        fused = self.project(img_flat + a_v * a_l).view(b, c, h, w)
+        # K-Gate fusion: concat(a_l, a_v) → conv → F_out
+        fused = self.kgate(f_l, f_v)  # [B, C, HW]
+        
+        # Residual connection
+        out = self.project(img_flat + fused).view(b, c, h, w)
 
-        return fused
+        return out
 
 
 # ---------------------------------------------------------------------------
