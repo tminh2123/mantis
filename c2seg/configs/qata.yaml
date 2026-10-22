@@ -28,7 +28,7 @@ model:
 pretrain:
   epochs: 100
   batch_size: 256
-  lr: 3.0e-4
+  lr: 1.0e-3  # QaTa-COV19 pretrain LR
   weight_decay: 1.0e-4
   temperature: 0.07
   eps: 0.8
@@ -37,7 +37,7 @@ pretrain:
 train:
   epochs: 500
   batch_size: 32
-  lr: 3.0e-4
+  lr: 1.0e-3  # QaTa-COV19 train LR
   weight_decay: 1.0e-4
   bce_weight: 0.5
   grad_clip: 1.0
