@@ -29,12 +29,26 @@ from datasets.dataset import C2SegDataset
 # ---------------------------------------------------------------------------
 def pretrain(cfg):
     import time
+    import json
     from tqdm import tqdm
 
     logger = get_logger('c2seg_pretrain', cfg['logging']['log_dir'])
     device = get_device()
     set_seed(cfg['project']['seed'])
     pcfg = cfg['pretrain']
+
+    # Dump full config to log
+    logger.info("=" * 60)
+    logger.info("CONFIGURATION")
+    logger.info("=" * 60)
+    for section, values in cfg.items():
+        logger.info(f"[{section}]")
+        if isinstance(values, dict):
+            for k, v in values.items():
+                logger.info(f"  {k}: {v}")
+        else:
+            logger.info(f"  {values}")
+    logger.info("=" * 60)
 
     dataset = C2SegDataset(cfg['data']['train_dir'],
                            image_size=cfg['data']['image_size'],
@@ -127,6 +141,19 @@ def train(cfg, pretrained_ckpt: str = None):
     device = get_device()
     set_seed(cfg['project']['seed'])
     tcfg = cfg['train']
+
+    # Dump full config to log
+    logger.info("=" * 60)
+    logger.info("CONFIGURATION")
+    logger.info("=" * 60)
+    for section, values in cfg.items():
+        logger.info(f"[{section}]")
+        if isinstance(values, dict):
+            for k, v in values.items():
+                logger.info(f"  {k}: {v}")
+        else:
+            logger.info(f"  {values}")
+    logger.info("=" * 60)
 
     train_ds = C2SegDataset(cfg['data']['train_dir'],
                             image_size=cfg['data']['image_size'], augment=True)
