@@ -20,7 +20,7 @@ from utils.logger import get_logger
 from utils.metrics import AverageMeter
 from utils.seg_metrics import dice_score, miou_score, hd95, assd
 from models.c2seg import C2Seg
-from models.losses import CaCLLoss, BCEDiceLoss, DeepSupervisionLoss
+from models.losses import CaCLLoss, BCEDiceLoss, DeepSupervisionLoss, WeightedDiceBCE
 from datasets.dataset import C2SegDataset
 
 
@@ -147,13 +147,24 @@ def train(cfg, pretrained_ckpt: str = None):
         load_checkpoint(ckpt, model)
         logger.info(f"Loaded pretrained weights from {ckpt}")
 
-    # Use deep supervision loss if enabled
+    # Use deep supervision loss if enabled (matching c2seg-origin)
     deep_sup = cfg['model'].get('deep_supervision', False)
     if deep_sup:
-        criterion = DeepSupervisionLoss(bce_weight=tcfg['bce_weight'])
-        logger.info("Using Deep Supervision Loss")
+        # Deep supervision with asymmetric weights from c2seg-origin
+        loss_weights = tcfg.get('loss_weights', [0.5, 0.2, 0.15, 0.1, 0.05])
+        asymmetric_weights = tcfg.get('asymmetric_weights', [
+            (0.5, 0.5), (0.4, 0.6), (0.3, 0.7), (0.2, 0.8), (0.1, 0.9)
+        ])
+        criterion = DeepSupervisionLoss(
+            loss_weights=loss_weights,
+            asymmetric_weights=asymmetric_weights
+        )
+        logger.info(f"Using Deep Supervision Loss with weights: {loss_weights}")
+        logger.info(f"Asymmetric weights: {asymmetric_weights}")
     else:
-        criterion = BCEDiceLoss(bce_weight=tcfg['bce_weight'])
+        # Simple weighted loss for single output
+        criterion = WeightedDiceBCE(weights=(0.5, 0.5))
+        logger.info("Using WeightedDiceBCE Loss")
 
     # visual encoder uses smaller lr (fine-tune), rest uses full lr
     # Visual encoder includes: down0-down4, pool
@@ -173,8 +184,18 @@ def train(cfg, pretrained_ckpt: str = None):
         {'params': visual_params, 'lr': tcfg['lr'] * 0.1},   # small lr for visual encoder
         {'params': other_params,  'lr': tcfg['lr']},
     ], weight_decay=tcfg['weight_decay'])
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=tcfg['epochs'])
+    
+    # Use CosineAnnealingWarmRestarts like c2seg-origin if configured
+    use_cosine_wr = tcfg.get('cosine_lr', True)
+    if use_cosine_wr:
+        from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
+        scheduler = CosineAnnealingWarmRestarts(
+            optimizer, T_0=10, T_mult=1, eta_min=1e-4
+        )
+        logger.info("Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)")
+    else:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=tcfg['epochs'])
 
     ckpt_dir = Path(cfg['logging']['checkpoint_dir'])
     ckpt_dir.mkdir(parents=True, exist_ok=True)
@@ -198,10 +219,12 @@ def train(cfg, pretrained_ckpt: str = None):
             
             # Handle deep supervision output (tuple) vs single output
             if isinstance(outputs, tuple):
+                # DeepSupervisionLoss expects (outputs_tuple, targets)
                 loss = criterion(outputs, masks)
                 logits = outputs[0]  # main output for logging
             else:
-                loss = criterion(outputs, masks)
+                # WeightedDiceBCE expects (targets, logits)
+                loss = criterion(masks, outputs)
                 logits = outputs
             
             # Scale loss for gradient accumulation

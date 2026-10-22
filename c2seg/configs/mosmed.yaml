@@ -41,7 +41,17 @@ train:
   weight_decay: 1.0e-4
   bce_weight: 0.5
   grad_clip: 1.0
+  cosine_lr: true  # Use CosineAnnealingWarmRestarts like c2seg-origin
+  # Deep supervision loss weights (scale importance)
   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+  # Asymmetric weights for each scale: (neg_weight, pos_weight)
+  # Progressively more positive bias at coarser scales
+  asymmetric_weights:
+    - [0.5, 0.5]   # Scale 0 (full res): balanced
+    - [0.4, 0.6]   # Scale 1 (patch 2): slight positive bias
+    - [0.3, 0.7]   # Scale 2 (patch 4): moderate positive bias
+    - [0.2, 0.8]   # Scale 3 (patch 8): strong positive bias
+    - [0.1, 0.9]   # Scale 4 (patch 16): very strong positive bias
   early_stopping: true
   es_patience: 50
   save_after: 50

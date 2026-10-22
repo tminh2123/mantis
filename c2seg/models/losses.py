@@ -1,8 +1,11 @@
 """
-Losses for C2Seg:
+Losses for C2Seg (matching c2seg-origin implementation):
   - CaCLLoss: Cluster-aware Contrastive Learning loss (Stage I)
-  - BCEDiceLoss: segmentation loss (Stage II)
-  - DeepSupervisionLoss: multi-scale loss with deep supervision
+  - WeightedBCE: Asymmetric Binary Cross-Entropy Loss
+  - WeightedDiceLoss: Asymmetric Dice Loss
+  - WeightedDiceBCE: Combined Weighted Dice + BCE (main segmentation loss)
+  - PatchMaskGenerator: Generates patch-level supervision masks
+  - DeepSupervisionLoss: Multi-scale loss with patch masks (Stage II)
 """
 
 import torch
@@ -18,7 +21,6 @@ class CaCLLoss(nn.Module):
     Args:
         temperature: tau for cross-modal logits (default 0.07)
         eps: soft-label mixing weight (default 0.8)
-        lang_encoder: frozen language encoder to compute text embeddings
     """
 
     def __init__(self, temperature: float = 0.07, eps: float = 0.8):
@@ -60,8 +62,249 @@ class CaCLLoss(nn.Module):
         return loss * 0.5
 
 
+# ================================================
+# Asymmetric Loss Functions (from c2seg-origin)
+# ================================================
+
+class WeightedBCE(nn.Module):
+    """
+    Weighted Binary Cross-Entropy Loss.
+    Applies different weights to positive and negative samples.
+    
+    Args:
+        weights: tuple (neg_weight, pos_weight), default (0.4, 0.6)
+    """
+    def __init__(self, weights=(0.4, 0.6)):
+        super().__init__()
+        self.w_neg, self.w_pos = weights
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        logits = logits.view(-1)
+        targets = targets.view(-1)
+        
+        loss = F.binary_cross_entropy(logits, targets, reduction='none')
+        
+        pos_mask = (targets > 0.5).float()
+        neg_mask = (targets < 0.5).float()
+        pos_weight = pos_mask.sum().clamp_min(1e-12)
+        neg_weight = neg_mask.sum().clamp_min(1e-12)
+
+        weighted_loss = (self.w_pos * pos_mask * loss / pos_weight +
+                         self.w_neg * neg_mask * loss / neg_weight).sum()
+        return weighted_loss
+
+
+class WeightedDiceLoss(nn.Module):
+    """
+    Weighted Dice Loss.
+    Applies different weights to positive and negative pixels.
+    
+    Args:
+        weights: tuple (neg_weight, pos_weight), default (0.4, 0.6)
+    """
+    def __init__(self, weights=(0.4, 0.6)):
+        super().__init__()
+        self.w_neg, self.w_pos = weights
+
+    def forward(self, targets: torch.Tensor, logits: torch.Tensor, smooth: float = 1e-5) -> torch.Tensor:
+        batch_size = logits.size(0)
+        targets = targets.view(batch_size, -1)
+        logits = logits.view(batch_size, -1)
+
+        # Weight pixels based on class
+        weights = targets.detach() * (self.w_pos - self.w_neg) + self.w_neg
+        t = weights * targets
+        p = weights * logits
+
+        intersection = (t * p).sum(-1)
+        union = (t * t).sum(-1) + (p * p).sum(-1)
+        dice_loss = 1 - (2 * intersection + smooth) / (union + smooth)
+
+        return dice_loss.mean()
+
+
+class WeightedDiceBCE(nn.Module):
+    """
+    Combined Weighted Dice + Binary Cross-Entropy Loss.
+    This is the main segmentation loss used in c2seg-origin.
+    
+    Args:
+        weights: tuple (neg_weight, pos_weight) for asymmetric weighting
+    """
+    def __init__(self, weights=(0.4, 0.6)):
+        super().__init__()
+        self.dice_loss = WeightedDiceLoss(weights)
+        self.bce_loss = WeightedBCE(weights)
+
+    def forward(self, targets: torch.Tensor, logits: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            targets: [B, 1, H, W] or [B, H, W] ground truth mask
+            logits: [B, 1, H, W] or [B, H, W] predicted probabilities (after sigmoid)
+        """
+        dice = self.dice_loss(targets, logits)
+        bce = self.bce_loss(logits, targets)
+        return 0.5 * dice + 0.5 * bce
+
+
+class AsymmetricDiceBCE(nn.Module):
+    """
+    Alternative naming for WeightedDiceBCE (alias for compatibility).
+    """
+    def __init__(self, weights=(0.4, 0.6), alpha: float = 0.5):
+        super().__init__()
+        self.dice = WeightedDiceLoss(weights)
+        self.bce = WeightedBCE(weights)
+        self.alpha = alpha
+
+    def forward(self, targets: torch.Tensor, logits: torch.Tensor) -> torch.Tensor:
+        dice_loss = self.dice(targets, logits)
+        bce_loss = self.bce(logits, targets)
+        return self.alpha * dice_loss + (1 - self.alpha) * bce_loss
+
+
+# ================================================
+# Patch Mask Generator (from c2seg-origin)
+# ================================================
+
+class PatchMaskGenerator(nn.Module):
+    """
+    Generates binary patch-level masks by dividing the image into
+    non-overlapping patches and marking a patch as 1 if it contains
+    any foreground pixels.
+    
+    Used for multi-scale deep supervision at different patch sizes.
+    
+    Args:
+        patch_size: size of each patch (e.g., 2, 4, 8, 16)
+    """
+    def __init__(self, patch_size: int = 16):
+        super().__init__()
+        self.patch_size = patch_size
+        self.conv = nn.Conv2d(
+            in_channels=1,
+            out_channels=1,
+            kernel_size=patch_size,
+            stride=patch_size,
+            bias=False
+        )
+        # Fill with ones to compute sum of pixels in each patch
+        self.conv.weight.data.fill_(1.0)
+        self.conv.weight.requires_grad = False
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: [B, 1, H, W] binary mask
+        Returns:
+            [B, 1, H/patch_size, W/patch_size] patch-level mask
+        """
+        patch_mean = self.conv(x.float()) / (self.patch_size * self.patch_size)
+        return (patch_mean > 0).float()
+
+
+# ================================================
+# Deep Supervision Loss (matching c2seg-origin)
+# ================================================
+
+class DeepSupervisionLoss(nn.Module):
+    """
+    Multi-scale deep supervision loss matching c2seg-origin.
+    
+    Uses different asymmetric weights at each scale:
+      - Scale 0 (full res): weights [0.5, 0.5]
+      - Scale 1 (patch 2):  weights [0.4, 0.6]
+      - Scale 2 (patch 4):  weights [0.3, 0.7]
+      - Scale 3 (patch 8):  weights [0.2, 0.8]
+      - Scale 4 (patch 16): weights [0.1, 0.9]
+    
+    Loss weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+    
+    Args:
+        loss_weights: list of weights for each scale (default from config)
+        asymmetric_weights: list of (neg, pos) weights for each scale
+    """
+
+    def __init__(
+        self, 
+        loss_weights: list = None,
+        asymmetric_weights: list = None,
+        patch_sizes: list = None
+    ):
+        super().__init__()
+        
+        # Default loss weights from c2seg-origin config
+        self.loss_weights = loss_weights or [0.5, 0.2, 0.15, 0.1, 0.05]
+        
+        # Default asymmetric weights from c2seg-origin train_model.py
+        self.asymmetric_weights = asymmetric_weights or [
+            (0.5, 0.5),   # Scale 0: balanced
+            (0.4, 0.6),   # Scale 1: slight positive bias
+            (0.3, 0.7),   # Scale 2: more positive bias
+            (0.2, 0.8),   # Scale 3: strong positive bias
+            (0.1, 0.9),   # Scale 4: very strong positive bias
+        ]
+        
+        # Patch sizes for generating patch-level masks
+        self.patch_sizes = patch_sizes or [2, 4, 8, 16]
+        
+        # Create loss functions for each scale
+        self.criterions = nn.ModuleList([
+            WeightedDiceBCE(w) for w in self.asymmetric_weights
+        ])
+        
+        # Create patch mask generators (for scales 1-4)
+        self.patch_gens = nn.ModuleList([
+            PatchMaskGenerator(ps) for ps in self.patch_sizes
+        ])
+
+    def forward(self, outputs: tuple, targets: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            outputs: tuple of (out0, out1, out2, out3, out4) at different scales
+                     out0: [B, 1, H, W]     - full resolution
+                     out1: [B, 1, H/2, W/2]
+                     out2: [B, 1, H/4, W/4]
+                     out3: [B, 1, H/8, W/8]
+                     out4: [B, 1, H/16, W/16]
+            targets: [B, 1, H, W] binary mask at full resolution
+            
+        Returns:
+            Weighted sum of losses at all scales
+        """
+        # Ensure targets has channel dimension
+        if targets.dim() == 3:
+            targets = targets.unsqueeze(1)
+        
+        # Generate patch masks for scales 1-4
+        patch_masks = [gen(targets) for gen in self.patch_gens]
+        
+        # All masks: [full_res, patch2, patch4, patch8, patch16]
+        all_masks = [targets] + patch_masks
+        
+        # Compute weighted loss at each scale
+        total_loss = 0.0
+        for i, (out, mask, criterion, weight) in enumerate(
+            zip(outputs, all_masks, self.criterions, self.loss_weights)
+        ):
+            # Ensure output matches mask size
+            if out.shape[2:] != mask.shape[2:]:
+                out = F.interpolate(out, size=mask.shape[2:], mode='bilinear', align_corners=False)
+            
+            loss = criterion(mask, out)
+            total_loss += weight * loss
+        
+        return total_loss
+
+
+# ================================================
+# Simple BCE + Dice Loss (for non-deep-supervision)
+# ================================================
+
 class BCEDiceLoss(nn.Module):
-    """Combined BCE + Dice loss for binary segmentation.
+    """
+    Combined BCE + Dice loss for binary segmentation.
+    Simple version without asymmetric weighting.
     
     Expects input to be probabilities (after sigmoid), NOT logits.
     """
@@ -69,7 +312,6 @@ class BCEDiceLoss(nn.Module):
     def __init__(self, bce_weight: float = 0.5):
         super().__init__()
         self.bce_w = bce_weight
-        # Use BCELoss since model output already has sigmoid
         self.bce = nn.BCELoss()
 
     def forward(self, probs: torch.Tensor, targets: torch.Tensor):
@@ -89,44 +331,3 @@ class BCEDiceLoss(nn.Module):
         dice_loss = dice_loss.mean()
 
         return self.bce_w * bce_loss + (1 - self.bce_w) * dice_loss
-
-
-class DeepSupervisionLoss(nn.Module):
-    """
-    Multi-scale deep supervision loss.
-    Computes BCEDiceLoss at multiple decoder scales with different weights.
-    
-    Ref/c2seg uses weights: [0.5, 0.2, 0.15, 0.1, 0.05] for 5 scales
-    """
-
-    def __init__(self, bce_weight: float = 0.5, weights: list = None):
-        super().__init__()
-        self.base_loss = BCEDiceLoss(bce_weight)
-        # Default weights from ref/c2seg config
-        self.weights = weights or [0.5, 0.2, 0.15, 0.1, 0.05]
-
-    def forward(self, outputs: tuple, targets: torch.Tensor):
-        """
-        outputs: tuple of (out0, out1, out2, out3, out4) at different scales
-                 out0: [B, 1, H, W]     - full resolution
-                 out1: [B, 1, H/2, W/2]
-                 out2: [B, 1, H/4, W/4]
-                 out3: [B, 1, H/8, W/8]
-                 out4: [B, 1, H/16, W/16]
-        targets: [B, 1, H, W] binary mask at full resolution
-        """
-        total_loss = 0.0
-        
-        for i, (out, weight) in enumerate(zip(outputs, self.weights)):
-            # Resize target to match output scale
-            if out.shape[2:] != targets.shape[2:]:
-                target_scaled = F.interpolate(
-                    targets, size=out.shape[2:], mode='nearest'
-                )
-            else:
-                target_scaled = targets
-            
-            loss = self.base_loss(out, target_scaled)
-            total_loss += weight * loss
-        
-        return total_loss
