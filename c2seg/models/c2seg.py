@@ -419,14 +419,23 @@ class C2Seg(nn.Module):
         kan_grid_size: int = 5,
         kan_spline_order: int = 3,
         deep_supervision: bool = False,
+        # Masking params (from c2seg-origin config)
+        text_mask_rate: float = 0.3,
+        img_mask_rate: float = 0.3,
+        mask_mode: str = "dist",  # "dist" or "random"
         # Unused params for compatibility
         use_kgate: bool = True,
         drop_path_rate: float = 0.,
+        frozen_clip: bool = True,
+        pool_mode: str = "max_pool",
     ):
         super().__init__()
         self.deep_supervision = deep_supervision
         self.use_text = use_text
         self.use_bcam = use_bcam
+        self.text_mask_rate = text_mask_rate
+        self.img_mask_rate = img_mask_rate
+        self.mask_mode = mask_mode
         
         # Scale base channel
         base_ch = max(16, int(base_channel * channel_scale))
@@ -477,12 +486,63 @@ class C2Seg(nn.Module):
         # Store for param counting
         self.base_ch = base_ch
 
+    def _apply_text_mask(self, token_emb: torch.Tensor) -> torch.Tensor:
+        """
+        Apply random masking to text token embeddings during training.
+        
+        Args:
+            token_emb: [B, N, D] text token embeddings
+            
+        Returns:
+            Masked embeddings with some tokens zeroed out
+        """
+        if not self.training or self.text_mask_rate <= 0:
+            return token_emb
+        
+        B, N, D = token_emb.shape
+        # Create random mask (1 = keep, 0 = mask)
+        mask = torch.rand(B, N, device=token_emb.device) > self.text_mask_rate
+        # Don't mask first token (CLS) and last non-pad token (EOS)
+        mask[:, 0] = True
+        
+        # Expand mask for broadcasting
+        mask = mask.unsqueeze(-1).expand_as(token_emb)
+        
+        return token_emb * mask.float()
+
+    def _apply_img_mask(self, img_feat: torch.Tensor) -> torch.Tensor:
+        """
+        Apply random patch masking to image features during training.
+        
+        Args:
+            img_feat: [B, C, H, W] image features
+            
+        Returns:
+            Masked features with some patches zeroed out
+        """
+        if not self.training or self.img_mask_rate <= 0:
+            return img_feat
+        
+        B, C, H, W = img_feat.shape
+        # Mask at patch level (e.g., 7x7 patches for 14x14 feature map)
+        patch_size = max(1, H // 7)
+        pH, pW = H // patch_size, W // patch_size
+        
+        # Create patch-level mask
+        patch_mask = torch.rand(B, 1, pH, pW, device=img_feat.device) > self.img_mask_rate
+        
+        # Upsample mask to feature size
+        mask = F.interpolate(patch_mask.float(), size=(H, W), mode='nearest')
+        
+        return img_feat * mask
+
     def forward(self, images, texts=None):
         # Encode text if provided
         l = None
         if self.use_text and texts is not None:
             token_emb, _ = self.lang_enc(texts, images.device)
-            l = token_emb  # [B, N, 512]
+            # Apply text masking during training
+            l = self._apply_text_mask(token_emb)  # [B, N, 512]
 
         # Encode image (vision stream)
         v0 = self.down0(images)              # [B, C, 224, 224]
@@ -490,6 +550,9 @@ class C2Seg(nn.Module):
         v2 = self.down2(self.pool(v1))       # [B, 4C, 56, 56]
         v3 = self.down3(self.pool(v2))       # [B, 8C, 28, 28]
         v4 = self.down4(self.pool(v3))       # [B, 8C, 14, 14]
+        
+        # Apply image masking during training (at bottleneck)
+        v4 = self._apply_img_mask(v4)
 
         # Cross-modal fusion + decoder
         if self.use_text and self.use_bcam and l is not None:
