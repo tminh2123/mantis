@@ -137,6 +137,9 @@ def pretrain(cfg):
 # Stage II: segmentation fine-tuning
 # ---------------------------------------------------------------------------
 def train(cfg, pretrained_ckpt: str = None):
+    import time
+    from tqdm import tqdm
+    
     logger = get_logger('c2seg_train', cfg['logging']['log_dir'])
     device = get_device()
     set_seed(cfg['project']['seed'])
