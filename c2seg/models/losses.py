@@ -199,6 +199,8 @@ class PatchMaskGenerator(nn.Module):
         Returns:
             [B, 1, H/patch_size, W/patch_size] patch-level mask
         """
+        # Move conv to same device as input
+        self.conv = self.conv.to(x.device)
         patch_mean = self.conv(x.float()) / (self.patch_size * self.patch_size)
         return (patch_mean > 0).float()
 
