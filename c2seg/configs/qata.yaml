@@ -15,8 +15,8 @@ data:
 model:
   clip_model: "ViT-B/32"
   base_channel: 64
-  kan_grid_size: 3
-  kan_spline_order: 2
+  kan_grid_size: 5  # KAN B-spline grid intervals (c2seg-origin default)
+  kan_spline_order: 3  # KAN B-spline order (cubic, c2seg-origin default)
   max_token_len: 18
   dropout: 0.5
   text_mask_rate: 0.3
