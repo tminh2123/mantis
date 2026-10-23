@@ -34,6 +34,10 @@ def _surface_distances(pred_bin: np.ndarray, gt_bin: np.ndarray):
     pred_border = pred_bin ^ _erode(pred_bin)
     gt_border   = gt_bin   ^ _erode(gt_bin)
 
+    # Handle edge case where border is empty after erosion
+    if not pred_border.any() or not gt_border.any():
+        return np.array([]), np.array([])
+
     dt_pred = distance_transform_edt(~pred_bin)
     dt_gt   = distance_transform_edt(~gt_bin)
 
