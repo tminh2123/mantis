@@ -39,11 +39,6 @@ Implementation of C2Seg paper: "Towards Text-Mask Consistency in Medical Image S
 | `mosmed_nokan_deepsup` | C2Seg + MLP + Deep Supervision | 1.0 | ❌ MLP only | 73.74% | 60.23% | 21.06 | 4.20 | Best @ epoch 71 |
 | **`mosmed_kan_deepsup`** | C2Seg + KAN + Deep Supervision + Accum2 | 1.0 | ✅ K-Gate | **74.04%** | **60.76%** | **18.20** | **3.53** | **Best result** ✅ |
 
-**Observations:**
-- MosMedData+ is harder than QaTa-COV19 (CT scans vs X-ray)
-- Model converged around epoch 80-100, fluctuating 67-70% on validation
-- Gap with paper: ~5% Dice
-
 ---
 
 ## Version Details
