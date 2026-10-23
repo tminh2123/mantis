@@ -1,0 +1,171 @@
+[2026-10-22 18:44:45] INFO - ============================================================
+[2026-10-22 18:44:45] INFO - CONFIGURATION
+[2026-10-22 18:44:45] INFO - ============================================================
+[2026-10-22 18:44:45] INFO - [project]
+[2026-10-22 18:44:45] INFO -   name: c2seg
+[2026-10-22 18:44:45] INFO -   seed: 922
+[2026-10-22 18:44:45] INFO - [data]
+[2026-10-22 18:44:45] INFO -   root: ../../../dataset/MosMedDataPlus
+[2026-10-22 18:44:45] INFO -   train_dir: ../../../dataset/MosMedDataPlus/Train_Folder
+[2026-10-22 18:44:45] INFO -   val_dir: ../../../dataset/MosMedDataPlus/Val_Folder
+[2026-10-22 18:44:45] INFO -   test_dir: ../../../dataset/MosMedDataPlus/Test_Folder
+[2026-10-22 18:44:45] INFO -   image_size: 224
+[2026-10-22 18:44:45] INFO -   num_workers: 4
+[2026-10-22 18:44:45] INFO - [model]
+[2026-10-22 18:44:45] INFO -   clip_model: openai/clip-vit-base-patch32
+[2026-10-22 18:44:45] INFO -   base_channel: 64
+[2026-10-22 18:44:45] INFO -   kan_grid_size: 5
+[2026-10-22 18:44:45] INFO -   kan_spline_order: 3
+[2026-10-22 18:44:45] INFO -   max_token_len: 18
+[2026-10-22 18:44:45] INFO -   dropout: 0.5
+[2026-10-22 18:44:45] INFO -   text_mask_rate: 0.3
+[2026-10-22 18:44:45] INFO -   img_mask_rate: 0.3
+[2026-10-22 18:44:45] INFO -   mask_mode: dist
+[2026-10-22 18:44:45] INFO -   pool_mode: max_pool
+[2026-10-22 18:44:45] INFO -   frozen_clip: True
+[2026-10-22 18:44:45] INFO -   use_text: True
+[2026-10-22 18:44:45] INFO -   use_bcam: True
+[2026-10-22 18:44:45] INFO -   use_kgate: True
+[2026-10-22 18:44:45] INFO -   use_kan: True
+[2026-10-22 18:44:45] INFO -   deep_supervision: True
+[2026-10-22 18:44:45] INFO -   channel_scale: 1.0
+[2026-10-22 18:44:45] INFO -   img_size: 224
+[2026-10-22 18:44:45] INFO - [pretrain]
+[2026-10-22 18:44:45] INFO -   epochs: 100
+[2026-10-22 18:44:45] INFO -   batch_size: 256
+[2026-10-22 18:44:45] INFO -   lr: 0.0003
+[2026-10-22 18:44:45] INFO -   weight_decay: 0.0001
+[2026-10-22 18:44:45] INFO -   temperature: 0.07
+[2026-10-22 18:44:45] INFO -   eps: 0.8
+[2026-10-22 18:44:45] INFO -   checkpoint: output/checkpoints/mosmed_full/c2seg_pretrain.pth
+[2026-10-22 18:44:45] INFO - [train]
+[2026-10-22 18:44:45] INFO -   epochs: 500
+[2026-10-22 18:44:45] INFO -   batch_size: 32
+[2026-10-22 18:44:45] INFO -   lr: 0.0003
+[2026-10-22 18:44:45] INFO -   weight_decay: 0.0001
+[2026-10-22 18:44:45] INFO -   bce_weight: 0.5
+[2026-10-22 18:44:45] INFO -   grad_clip: 1.0
+[2026-10-22 18:44:45] INFO -   cosine_lr: True
+[2026-10-22 18:44:45] INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 18:44:45] INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 18:44:45] INFO -   early_stopping: True
+[2026-10-22 18:44:45] INFO -   es_patience: 50
+[2026-10-22 18:44:45] INFO -   save_after: 50
+[2026-10-22 18:44:45] INFO - [eval]
+[2026-10-22 18:44:45] INFO -   batch_size: 16
+[2026-10-22 18:44:45] INFO -   threshold: 0.5
+[2026-10-22 18:44:45] INFO -   checkpoint: output/checkpoints/mosmed_full/c2seg_best.pth
+[2026-10-22 18:44:45] INFO - [logging]
+[2026-10-22 18:44:45] INFO -   log_dir: output/logs/mosmed_full
+[2026-10-22 18:44:45] INFO -   checkpoint_dir: output/checkpoints/mosmed_full
+[2026-10-22 18:44:45] INFO -   save_every: 10
+[2026-10-22 18:44:45] INFO - [accum_steps]
+[2026-10-22 18:44:45] INFO -   1
+[2026-10-22 18:44:45] INFO - ============================================================
+[2026-10-22 18:45:18] INFO - Trainable params: 32,404,865 / 95,570,817 (33.9%)
+[2026-10-22 18:45:18] INFO - Dataset: 2183 samples | Batch size: 256 | Steps/epoch: 8
+[2026-10-22 18:45:18] INFO - Config: τ=0.07, ρ=0.8, lr=0.0003
+[2026-10-22 18:45:18] INFO - ------------------------------------------------------------
+[2026-10-22 18:45:30] INFO - Epoch [01/100] Loss: 6.0663 | LR: 3.00e-04 | Time: 11.3s
+[2026-10-22 18:45:39] INFO - Epoch [02/100] Loss: 5.5524 | LR: 3.00e-04 | Time: 8.9s
+[2026-10-22 18:45:49] INFO - Epoch [03/100] Loss: 5.5369 | LR: 2.99e-04 | Time: 9.0s
+[2026-10-22 18:45:59] INFO - Epoch [04/100] Loss: 5.5339 | LR: 2.99e-04 | Time: 8.9s
+[2026-10-22 18:46:09] INFO - Epoch [05/100] Loss: 5.5308 | LR: 2.98e-04 | Time: 9.0s
+[2026-10-22 18:46:19] INFO - Epoch [06/100] Loss: 5.5294 | LR: 2.97e-04 | Time: 9.2s
+[2026-10-22 18:46:29] INFO - Epoch [07/100] Loss: 5.5279 | LR: 2.96e-04 | Time: 9.1s
+[2026-10-22 18:46:39] INFO - Epoch [08/100] Loss: 5.5263 | LR: 2.95e-04 | Time: 8.8s
+[2026-10-22 18:46:49] INFO - Epoch [09/100] Loss: 5.5236 | LR: 2.94e-04 | Time: 9.2s
+[2026-10-22 18:46:59] INFO - Epoch [10/100] Loss: 5.5240 | LR: 2.93e-04 | Time: 9.1s
+[2026-10-22 18:47:08] INFO - Epoch [11/100] Loss: 5.5211 | LR: 2.91e-04 | Time: 8.8s
+[2026-10-22 18:47:18] INFO - Epoch [12/100] Loss: 5.5186 | LR: 2.89e-04 | Time: 8.9s
+[2026-10-22 18:47:27] INFO - Epoch [13/100] Loss: 5.5175 | LR: 2.88e-04 | Time: 8.6s
+[2026-10-22 18:47:37] INFO - Epoch [14/100] Loss: 5.5143 | LR: 2.86e-04 | Time: 9.1s
+[2026-10-22 18:47:47] INFO - Epoch [15/100] Loss: 5.5132 | LR: 2.84e-04 | Time: 9.0s
+[2026-10-22 18:47:57] INFO - Epoch [16/100] Loss: 5.5105 | LR: 2.81e-04 | Time: 9.1s
+[2026-10-22 18:48:06] INFO - Epoch [17/100] Loss: 5.5081 | LR: 2.79e-04 | Time: 9.0s
+[2026-10-22 18:48:16] INFO - Epoch [18/100] Loss: 5.5083 | LR: 2.77e-04 | Time: 8.9s
+[2026-10-22 18:48:25] INFO - Epoch [19/100] Loss: 5.5086 | LR: 2.74e-04 | Time: 9.0s
+[2026-10-22 18:48:34] INFO - Epoch [20/100] Loss: 5.5055 | LR: 2.71e-04 | Time: 9.0s
+[2026-10-22 18:48:44] INFO - Epoch [21/100] Loss: 5.5027 | LR: 2.69e-04 | Time: 8.9s
+[2026-10-22 18:48:54] INFO - Epoch [22/100] Loss: 5.5099 | LR: 2.66e-04 | Time: 9.1s
+[2026-10-22 18:49:04] INFO - Epoch [23/100] Loss: 5.5108 | LR: 2.63e-04 | Time: 9.3s
+[2026-10-22 18:49:13] INFO - Epoch [24/100] Loss: 5.5053 | LR: 2.59e-04 | Time: 9.4s
+[2026-10-22 18:49:22] INFO - Epoch [25/100] Loss: 5.5016 | LR: 2.56e-04 | Time: 9.1s
+[2026-10-22 18:49:32] INFO - Epoch [26/100] Loss: 5.4951 | LR: 2.53e-04 | Time: 9.2s
+[2026-10-22 18:49:42] INFO - Epoch [27/100] Loss: 5.4909 | LR: 2.49e-04 | Time: 9.2s
+[2026-10-22 18:49:52] INFO - Epoch [28/100] Loss: 5.4870 | LR: 2.46e-04 | Time: 8.9s
+[2026-10-22 18:50:02] INFO - Epoch [29/100] Loss: 5.4904 | LR: 2.42e-04 | Time: 8.8s
+[2026-10-22 18:50:10] INFO - Epoch [30/100] Loss: 5.4902 | LR: 2.38e-04 | Time: 8.8s
+[2026-10-22 18:50:20] INFO - Epoch [31/100] Loss: 5.4816 | LR: 2.34e-04 | Time: 9.0s
+[2026-10-22 18:50:30] INFO - Epoch [32/100] Loss: 5.4808 | LR: 2.30e-04 | Time: 9.1s
+[2026-10-22 18:50:39] INFO - Epoch [33/100] Loss: 5.4768 | LR: 2.26e-04 | Time: 8.7s
+[2026-10-22 18:50:49] INFO - Epoch [34/100] Loss: 5.4754 | LR: 2.22e-04 | Time: 9.1s
+[2026-10-22 18:50:59] INFO - Epoch [35/100] Loss: 5.4724 | LR: 2.18e-04 | Time: 8.8s
+[2026-10-22 18:51:09] INFO - Epoch [36/100] Loss: 5.4727 | LR: 2.14e-04 | Time: 8.7s
+[2026-10-22 18:51:18] INFO - Epoch [37/100] Loss: 5.4695 | LR: 2.10e-04 | Time: 8.9s
+[2026-10-22 18:51:27] INFO - Epoch [38/100] Loss: 5.4679 | LR: 2.05e-04 | Time: 8.7s
+[2026-10-22 18:51:37] INFO - Epoch [39/100] Loss: 5.4650 | LR: 2.01e-04 | Time: 9.1s
+[2026-10-22 18:51:47] INFO - Epoch [40/100] Loss: 5.4649 | LR: 1.96e-04 | Time: 8.9s
+[2026-10-22 18:51:57] INFO - Epoch [41/100] Loss: 5.4645 | LR: 1.92e-04 | Time: 9.0s
+[2026-10-22 18:52:07] INFO - Epoch [42/100] Loss: 5.4620 | LR: 1.87e-04 | Time: 8.9s
+[2026-10-22 18:52:17] INFO - Epoch [43/100] Loss: 5.4603 | LR: 1.83e-04 | Time: 9.0s
+[2026-10-22 18:52:27] INFO - Epoch [44/100] Loss: 5.4579 | LR: 1.78e-04 | Time: 9.0s
+[2026-10-22 18:52:37] INFO - Epoch [45/100] Loss: 5.4586 | LR: 1.73e-04 | Time: 9.0s
+[2026-10-22 18:52:45] INFO - Epoch [46/100] Loss: 5.4561 | LR: 1.69e-04 | Time: 9.0s
+[2026-10-22 18:52:56] INFO - Epoch [47/100] Loss: 5.4558 | LR: 1.64e-04 | Time: 9.2s
+[2026-10-22 18:53:05] INFO - Epoch [48/100] Loss: 5.4582 | LR: 1.59e-04 | Time: 8.7s
+[2026-10-22 18:53:14] INFO - Epoch [49/100] Loss: 5.4552 | LR: 1.55e-04 | Time: 8.9s
+[2026-10-22 18:53:23] INFO - Epoch [50/100] Loss: 5.4558 | LR: 1.50e-04 | Time: 8.7s
+[2026-10-22 18:53:33] INFO - Epoch [51/100] Loss: 5.4523 | LR: 1.45e-04 | Time: 9.0s
+[2026-10-22 18:53:43] INFO - Epoch [52/100] Loss: 5.4540 | LR: 1.41e-04 | Time: 8.8s
+[2026-10-22 18:53:51] INFO - Epoch [53/100] Loss: 5.4503 | LR: 1.36e-04 | Time: 8.8s
+[2026-10-22 18:54:01] INFO - Epoch [54/100] Loss: 5.4512 | LR: 1.31e-04 | Time: 9.1s
+[2026-10-22 18:54:10] INFO - Epoch [55/100] Loss: 5.4485 | LR: 1.27e-04 | Time: 9.0s
+[2026-10-22 18:54:20] INFO - Epoch [56/100] Loss: 5.4492 | LR: 1.22e-04 | Time: 9.2s
+[2026-10-22 18:54:29] INFO - Epoch [57/100] Loss: 5.4482 | LR: 1.17e-04 | Time: 9.0s
+[2026-10-22 18:54:39] INFO - Epoch [58/100] Loss: 5.4487 | LR: 1.13e-04 | Time: 8.9s
+[2026-10-22 18:54:48] INFO - Epoch [59/100] Loss: 5.4473 | LR: 1.08e-04 | Time: 9.0s
+[2026-10-22 18:54:57] INFO - Epoch [60/100] Loss: 5.4476 | LR: 1.04e-04 | Time: 8.7s
+[2026-10-22 18:55:07] INFO - Epoch [61/100] Loss: 5.4459 | LR: 9.92e-05 | Time: 8.8s
+[2026-10-22 18:55:17] INFO - Epoch [62/100] Loss: 5.4448 | LR: 9.48e-05 | Time: 9.0s
+[2026-10-22 18:55:26] INFO - Epoch [63/100] Loss: 5.4422 | LR: 9.04e-05 | Time: 8.9s
+[2026-10-22 18:55:36] INFO - Epoch [64/100] Loss: 5.4462 | LR: 8.61e-05 | Time: 8.7s
+[2026-10-22 18:55:45] INFO - Epoch [65/100] Loss: 5.4451 | LR: 8.19e-05 | Time: 8.7s
+[2026-10-22 18:55:53] INFO - Epoch [66/100] Loss: 5.4432 | LR: 7.77e-05 | Time: 8.8s
+[2026-10-22 18:56:02] INFO - Epoch [67/100] Loss: 5.4427 | LR: 7.36e-05 | Time: 8.9s
+[2026-10-22 18:56:11] INFO - Epoch [68/100] Loss: 5.4422 | LR: 6.96e-05 | Time: 8.9s
+[2026-10-22 18:56:20] INFO - Epoch [69/100] Loss: 5.4385 | LR: 6.57e-05 | Time: 9.0s
+[2026-10-22 18:56:30] INFO - Epoch [70/100] Loss: 5.4393 | LR: 6.18e-05 | Time: 9.1s
+[2026-10-22 18:56:40] INFO - Epoch [71/100] Loss: 5.4375 | LR: 5.81e-05 | Time: 9.0s
+[2026-10-22 18:56:50] INFO - Epoch [72/100] Loss: 5.4352 | LR: 5.44e-05 | Time: 9.0s
+[2026-10-22 18:56:59] INFO - Epoch [73/100] Loss: 5.4353 | LR: 5.08e-05 | Time: 8.7s
+[2026-10-22 18:57:08] INFO - Epoch [74/100] Loss: 5.4361 | LR: 4.73e-05 | Time: 8.8s
+[2026-10-22 18:57:17] INFO - Epoch [75/100] Loss: 5.4345 | LR: 4.39e-05 | Time: 9.0s
+[2026-10-22 18:57:27] INFO - Epoch [76/100] Loss: 5.4324 | LR: 4.07e-05 | Time: 8.8s
+[2026-10-22 18:57:36] INFO - Epoch [77/100] Loss: 5.4329 | LR: 3.75e-05 | Time: 8.8s
+[2026-10-22 18:57:45] INFO - Epoch [78/100] Loss: 5.4338 | LR: 3.44e-05 | Time: 9.0s
+[2026-10-22 18:57:54] INFO - Epoch [79/100] Loss: 5.4355 | LR: 3.15e-05 | Time: 8.9s
+[2026-10-22 18:58:03] INFO - Epoch [80/100] Loss: 5.4307 | LR: 2.86e-05 | Time: 8.7s
+[2026-10-22 18:58:13] INFO - Epoch [81/100] Loss: 5.4309 | LR: 2.59e-05 | Time: 9.0s
+[2026-10-22 18:58:22] INFO - Epoch [82/100] Loss: 5.4326 | LR: 2.34e-05 | Time: 8.9s
+[2026-10-22 18:58:31] INFO - Epoch [83/100] Loss: 5.4289 | LR: 2.09e-05 | Time: 8.9s
+[2026-10-22 18:58:41] INFO - Epoch [84/100] Loss: 5.4289 | LR: 1.86e-05 | Time: 9.0s
+[2026-10-22 18:58:50] INFO - Epoch [85/100] Loss: 5.4299 | LR: 1.63e-05 | Time: 8.8s
+[2026-10-22 18:58:59] INFO - Epoch [86/100] Loss: 5.4272 | LR: 1.43e-05 | Time: 9.1s
+[2026-10-22 18:59:09] INFO - Epoch [87/100] Loss: 5.4271 | LR: 1.23e-05 | Time: 8.7s
+[2026-10-22 18:59:19] INFO - Epoch [88/100] Loss: 5.4274 | LR: 1.05e-05 | Time: 9.1s
+[2026-10-22 18:59:28] INFO - Epoch [89/100] Loss: 5.4285 | LR: 8.87e-06 | Time: 8.8s
+[2026-10-22 18:59:37] INFO - Epoch [90/100] Loss: 5.4276 | LR: 7.34e-06 | Time: 8.9s
+[2026-10-22 18:59:47] INFO - Epoch [91/100] Loss: 5.4255 | LR: 5.96e-06 | Time: 9.2s
+[2026-10-22 18:59:57] INFO - Epoch [92/100] Loss: 5.4268 | LR: 4.71e-06 | Time: 9.1s
+[2026-10-22 19:00:05] INFO - Epoch [93/100] Loss: 5.4250 | LR: 3.61e-06 | Time: 8.7s
+[2026-10-22 19:00:15] INFO - Epoch [94/100] Loss: 5.4272 | LR: 2.66e-06 | Time: 9.2s
+[2026-10-22 19:00:24] INFO - Epoch [95/100] Loss: 5.4246 | LR: 1.85e-06 | Time: 8.9s
+[2026-10-22 19:00:34] INFO - Epoch [96/100] Loss: 5.4257 | LR: 1.18e-06 | Time: 8.9s
+[2026-10-22 19:00:43] INFO - Epoch [97/100] Loss: 5.4242 | LR: 6.66e-07 | Time: 9.0s
+[2026-10-22 19:00:53] INFO - Epoch [98/100] Loss: 5.4216 | LR: 2.96e-07 | Time: 9.0s
+[2026-10-22 19:01:03] INFO - Epoch [99/100] Loss: 5.4234 | LR: 7.40e-08 | Time: 8.9s
+[2026-10-22 19:01:12] INFO - Epoch [100/100] Loss: 5.4242 | LR: 0.00e+00 | Time: 9.2s
+[2026-10-22 19:01:13] INFO - ------------------------------------------------------------
+[2026-10-22 19:01:13] INFO - Pretrain done. Best loss: 5.4216
+[2026-10-22 19:01:13] INFO - Saved to output/checkpoints/mosmed_full/c2seg_pretrain.pth

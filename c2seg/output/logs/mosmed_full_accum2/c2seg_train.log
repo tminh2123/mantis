@@ -1,0 +1,651 @@
+[2026-10-22 19:02:42] INFO - ============================================================
+[2026-10-22 19:02:42] INFO - CONFIGURATION
+[2026-10-22 19:02:42] INFO - ============================================================
+[2026-10-22 19:02:42] INFO - [project]
+[2026-10-22 19:02:42] INFO -   name: c2seg
+[2026-10-22 19:02:42] INFO -   seed: 922
+[2026-10-22 19:02:42] INFO - [data]
+[2026-10-22 19:02:42] INFO -   root: ../../../dataset/MosMedDataPlus
+[2026-10-22 19:02:42] INFO -   train_dir: ../../../dataset/MosMedDataPlus/Train_Folder
+[2026-10-22 19:02:42] INFO -   val_dir: ../../../dataset/MosMedDataPlus/Val_Folder
+[2026-10-22 19:02:42] INFO -   test_dir: ../../../dataset/MosMedDataPlus/Test_Folder
+[2026-10-22 19:02:42] INFO -   image_size: 224
+[2026-10-22 19:02:42] INFO -   num_workers: 4
+[2026-10-22 19:02:42] INFO - [model]
+[2026-10-22 19:02:42] INFO -   clip_model: openai/clip-vit-base-patch32
+[2026-10-22 19:02:42] INFO -   base_channel: 64
+[2026-10-22 19:02:42] INFO -   kan_grid_size: 5
+[2026-10-22 19:02:42] INFO -   kan_spline_order: 3
+[2026-10-22 19:02:42] INFO -   max_token_len: 18
+[2026-10-22 19:02:42] INFO -   dropout: 0.5
+[2026-10-22 19:02:42] INFO -   text_mask_rate: 0.3
+[2026-10-22 19:02:42] INFO -   img_mask_rate: 0.3
+[2026-10-22 19:02:42] INFO -   mask_mode: dist
+[2026-10-22 19:02:42] INFO -   pool_mode: max_pool
+[2026-10-22 19:02:42] INFO -   frozen_clip: True
+[2026-10-22 19:02:42] INFO -   use_text: True
+[2026-10-22 19:02:42] INFO -   use_bcam: True
+[2026-10-22 19:02:42] INFO -   use_kgate: True
+[2026-10-22 19:02:42] INFO -   use_kan: True
+[2026-10-22 19:02:42] INFO -   deep_supervision: True
+[2026-10-22 19:02:42] INFO -   channel_scale: 1.0
+[2026-10-22 19:02:42] INFO -   img_size: 224
+[2026-10-22 19:02:42] INFO - [pretrain]
+[2026-10-22 19:02:42] INFO -   epochs: 100
+[2026-10-22 19:02:42] INFO -   batch_size: 128
+[2026-10-22 19:02:42] INFO -   lr: 0.0003
+[2026-10-22 19:02:42] INFO -   weight_decay: 0.0001
+[2026-10-22 19:02:42] INFO -   temperature: 0.07
+[2026-10-22 19:02:42] INFO -   eps: 0.8
+[2026-10-22 19:02:42] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_pretrain.pth
+[2026-10-22 19:02:42] INFO - [train]
+[2026-10-22 19:02:42] INFO -   epochs: 500
+[2026-10-22 19:02:42] INFO -   batch_size: 16
+[2026-10-22 19:02:42] INFO -   lr: 0.0003
+[2026-10-22 19:02:42] INFO -   weight_decay: 0.0001
+[2026-10-22 19:02:42] INFO -   bce_weight: 0.5
+[2026-10-22 19:02:42] INFO -   grad_clip: 1.0
+[2026-10-22 19:02:42] INFO -   cosine_lr: True
+[2026-10-22 19:02:42] INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:02:42] INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:02:42] INFO -   early_stopping: True
+[2026-10-22 19:02:42] INFO -   es_patience: 50
+[2026-10-22 19:02:42] INFO -   save_after: 50
+[2026-10-22 19:02:42] INFO - [eval]
+[2026-10-22 19:02:42] INFO -   batch_size: 16
+[2026-10-22 19:02:42] INFO -   threshold: 0.5
+[2026-10-22 19:02:42] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_best.pth
+[2026-10-22 19:02:42] INFO - [logging]
+[2026-10-22 19:02:42] INFO -   log_dir: output/logs/mosmed_full_accum2
+[2026-10-22 19:02:42] INFO -   checkpoint_dir: output/checkpoints/mosmed_full_accum2
+[2026-10-22 19:02:42] INFO -   save_every: 10
+[2026-10-22 19:02:42] INFO - [accum_steps]
+[2026-10-22 19:02:42] INFO -   2
+[2026-10-22 19:02:42] INFO - ============================================================
+[2026-10-22 19:03:22] INFO - Loaded pretrained weights from output/checkpoints/mosmed_full/c2seg_pretrain.pth
+[2026-10-22 19:03:22] INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:03:22] INFO - Asymmetric weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:03:22] INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
+[2026-10-22 19:03:22] INFO - Gradient accumulation: 2 steps (effective batch = 32)
+[2026-10-22 19:05:22] INFO - ============================================================
+[2026-10-22 19:05:22] INFO - CONFIGURATION
+[2026-10-22 19:05:22] INFO - ============================================================
+[2026-10-22 19:05:22] INFO - [project]
+[2026-10-22 19:05:22] INFO -   name: c2seg
+[2026-10-22 19:05:22] INFO -   seed: 922
+[2026-10-22 19:05:22] INFO - [data]
+[2026-10-22 19:05:22] INFO -   root: ../../../dataset/MosMedDataPlus
+[2026-10-22 19:05:22] INFO -   train_dir: ../../../dataset/MosMedDataPlus/Train_Folder
+[2026-10-22 19:05:22] INFO -   val_dir: ../../../dataset/MosMedDataPlus/Val_Folder
+[2026-10-22 19:05:22] INFO -   test_dir: ../../../dataset/MosMedDataPlus/Test_Folder
+[2026-10-22 19:05:22] INFO -   image_size: 224
+[2026-10-22 19:05:22] INFO -   num_workers: 4
+[2026-10-22 19:05:22] INFO - [model]
+[2026-10-22 19:05:22] INFO -   clip_model: openai/clip-vit-base-patch32
+[2026-10-22 19:05:22] INFO -   base_channel: 64
+[2026-10-22 19:05:22] INFO -   kan_grid_size: 5
+[2026-10-22 19:05:22] INFO -   kan_spline_order: 3
+[2026-10-22 19:05:22] INFO -   max_token_len: 18
+[2026-10-22 19:05:22] INFO -   dropout: 0.5
+[2026-10-22 19:05:22] INFO -   text_mask_rate: 0.3
+[2026-10-22 19:05:22] INFO -   img_mask_rate: 0.3
+[2026-10-22 19:05:22] INFO -   mask_mode: dist
+[2026-10-22 19:05:22] INFO -   pool_mode: max_pool
+[2026-10-22 19:05:22] INFO -   frozen_clip: True
+[2026-10-22 19:05:22] INFO -   use_text: True
+[2026-10-22 19:05:22] INFO -   use_bcam: True
+[2026-10-22 19:05:22] INFO -   use_kgate: True
+[2026-10-22 19:05:22] INFO -   use_kan: True
+[2026-10-22 19:05:22] INFO -   deep_supervision: True
+[2026-10-22 19:05:22] INFO -   channel_scale: 1.0
+[2026-10-22 19:05:22] INFO -   img_size: 224
+[2026-10-22 19:05:22] INFO - [pretrain]
+[2026-10-22 19:05:22] INFO -   epochs: 100
+[2026-10-22 19:05:22] INFO -   batch_size: 128
+[2026-10-22 19:05:22] INFO -   lr: 0.0003
+[2026-10-22 19:05:22] INFO -   weight_decay: 0.0001
+[2026-10-22 19:05:22] INFO -   temperature: 0.07
+[2026-10-22 19:05:22] INFO -   eps: 0.8
+[2026-10-22 19:05:22] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_pretrain.pth
+[2026-10-22 19:05:22] INFO - [train]
+[2026-10-22 19:05:22] INFO -   epochs: 500
+[2026-10-22 19:05:22] INFO -   batch_size: 16
+[2026-10-22 19:05:22] INFO -   lr: 0.0003
+[2026-10-22 19:05:22] INFO -   weight_decay: 0.0001
+[2026-10-22 19:05:22] INFO -   bce_weight: 0.5
+[2026-10-22 19:05:22] INFO -   grad_clip: 1.0
+[2026-10-22 19:05:22] INFO -   cosine_lr: True
+[2026-10-22 19:05:22] INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:05:22] INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:05:22] INFO -   early_stopping: True
+[2026-10-22 19:05:22] INFO -   es_patience: 50
+[2026-10-22 19:05:22] INFO -   save_after: 50
+[2026-10-22 19:05:22] INFO - [eval]
+[2026-10-22 19:05:22] INFO -   batch_size: 16
+[2026-10-22 19:05:22] INFO -   threshold: 0.5
+[2026-10-22 19:05:22] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_best.pth
+[2026-10-22 19:05:22] INFO - [logging]
+[2026-10-22 19:05:22] INFO -   log_dir: output/logs/mosmed_full_accum2
+[2026-10-22 19:05:22] INFO -   checkpoint_dir: output/checkpoints/mosmed_full_accum2
+[2026-10-22 19:05:22] INFO -   save_every: 10
+[2026-10-22 19:05:22] INFO - [accum_steps]
+[2026-10-22 19:05:22] INFO -   2
+[2026-10-22 19:05:22] INFO - ============================================================
+[2026-10-22 19:05:50] INFO - Loaded pretrained weights from output/checkpoints/mosmed_full/c2seg_pretrain.pth
+[2026-10-22 19:05:50] INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:05:50] INFO - Asymmetric weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:05:51] INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
+[2026-10-22 19:05:51] INFO - Gradient accumulation: 2 steps (effective batch = 32)
+[2026-10-22 19:07:24] INFO - Epoch [1/500] Loss: 0.5217 | Dice: 35.67% | mIoU: 25.26% | HD95: 0.00 | ASSD: 0.00
+[2026-10-22 19:09:30] INFO - ============================================================
+[2026-10-22 19:09:30] INFO - CONFIGURATION
+[2026-10-22 19:09:30] INFO - ============================================================
+[2026-10-22 19:09:30] INFO - [project]
+[2026-10-22 19:09:30] INFO -   name: c2seg
+[2026-10-22 19:09:30] INFO -   seed: 922
+[2026-10-22 19:09:30] INFO - [data]
+[2026-10-22 19:09:30] INFO -   root: ../../../dataset/MosMedDataPlus
+[2026-10-22 19:09:30] INFO -   train_dir: ../../../dataset/MosMedDataPlus/Train_Folder
+[2026-10-22 19:09:30] INFO -   val_dir: ../../../dataset/MosMedDataPlus/Val_Folder
+[2026-10-22 19:09:30] INFO -   test_dir: ../../../dataset/MosMedDataPlus/Test_Folder
+[2026-10-22 19:09:30] INFO -   image_size: 224
+[2026-10-22 19:09:30] INFO -   num_workers: 4
+[2026-10-22 19:09:30] INFO - [model]
+[2026-10-22 19:09:30] INFO -   clip_model: openai/clip-vit-base-patch32
+[2026-10-22 19:09:30] INFO -   base_channel: 64
+[2026-10-22 19:09:30] INFO -   kan_grid_size: 5
+[2026-10-22 19:09:30] INFO -   kan_spline_order: 3
+[2026-10-22 19:09:30] INFO -   max_token_len: 18
+[2026-10-22 19:09:30] INFO -   dropout: 0.5
+[2026-10-22 19:09:30] INFO -   text_mask_rate: 0.3
+[2026-10-22 19:09:30] INFO -   img_mask_rate: 0.3
+[2026-10-22 19:09:30] INFO -   mask_mode: dist
+[2026-10-22 19:09:30] INFO -   pool_mode: max_pool
+[2026-10-22 19:09:30] INFO -   frozen_clip: True
+[2026-10-22 19:09:30] INFO -   use_text: True
+[2026-10-22 19:09:30] INFO -   use_bcam: True
+[2026-10-22 19:09:30] INFO -   use_kgate: True
+[2026-10-22 19:09:30] INFO -   use_kan: True
+[2026-10-22 19:09:30] INFO -   deep_supervision: True
+[2026-10-22 19:09:30] INFO -   channel_scale: 1.0
+[2026-10-22 19:09:30] INFO -   img_size: 224
+[2026-10-22 19:09:30] INFO - [pretrain]
+[2026-10-22 19:09:30] INFO -   epochs: 100
+[2026-10-22 19:09:30] INFO -   batch_size: 128
+[2026-10-22 19:09:30] INFO -   lr: 0.0003
+[2026-10-22 19:09:30] INFO -   weight_decay: 0.0001
+[2026-10-22 19:09:30] INFO -   temperature: 0.07
+[2026-10-22 19:09:30] INFO -   eps: 0.8
+[2026-10-22 19:09:30] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_pretrain.pth
+[2026-10-22 19:09:30] INFO - [train]
+[2026-10-22 19:09:30] INFO -   epochs: 500
+[2026-10-22 19:09:30] INFO -   batch_size: 16
+[2026-10-22 19:09:30] INFO -   lr: 0.0003
+[2026-10-22 19:09:30] INFO -   weight_decay: 0.0001
+[2026-10-22 19:09:30] INFO -   bce_weight: 0.5
+[2026-10-22 19:09:30] INFO -   grad_clip: 1.0
+[2026-10-22 19:09:30] INFO -   cosine_lr: True
+[2026-10-22 19:09:30] INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:09:30] INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:09:30] INFO -   early_stopping: True
+[2026-10-22 19:09:30] INFO -   es_patience: 50
+[2026-10-22 19:09:30] INFO -   save_after: 50
+[2026-10-22 19:09:30] INFO - [eval]
+[2026-10-22 19:09:30] INFO -   batch_size: 16
+[2026-10-22 19:09:30] INFO -   threshold: 0.5
+[2026-10-22 19:09:30] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_best.pth
+[2026-10-22 19:09:30] INFO - [logging]
+[2026-10-22 19:09:30] INFO -   log_dir: output/logs/mosmed_full_accum2
+[2026-10-22 19:09:30] INFO -   checkpoint_dir: output/checkpoints/mosmed_full_accum2
+[2026-10-22 19:09:30] INFO -   save_every: 10
+[2026-10-22 19:09:30] INFO - [accum_steps]
+[2026-10-22 19:09:30] INFO -   2
+[2026-10-22 19:09:30] INFO - ============================================================
+[2026-10-22 19:10:32] INFO - Loaded pretrained weights from output/checkpoints/mosmed_full/c2seg_pretrain.pth
+[2026-10-22 19:10:32] INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:10:32] INFO - Asymmetric weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:10:32] INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
+[2026-10-22 19:10:32] INFO - Gradient accumulation: 2 steps (effective batch = 32)
+[2026-10-22 19:11:45] INFO - ============================================================
+[2026-10-22 19:11:45] INFO - CONFIGURATION
+[2026-10-22 19:11:45] INFO - ============================================================
+[2026-10-22 19:11:45] INFO - [project]
+[2026-10-22 19:11:45] INFO -   name: c2seg
+[2026-10-22 19:11:45] INFO -   seed: 922
+[2026-10-22 19:11:45] INFO - [data]
+[2026-10-22 19:11:45] INFO -   root: ../../../dataset/MosMedDataPlus
+[2026-10-22 19:11:45] INFO -   train_dir: ../../../dataset/MosMedDataPlus/Train_Folder
+[2026-10-22 19:11:45] INFO -   val_dir: ../../../dataset/MosMedDataPlus/Val_Folder
+[2026-10-22 19:11:45] INFO -   test_dir: ../../../dataset/MosMedDataPlus/Test_Folder
+[2026-10-22 19:11:45] INFO -   image_size: 224
+[2026-10-22 19:11:45] INFO -   num_workers: 4
+[2026-10-22 19:11:45] INFO - [model]
+[2026-10-22 19:11:45] INFO -   clip_model: openai/clip-vit-base-patch32
+[2026-10-22 19:11:45] INFO -   base_channel: 64
+[2026-10-22 19:11:45] INFO -   kan_grid_size: 5
+[2026-10-22 19:11:45] INFO -   kan_spline_order: 3
+[2026-10-22 19:11:45] INFO -   max_token_len: 18
+[2026-10-22 19:11:45] INFO -   dropout: 0.5
+[2026-10-22 19:11:45] INFO -   text_mask_rate: 0.3
+[2026-10-22 19:11:45] INFO -   img_mask_rate: 0.3
+[2026-10-22 19:11:45] INFO -   mask_mode: dist
+[2026-10-22 19:11:45] INFO -   pool_mode: max_pool
+[2026-10-22 19:11:45] INFO -   frozen_clip: True
+[2026-10-22 19:11:45] INFO -   use_text: True
+[2026-10-22 19:11:45] INFO -   use_bcam: True
+[2026-10-22 19:11:45] INFO -   use_kgate: True
+[2026-10-22 19:11:45] INFO -   use_kan: True
+[2026-10-22 19:11:45] INFO -   deep_supervision: True
+[2026-10-22 19:11:45] INFO -   channel_scale: 1.0
+[2026-10-22 19:11:45] INFO -   img_size: 224
+[2026-10-22 19:11:45] INFO - [pretrain]
+[2026-10-22 19:11:45] INFO -   epochs: 100
+[2026-10-22 19:11:45] INFO -   batch_size: 128
+[2026-10-22 19:11:45] INFO -   lr: 0.0003
+[2026-10-22 19:11:45] INFO -   weight_decay: 0.0001
+[2026-10-22 19:11:45] INFO -   temperature: 0.07
+[2026-10-22 19:11:45] INFO -   eps: 0.8
+[2026-10-22 19:11:45] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_pretrain.pth
+[2026-10-22 19:11:45] INFO - [train]
+[2026-10-22 19:11:45] INFO -   epochs: 500
+[2026-10-22 19:11:45] INFO -   batch_size: 16
+[2026-10-22 19:11:45] INFO -   lr: 0.0003
+[2026-10-22 19:11:45] INFO -   weight_decay: 0.0001
+[2026-10-22 19:11:45] INFO -   bce_weight: 0.5
+[2026-10-22 19:11:45] INFO -   grad_clip: 1.0
+[2026-10-22 19:11:45] INFO -   cosine_lr: True
+[2026-10-22 19:11:45] INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:11:45] INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:11:45] INFO -   early_stopping: True
+[2026-10-22 19:11:45] INFO -   es_patience: 50
+[2026-10-22 19:11:45] INFO -   save_after: 50
+[2026-10-22 19:11:45] INFO - [eval]
+[2026-10-22 19:11:45] INFO -   batch_size: 16
+[2026-10-22 19:11:45] INFO -   threshold: 0.5
+[2026-10-22 19:11:45] INFO -   checkpoint: output/checkpoints/mosmed_full_accum2/c2seg_best.pth
+[2026-10-22 19:11:45] INFO - [logging]
+[2026-10-22 19:11:45] INFO -   log_dir: output/logs/mosmed_full_accum2
+[2026-10-22 19:11:45] INFO -   checkpoint_dir: output/checkpoints/mosmed_full_accum2
+[2026-10-22 19:11:45] INFO -   save_every: 10
+[2026-10-22 19:11:45] INFO - [accum_steps]
+[2026-10-22 19:11:45] INFO -   2
+[2026-10-22 19:11:45] INFO - ============================================================
+[2026-10-22 19:12:07] INFO - Loaded pretrained weights from output/checkpoints/mosmed_full/c2seg_pretrain.pth
+[2026-10-22 19:12:07] INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:12:07] INFO - Asymmetric weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:12:07] INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
+[2026-10-22 19:12:07] INFO - Gradient accumulation: 2 steps (effective batch = 32)
+[2026-10-22 19:13:41] INFO - Epoch [1/500] Loss: 0.5094 | Dice: 35.87% | mIoU: 25.50% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-22 19:15:14] INFO - Epoch [2/500] Loss: 0.3936 | Dice: 45.42% | mIoU: 33.76% | HD95: 0.00 | ASSD: 0.00 | Time: 87.8s
+[2026-10-22 19:16:48] INFO - Epoch [3/500] Loss: 0.3331 | Dice: 52.96% | mIoU: 40.57% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-22 19:18:21] INFO - Epoch [4/500] Loss: 0.2947 | Dice: 57.26% | mIoU: 44.73% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-22 19:19:55] INFO - Epoch [5/500] Loss: 0.2702 | Dice: 58.47% | mIoU: 45.85% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 19:21:30] INFO - Epoch [6/500] Loss: 0.2469 | Dice: 61.93% | mIoU: 48.57% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 19:23:04] INFO - Epoch [7/500] Loss: 0.2334 | Dice: 57.87% | mIoU: 44.87% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 19:24:37] INFO - Epoch [8/500] Loss: 0.2213 | Dice: 62.37% | mIoU: 49.37% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 19:26:12] INFO - Epoch [9/500] Loss: 0.2065 | Dice: 64.96% | mIoU: 52.07% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 19:27:46] INFO - Epoch [10/500] Loss: 0.2011 | Dice: 61.48% | mIoU: 48.19% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 19:29:20] INFO - Epoch [11/500] Loss: 0.1959 | Dice: 65.71% | mIoU: 52.63% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 19:30:54] INFO - Epoch [12/500] Loss: 0.1866 | Dice: 66.46% | mIoU: 53.18% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 19:32:28] INFO - Epoch [13/500] Loss: 0.1748 | Dice: 66.28% | mIoU: 52.95% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 19:34:01] INFO - Epoch [14/500] Loss: 0.1720 | Dice: 66.07% | mIoU: 53.22% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 19:35:35] INFO - Epoch [15/500] Loss: 0.1685 | Dice: 65.31% | mIoU: 52.00% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 19:37:08] INFO - Epoch [16/500] Loss: 0.1643 | Dice: 57.62% | mIoU: 44.38% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 19:38:42] INFO - Epoch [17/500] Loss: 0.1590 | Dice: 66.08% | mIoU: 52.58% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 19:40:15] INFO - Epoch [18/500] Loss: 0.1572 | Dice: 66.78% | mIoU: 53.48% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 19:41:50] INFO - Epoch [19/500] Loss: 0.1559 | Dice: 64.70% | mIoU: 51.26% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-22 19:43:24] INFO - Epoch [20/500] Loss: 0.1495 | Dice: 68.31% | mIoU: 55.21% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 19:44:59] INFO - Epoch [21/500] Loss: 0.1507 | Dice: 67.55% | mIoU: 54.53% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 19:46:33] INFO - Epoch [22/500] Loss: 0.1430 | Dice: 68.33% | mIoU: 55.25% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 19:48:08] INFO - Epoch [23/500] Loss: 0.1429 | Dice: 68.36% | mIoU: 55.59% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 19:49:42] INFO - Epoch [24/500] Loss: 0.1425 | Dice: 67.87% | mIoU: 54.91% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-22 19:51:16] INFO - Epoch [25/500] Loss: 0.1371 | Dice: 69.02% | mIoU: 56.32% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-22 19:52:51] INFO - Epoch [26/500] Loss: 0.1376 | Dice: 68.31% | mIoU: 55.35% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-22 19:54:25] INFO - Epoch [27/500] Loss: 0.1351 | Dice: 69.47% | mIoU: 56.83% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 19:55:59] INFO - Epoch [28/500] Loss: 0.1322 | Dice: 67.25% | mIoU: 54.32% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 19:57:33] INFO - Epoch [29/500] Loss: 0.1341 | Dice: 68.74% | mIoU: 55.51% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 19:59:07] INFO - Epoch [30/500] Loss: 0.1293 | Dice: 66.74% | mIoU: 53.68% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 20:00:41] INFO - Epoch [31/500] Loss: 0.1338 | Dice: 67.30% | mIoU: 53.97% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 20:02:14] INFO - Epoch [32/500] Loss: 0.1294 | Dice: 67.31% | mIoU: 54.10% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-22 20:03:48] INFO - Epoch [33/500] Loss: 0.1260 | Dice: 68.68% | mIoU: 55.45% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 20:05:22] INFO - Epoch [34/500] Loss: 0.1241 | Dice: 68.64% | mIoU: 55.99% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-22 20:06:56] INFO - Epoch [35/500] Loss: 0.1213 | Dice: 69.89% | mIoU: 57.26% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 20:08:30] INFO - Epoch [36/500] Loss: 0.1238 | Dice: 69.86% | mIoU: 57.15% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 20:10:04] INFO - Epoch [37/500] Loss: 0.1224 | Dice: 68.56% | mIoU: 55.66% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 20:11:37] INFO - Epoch [38/500] Loss: 0.1205 | Dice: 68.00% | mIoU: 55.40% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 20:13:11] INFO - Epoch [39/500] Loss: 0.1214 | Dice: 69.28% | mIoU: 56.56% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 20:14:44] INFO - Epoch [40/500] Loss: 0.1185 | Dice: 69.92% | mIoU: 56.82% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 20:16:19] INFO - Epoch [41/500] Loss: 0.1215 | Dice: 69.97% | mIoU: 56.98% | HD95: 0.00 | ASSD: 0.00 | Time: 89.3s
+[2026-10-22 20:17:54] INFO - Epoch [42/500] Loss: 0.1157 | Dice: 67.00% | mIoU: 53.79% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 20:19:27] INFO - Epoch [43/500] Loss: 0.1169 | Dice: 66.92% | mIoU: 53.60% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-22 20:21:01] INFO - Epoch [44/500] Loss: 0.1178 | Dice: 69.13% | mIoU: 56.05% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-22 20:22:35] INFO - Epoch [45/500] Loss: 0.1174 | Dice: 69.10% | mIoU: 56.07% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-22 20:24:09] INFO - Epoch [46/500] Loss: 0.1145 | Dice: 68.93% | mIoU: 56.23% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 20:25:42] INFO - Epoch [47/500] Loss: 0.1168 | Dice: 70.65% | mIoU: 57.72% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 20:27:17] INFO - Epoch [48/500] Loss: 0.1137 | Dice: 70.40% | mIoU: 57.49% | HD95: 0.00 | ASSD: 0.00 | Time: 89.4s
+[2026-10-22 20:28:50] INFO - Epoch [49/500] Loss: 0.1113 | Dice: 69.75% | mIoU: 56.94% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 20:30:24] INFO - Epoch [50/500] Loss: 0.1118 | Dice: 69.77% | mIoU: 56.96% | HD95: 0.00 | ASSD: 0.00 | Time: 89.2s
+[2026-10-22 20:31:58] INFO - Epoch [51/500] Loss: 0.1149 | Dice: 70.79% | mIoU: 57.78% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 20:33:32] INFO - Epoch [52/500] Loss: 0.1123 | Dice: 69.94% | mIoU: 56.74% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 20:35:05] INFO - Epoch [53/500] Loss: 0.1099 | Dice: 71.12% | mIoU: 58.42% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 20:36:39] INFO - Epoch [54/500] Loss: 0.1093 | Dice: 70.02% | mIoU: 57.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 20:38:12] INFO - Epoch [55/500] Loss: 0.1067 | Dice: 68.35% | mIoU: 54.79% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 20:39:45] INFO - Epoch [56/500] Loss: 0.1081 | Dice: 68.50% | mIoU: 55.29% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 20:41:18] INFO - Epoch [57/500] Loss: 0.1090 | Dice: 69.70% | mIoU: 56.63% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 20:42:51] INFO - Epoch [58/500] Loss: 0.1072 | Dice: 68.88% | mIoU: 56.04% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 20:44:24] INFO - Epoch [59/500] Loss: 0.1073 | Dice: 68.31% | mIoU: 55.27% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 20:45:57] INFO - Epoch [60/500] Loss: 0.1066 | Dice: 70.36% | mIoU: 57.55% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 20:47:30] INFO - Epoch [61/500] Loss: 0.1076 | Dice: 68.33% | mIoU: 55.48% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 20:49:03] INFO - Epoch [62/500] Loss: 0.1039 | Dice: 69.65% | mIoU: 56.79% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 20:50:36] INFO - Epoch [63/500] Loss: 0.1062 | Dice: 70.58% | mIoU: 57.65% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 20:52:09] INFO - Epoch [64/500] Loss: 0.1036 | Dice: 70.79% | mIoU: 57.84% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 20:53:42] INFO - Epoch [65/500] Loss: 0.1037 | Dice: 70.18% | mIoU: 57.44% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 20:55:15] INFO - Epoch [66/500] Loss: 0.1034 | Dice: 69.74% | mIoU: 56.61% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 20:56:47] INFO - Epoch [67/500] Loss: 0.1033 | Dice: 70.14% | mIoU: 56.97% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 20:58:20] INFO - Epoch [68/500] Loss: 0.1031 | Dice: 69.40% | mIoU: 56.83% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-22 20:59:53] INFO - Epoch [69/500] Loss: 0.1057 | Dice: 67.69% | mIoU: 54.79% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:01:26] INFO - Epoch [70/500] Loss: 0.1040 | Dice: 69.40% | mIoU: 56.50% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:02:59] INFO - Epoch [71/500] Loss: 0.1040 | Dice: 70.19% | mIoU: 57.25% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-22 21:04:32] INFO - Epoch [72/500] Loss: 0.1003 | Dice: 70.47% | mIoU: 57.41% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-22 21:06:05] INFO - Epoch [73/500] Loss: 0.1002 | Dice: 71.78% | mIoU: 59.05% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:07:39] INFO - Epoch [74/500] Loss: 0.1028 | Dice: 67.33% | mIoU: 53.98% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:09:11] INFO - Epoch [75/500] Loss: 0.1029 | Dice: 68.74% | mIoU: 55.57% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:10:44] INFO - Epoch [76/500] Loss: 0.1005 | Dice: 69.54% | mIoU: 56.82% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:12:17] INFO - Epoch [77/500] Loss: 0.0982 | Dice: 67.62% | mIoU: 54.10% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:13:50] INFO - Epoch [78/500] Loss: 0.1002 | Dice: 69.71% | mIoU: 56.90% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:15:23] INFO - Epoch [79/500] Loss: 0.0990 | Dice: 69.02% | mIoU: 55.82% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:16:56] INFO - Epoch [80/500] Loss: 0.0999 | Dice: 71.09% | mIoU: 58.26% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:18:29] INFO - Epoch [81/500] Loss: 0.0974 | Dice: 70.75% | mIoU: 57.93% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:20:02] INFO - Epoch [82/500] Loss: 0.0973 | Dice: 71.44% | mIoU: 58.81% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 21:21:35] INFO - Epoch [83/500] Loss: 0.0983 | Dice: 69.51% | mIoU: 56.47% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 21:23:08] INFO - Epoch [84/500] Loss: 0.0968 | Dice: 70.06% | mIoU: 57.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:24:41] INFO - Epoch [85/500] Loss: 0.0962 | Dice: 70.96% | mIoU: 58.19% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 21:26:14] INFO - Epoch [86/500] Loss: 0.0974 | Dice: 71.13% | mIoU: 58.34% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 21:27:47] INFO - Epoch [87/500] Loss: 0.0974 | Dice: 69.64% | mIoU: 56.49% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:29:20] INFO - Epoch [88/500] Loss: 0.0962 | Dice: 70.35% | mIoU: 57.39% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 21:30:53] INFO - Epoch [89/500] Loss: 0.0965 | Dice: 70.88% | mIoU: 58.69% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:32:26] INFO - Epoch [90/500] Loss: 0.0959 | Dice: 70.14% | mIoU: 57.40% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:34:00] INFO - Epoch [91/500] Loss: 0.0975 | Dice: 69.67% | mIoU: 57.19% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 21:35:33] INFO - Epoch [92/500] Loss: 0.0961 | Dice: 69.07% | mIoU: 55.84% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:37:07] INFO - Epoch [93/500] Loss: 0.0956 | Dice: 71.62% | mIoU: 58.84% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 21:38:40] INFO - Epoch [94/500] Loss: 0.0932 | Dice: 71.94% | mIoU: 59.35% | HD95: 0.00 | ASSD: 0.00 | Time: 89.1s
+[2026-10-22 21:40:14] INFO - Epoch [95/500] Loss: 0.0929 | Dice: 67.98% | mIoU: 54.45% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:41:47] INFO - Epoch [96/500] Loss: 0.0953 | Dice: 70.67% | mIoU: 57.58% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 21:43:20] INFO - Epoch [97/500] Loss: 0.0944 | Dice: 72.10% | mIoU: 59.68% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:44:55] INFO - Epoch [98/500] Loss: 0.0944 | Dice: 71.36% | mIoU: 59.06% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 21:46:28] INFO - Epoch [99/500] Loss: 0.0911 | Dice: 70.56% | mIoU: 57.91% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 21:48:01] INFO - Epoch [100/500] Loss: 0.0936 | Dice: 71.20% | mIoU: 58.72% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:49:35] INFO - Epoch [101/500] Loss: 0.0922 | Dice: 71.83% | mIoU: 59.46% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 21:51:08] INFO - Epoch [102/500] Loss: 0.0918 | Dice: 69.80% | mIoU: 56.62% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 21:52:41] INFO - Epoch [103/500] Loss: 0.0924 | Dice: 71.99% | mIoU: 59.35% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 21:54:14] INFO - Epoch [104/500] Loss: 0.0923 | Dice: 70.96% | mIoU: 58.31% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 21:55:47] INFO - Epoch [105/500] Loss: 0.0922 | Dice: 71.79% | mIoU: 58.86% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 21:57:20] INFO - Epoch [106/500] Loss: 0.0916 | Dice: 71.98% | mIoU: 59.37% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 21:58:53] INFO - Epoch [107/500] Loss: 0.0920 | Dice: 72.75% | mIoU: 60.09% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:00:27] INFO - Epoch [108/500] Loss: 0.0908 | Dice: 71.70% | mIoU: 58.72% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:02:00] INFO - Epoch [109/500] Loss: 0.0927 | Dice: 71.93% | mIoU: 59.42% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:03:33] INFO - Epoch [110/500] Loss: 0.0919 | Dice: 71.06% | mIoU: 57.93% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:05:07] INFO - Epoch [111/500] Loss: 0.0928 | Dice: 71.09% | mIoU: 58.42% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:06:40] INFO - Epoch [112/500] Loss: 0.0901 | Dice: 71.46% | mIoU: 58.78% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:08:13] INFO - Epoch [113/500] Loss: 0.0886 | Dice: 70.89% | mIoU: 57.96% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:09:46] INFO - Epoch [114/500] Loss: 0.0885 | Dice: 72.59% | mIoU: 59.99% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:11:19] INFO - Epoch [115/500] Loss: 0.0901 | Dice: 72.24% | mIoU: 59.60% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:12:52] INFO - Epoch [116/500] Loss: 0.0902 | Dice: 69.79% | mIoU: 57.24% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:14:25] INFO - Epoch [117/500] Loss: 0.0901 | Dice: 70.57% | mIoU: 57.94% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:15:58] INFO - Epoch [118/500] Loss: 0.0896 | Dice: 71.08% | mIoU: 58.26% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:17:31] INFO - Epoch [119/500] Loss: 0.0891 | Dice: 71.88% | mIoU: 58.94% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:19:04] INFO - Epoch [120/500] Loss: 0.0880 | Dice: 71.02% | mIoU: 58.44% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 22:20:37] INFO - Epoch [121/500] Loss: 0.0908 | Dice: 70.33% | mIoU: 57.54% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:22:10] INFO - Epoch [122/500] Loss: 0.0878 | Dice: 72.79% | mIoU: 60.30% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 22:23:44] INFO - Epoch [123/500] Loss: 0.0874 | Dice: 72.45% | mIoU: 59.93% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:25:17] INFO - Epoch [124/500] Loss: 0.0882 | Dice: 70.26% | mIoU: 57.38% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:26:49] INFO - Epoch [125/500] Loss: 0.0879 | Dice: 70.85% | mIoU: 58.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:28:22] INFO - Epoch [126/500] Loss: 0.0873 | Dice: 71.28% | mIoU: 58.55% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:29:55] INFO - Epoch [127/500] Loss: 0.0866 | Dice: 70.32% | mIoU: 57.87% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:31:28] INFO - Epoch [128/500] Loss: 0.0892 | Dice: 69.95% | mIoU: 57.22% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:33:01] INFO - Epoch [129/500] Loss: 0.0869 | Dice: 71.69% | mIoU: 59.18% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:34:34] INFO - Epoch [130/500] Loss: 0.0865 | Dice: 71.77% | mIoU: 59.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:36:08] INFO - Epoch [131/500] Loss: 0.0896 | Dice: 70.99% | mIoU: 58.43% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:37:41] INFO - Epoch [132/500] Loss: 0.0867 | Dice: 69.88% | mIoU: 56.56% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:39:14] INFO - Epoch [133/500] Loss: 0.0862 | Dice: 71.84% | mIoU: 59.45% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:40:47] INFO - Epoch [134/500] Loss: 0.0868 | Dice: 70.50% | mIoU: 57.45% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:42:20] INFO - Epoch [135/500] Loss: 0.0851 | Dice: 71.25% | mIoU: 58.99% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:43:53] INFO - Epoch [136/500] Loss: 0.0878 | Dice: 71.24% | mIoU: 58.47% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:45:26] INFO - Epoch [137/500] Loss: 0.0848 | Dice: 71.51% | mIoU: 58.99% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:46:59] INFO - Epoch [138/500] Loss: 0.0880 | Dice: 71.41% | mIoU: 58.63% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:48:32] INFO - Epoch [139/500] Loss: 0.0872 | Dice: 72.77% | mIoU: 60.28% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:50:05] INFO - Epoch [140/500] Loss: 0.0860 | Dice: 70.68% | mIoU: 58.16% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:51:39] INFO - Epoch [141/500] Loss: 0.0870 | Dice: 72.20% | mIoU: 59.90% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 22:53:12] INFO - Epoch [142/500] Loss: 0.0856 | Dice: 70.53% | mIoU: 58.08% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 22:54:45] INFO - Epoch [143/500] Loss: 0.0853 | Dice: 72.03% | mIoU: 59.28% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:56:18] INFO - Epoch [144/500] Loss: 0.0865 | Dice: 72.44% | mIoU: 60.17% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 22:57:51] INFO - Epoch [145/500] Loss: 0.0869 | Dice: 71.21% | mIoU: 58.19% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 22:59:24] INFO - Epoch [146/500] Loss: 0.0858 | Dice: 72.73% | mIoU: 60.35% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:00:57] INFO - Epoch [147/500] Loss: 0.0844 | Dice: 72.18% | mIoU: 59.93% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:02:31] INFO - Epoch [148/500] Loss: 0.0839 | Dice: 71.56% | mIoU: 58.60% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:04:04] INFO - Epoch [149/500] Loss: 0.0838 | Dice: 72.60% | mIoU: 59.91% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:05:37] INFO - Epoch [150/500] Loss: 0.0850 | Dice: 72.35% | mIoU: 59.62% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:07:11] INFO - Epoch [151/500] Loss: 0.0839 | Dice: 71.58% | mIoU: 58.67% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:08:44] INFO - Epoch [152/500] Loss: 0.0841 | Dice: 72.94% | mIoU: 60.48% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:10:18] INFO - Epoch [153/500] Loss: 0.0831 | Dice: 71.01% | mIoU: 58.16% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:11:51] INFO - Epoch [154/500] Loss: 0.0834 | Dice: 72.82% | mIoU: 60.17% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:13:24] INFO - Epoch [155/500] Loss: 0.0836 | Dice: 72.02% | mIoU: 59.45% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:14:57] INFO - Epoch [156/500] Loss: 0.0824 | Dice: 73.03% | mIoU: 60.72% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:16:31] INFO - Epoch [157/500] Loss: 0.0834 | Dice: 72.28% | mIoU: 59.71% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:18:04] INFO - Epoch [158/500] Loss: 0.0844 | Dice: 71.99% | mIoU: 59.74% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:19:37] INFO - Epoch [159/500] Loss: 0.0837 | Dice: 71.57% | mIoU: 59.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:21:10] INFO - Epoch [160/500] Loss: 0.0837 | Dice: 72.43% | mIoU: 59.86% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:22:43] INFO - Epoch [161/500] Loss: 0.0862 | Dice: 71.24% | mIoU: 58.76% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:24:17] INFO - Epoch [162/500] Loss: 0.0833 | Dice: 72.94% | mIoU: 60.83% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 23:25:50] INFO - Epoch [163/500] Loss: 0.0827 | Dice: 71.41% | mIoU: 59.27% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:27:23] INFO - Epoch [164/500] Loss: 0.0820 | Dice: 71.96% | mIoU: 59.34% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:28:56] INFO - Epoch [165/500] Loss: 0.0814 | Dice: 72.06% | mIoU: 59.52% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 23:30:29] INFO - Epoch [166/500] Loss: 0.0809 | Dice: 70.75% | mIoU: 58.31% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-22 23:32:02] INFO - Epoch [167/500] Loss: 0.0810 | Dice: 71.04% | mIoU: 58.61% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:33:36] INFO - Epoch [168/500] Loss: 0.0819 | Dice: 71.62% | mIoU: 59.52% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:35:09] INFO - Epoch [169/500] Loss: 0.0832 | Dice: 72.85% | mIoU: 60.32% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:36:42] INFO - Epoch [170/500] Loss: 0.0828 | Dice: 71.55% | mIoU: 59.05% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-22 23:38:15] INFO - Epoch [171/500] Loss: 0.0833 | Dice: 71.85% | mIoU: 59.23% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:39:48] INFO - Epoch [172/500] Loss: 0.0813 | Dice: 70.61% | mIoU: 57.91% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:41:21] INFO - Epoch [173/500] Loss: 0.0831 | Dice: 72.80% | mIoU: 60.47% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:42:55] INFO - Epoch [174/500] Loss: 0.0813 | Dice: 72.45% | mIoU: 60.10% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-22 23:44:28] INFO - Epoch [175/500] Loss: 0.0823 | Dice: 71.58% | mIoU: 59.27% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-22 23:46:00] INFO - Epoch [176/500] Loss: 0.0811 | Dice: 73.66% | mIoU: 61.43% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-22 23:47:34] INFO - Epoch [177/500] Loss: 0.0805 | Dice: 73.11% | mIoU: 61.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 23:49:07] INFO - Epoch [178/500] Loss: 0.0805 | Dice: 72.34% | mIoU: 60.00% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 23:50:40] INFO - Epoch [179/500] Loss: 0.0817 | Dice: 70.69% | mIoU: 58.34% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 23:52:13] INFO - Epoch [180/500] Loss: 0.0810 | Dice: 70.90% | mIoU: 58.76% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 23:53:46] INFO - Epoch [181/500] Loss: 0.0831 | Dice: 72.02% | mIoU: 59.28% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-22 23:55:19] INFO - Epoch [182/500] Loss: 0.0812 | Dice: 70.62% | mIoU: 58.33% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-22 23:56:52] INFO - Epoch [183/500] Loss: 0.0803 | Dice: 73.48% | mIoU: 61.14% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-22 23:58:24] INFO - Epoch [184/500] Loss: 0.0797 | Dice: 73.71% | mIoU: 61.49% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-22 23:59:58] INFO - Epoch [185/500] Loss: 0.0788 | Dice: 71.84% | mIoU: 59.29% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 00:01:31] INFO - Epoch [186/500] Loss: 0.0808 | Dice: 72.44% | mIoU: 59.79% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 00:03:04] INFO - Epoch [187/500] Loss: 0.0785 | Dice: 71.04% | mIoU: 58.40% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 00:04:36] INFO - Epoch [188/500] Loss: 0.0795 | Dice: 72.80% | mIoU: 60.46% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:06:09] INFO - Epoch [189/500] Loss: 0.0816 | Dice: 71.95% | mIoU: 59.46% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 00:07:42] INFO - Epoch [190/500] Loss: 0.0804 | Dice: 73.06% | mIoU: 60.57% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:09:14] INFO - Epoch [191/500] Loss: 0.0818 | Dice: 71.96% | mIoU: 59.71% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 00:10:47] INFO - Epoch [192/500] Loss: 0.0815 | Dice: 72.84% | mIoU: 60.52% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:12:20] INFO - Epoch [193/500] Loss: 0.0810 | Dice: 71.87% | mIoU: 59.15% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 00:13:53] INFO - Epoch [194/500] Loss: 0.0794 | Dice: 72.56% | mIoU: 60.05% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 00:15:26] INFO - Epoch [195/500] Loss: 0.0789 | Dice: 72.99% | mIoU: 60.87% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-23 00:16:59] INFO - Epoch [196/500] Loss: 0.0775 | Dice: 73.35% | mIoU: 60.92% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-23 00:18:32] INFO - Epoch [197/500] Loss: 0.0783 | Dice: 71.80% | mIoU: 59.44% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-23 00:20:05] INFO - Epoch [198/500] Loss: 0.0802 | Dice: 73.04% | mIoU: 60.84% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-23 00:21:38] INFO - Epoch [199/500] Loss: 0.0789 | Dice: 73.39% | mIoU: 60.80% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:23:11] INFO - Epoch [200/500] Loss: 0.0773 | Dice: 72.06% | mIoU: 59.91% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:24:45] INFO - Epoch [201/500] Loss: 0.0803 | Dice: 72.57% | mIoU: 60.21% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-23 00:26:18] INFO - Epoch [202/500] Loss: 0.0777 | Dice: 72.81% | mIoU: 60.33% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:27:51] INFO - Epoch [203/500] Loss: 0.0793 | Dice: 71.92% | mIoU: 59.64% | HD95: 0.00 | ASSD: 0.00 | Time: 89.0s
+[2026-10-23 00:29:25] INFO - Epoch [204/500] Loss: 0.0778 | Dice: 71.69% | mIoU: 59.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:30:58] INFO - Epoch [205/500] Loss: 0.0783 | Dice: 73.23% | mIoU: 61.07% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-23 00:32:31] INFO - Epoch [206/500] Loss: 0.0768 | Dice: 72.84% | mIoU: 60.83% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-23 00:34:04] INFO - Epoch [207/500] Loss: 0.0775 | Dice: 72.17% | mIoU: 60.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.8s
+[2026-10-23 00:35:37] INFO - Epoch [208/500] Loss: 0.0761 | Dice: 74.06% | mIoU: 61.75% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:37:11] INFO - Epoch [209/500] Loss: 0.0776 | Dice: 72.73% | mIoU: 60.20% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:38:44] INFO - Epoch [210/500] Loss: 0.0776 | Dice: 71.57% | mIoU: 59.22% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:40:18] INFO - Epoch [211/500] Loss: 0.0788 | Dice: 71.44% | mIoU: 58.61% | HD95: 0.00 | ASSD: 0.00 | Time: 88.9s
+[2026-10-23 00:41:51] INFO - Epoch [212/500] Loss: 0.0786 | Dice: 71.79% | mIoU: 59.02% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-23 00:43:24] INFO - Epoch [213/500] Loss: 0.0769 | Dice: 72.13% | mIoU: 59.73% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-23 00:44:57] INFO - Epoch [214/500] Loss: 0.0777 | Dice: 72.98% | mIoU: 60.93% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 00:46:29] INFO - Epoch [215/500] Loss: 0.0781 | Dice: 71.36% | mIoU: 58.62% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:48:02] INFO - Epoch [216/500] Loss: 0.0770 | Dice: 73.22% | mIoU: 60.84% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:49:34] INFO - Epoch [217/500] Loss: 0.0752 | Dice: 71.92% | mIoU: 59.17% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:51:07] INFO - Epoch [218/500] Loss: 0.0774 | Dice: 72.03% | mIoU: 59.32% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:52:40] INFO - Epoch [219/500] Loss: 0.0762 | Dice: 72.23% | mIoU: 59.49% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:54:12] INFO - Epoch [220/500] Loss: 0.0754 | Dice: 73.43% | mIoU: 60.97% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:55:46] INFO - Epoch [221/500] Loss: 0.0771 | Dice: 73.39% | mIoU: 60.87% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 00:57:18] INFO - Epoch [222/500] Loss: 0.0769 | Dice: 72.89% | mIoU: 60.56% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 00:58:51] INFO - Epoch [223/500] Loss: 0.0791 | Dice: 73.01% | mIoU: 60.75% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:00:24] INFO - Epoch [224/500] Loss: 0.0753 | Dice: 72.58% | mIoU: 60.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:01:56] INFO - Epoch [225/500] Loss: 0.0751 | Dice: 71.54% | mIoU: 58.95% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:03:29] INFO - Epoch [226/500] Loss: 0.0764 | Dice: 71.41% | mIoU: 59.01% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:05:02] INFO - Epoch [227/500] Loss: 0.0745 | Dice: 73.83% | mIoU: 61.60% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:06:34] INFO - Epoch [228/500] Loss: 0.0778 | Dice: 73.00% | mIoU: 60.84% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:08:07] INFO - Epoch [229/500] Loss: 0.0781 | Dice: 71.37% | mIoU: 58.96% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 01:09:39] INFO - Epoch [230/500] Loss: 0.0771 | Dice: 73.15% | mIoU: 60.68% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:11:13] INFO - Epoch [231/500] Loss: 0.0763 | Dice: 73.06% | mIoU: 60.45% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 01:12:46] INFO - Epoch [232/500] Loss: 0.0767 | Dice: 72.24% | mIoU: 59.54% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:14:19] INFO - Epoch [233/500] Loss: 0.0760 | Dice: 72.72% | mIoU: 60.30% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 01:15:51] INFO - Epoch [234/500] Loss: 0.0753 | Dice: 73.63% | mIoU: 61.31% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-23 01:17:24] INFO - Epoch [235/500] Loss: 0.0740 | Dice: 73.92% | mIoU: 61.59% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-23 01:18:57] INFO - Epoch [236/500] Loss: 0.0745 | Dice: 73.71% | mIoU: 61.35% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 01:20:30] INFO - Epoch [237/500] Loss: 0.0756 | Dice: 72.37% | mIoU: 59.51% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 01:22:03] INFO - Epoch [238/500] Loss: 0.0736 | Dice: 70.77% | mIoU: 57.99% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 01:23:36] INFO - Epoch [239/500] Loss: 0.0771 | Dice: 73.06% | mIoU: 60.83% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 01:25:09] INFO - Epoch [240/500] Loss: 0.0761 | Dice: 71.43% | mIoU: 58.77% | HD95: 0.00 | ASSD: 0.00 | Time: 88.7s
+[2026-10-23 01:26:42] INFO - Epoch [241/500] Loss: 0.0773 | Dice: 73.13% | mIoU: 60.58% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:28:15] INFO - Epoch [242/500] Loss: 0.0755 | Dice: 71.66% | mIoU: 58.79% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:29:48] INFO - Epoch [243/500] Loss: 0.0758 | Dice: 69.76% | mIoU: 56.85% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:31:20] INFO - Epoch [244/500] Loss: 0.0765 | Dice: 72.79% | mIoU: 60.41% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:32:53] INFO - Epoch [245/500] Loss: 0.0750 | Dice: 73.23% | mIoU: 61.23% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:34:26] INFO - Epoch [246/500] Loss: 0.0740 | Dice: 73.41% | mIoU: 61.10% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:35:59] INFO - Epoch [247/500] Loss: 0.0754 | Dice: 73.88% | mIoU: 61.48% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:37:31] INFO - Epoch [248/500] Loss: 0.0751 | Dice: 74.08% | mIoU: 61.63% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 01:39:05] INFO - Epoch [249/500] Loss: 0.0767 | Dice: 73.82% | mIoU: 61.57% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:40:38] INFO - Epoch [250/500] Loss: 0.0754 | Dice: 73.04% | mIoU: 61.09% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:42:11] INFO - Epoch [251/500] Loss: 0.0747 | Dice: 72.86% | mIoU: 60.50% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:43:44] INFO - Epoch [252/500] Loss: 0.0752 | Dice: 72.22% | mIoU: 59.66% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:45:16] INFO - Epoch [253/500] Loss: 0.0737 | Dice: 73.60% | mIoU: 61.34% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:46:49] INFO - Epoch [254/500] Loss: 0.0743 | Dice: 73.33% | mIoU: 61.02% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:48:21] INFO - Epoch [255/500] Loss: 0.0736 | Dice: 73.41% | mIoU: 60.91% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:49:54] INFO - Epoch [256/500] Loss: 0.0746 | Dice: 73.57% | mIoU: 61.43% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:51:26] INFO - Epoch [257/500] Loss: 0.0742 | Dice: 71.86% | mIoU: 59.22% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:52:59] INFO - Epoch [258/500] Loss: 0.0759 | Dice: 73.48% | mIoU: 61.34% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:54:32] INFO - Epoch [259/500] Loss: 0.0759 | Dice: 71.56% | mIoU: 59.04% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 01:56:04] INFO - Epoch [260/500] Loss: 0.0749 | Dice: 72.89% | mIoU: 60.32% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:57:37] INFO - Epoch [261/500] Loss: 0.0752 | Dice: 73.79% | mIoU: 61.51% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 01:59:10] INFO - Epoch [262/500] Loss: 0.0743 | Dice: 72.39% | mIoU: 59.90% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:00:43] INFO - Epoch [263/500] Loss: 0.0741 | Dice: 72.70% | mIoU: 60.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:02:15] INFO - Epoch [264/500] Loss: 0.0729 | Dice: 72.71% | mIoU: 60.36% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:03:48] INFO - Epoch [265/500] Loss: 0.0739 | Dice: 72.28% | mIoU: 59.69% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 02:05:21] INFO - Epoch [266/500] Loss: 0.0725 | Dice: 73.05% | mIoU: 60.74% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:06:53] INFO - Epoch [267/500] Loss: 0.0718 | Dice: 72.84% | mIoU: 60.60% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 02:08:26] INFO - Epoch [268/500] Loss: 0.0742 | Dice: 73.54% | mIoU: 61.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 02:09:58] INFO - Epoch [269/500] Loss: 0.0727 | Dice: 71.44% | mIoU: 59.01% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:11:31] INFO - Epoch [270/500] Loss: 0.0736 | Dice: 72.63% | mIoU: 60.28% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:13:04] INFO - Epoch [271/500] Loss: 0.0758 | Dice: 73.89% | mIoU: 62.11% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 02:14:37] INFO - Epoch [272/500] Loss: 0.0740 | Dice: 71.89% | mIoU: 59.41% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 02:16:10] INFO - Epoch [273/500] Loss: 0.0749 | Dice: 73.61% | mIoU: 61.24% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 02:17:43] INFO - Epoch [274/500] Loss: 0.0711 | Dice: 73.44% | mIoU: 60.83% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 02:19:15] INFO - Epoch [275/500] Loss: 0.0713 | Dice: 72.07% | mIoU: 59.51% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 02:20:48] INFO - Epoch [276/500] Loss: 0.0726 | Dice: 73.06% | mIoU: 60.67% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:22:21] INFO - Epoch [277/500] Loss: 0.0722 | Dice: 72.91% | mIoU: 60.43% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:23:53] INFO - Epoch [278/500] Loss: 0.0722 | Dice: 73.21% | mIoU: 60.93% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:25:26] INFO - Epoch [279/500] Loss: 0.0734 | Dice: 72.86% | mIoU: 60.74% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:26:59] INFO - Epoch [280/500] Loss: 0.0725 | Dice: 74.28% | mIoU: 62.02% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:28:33] INFO - Epoch [281/500] Loss: 0.0741 | Dice: 72.85% | mIoU: 60.55% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 02:30:05] INFO - Epoch [282/500] Loss: 0.0748 | Dice: 72.99% | mIoU: 60.39% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 02:31:38] INFO - Epoch [283/500] Loss: 0.0724 | Dice: 72.28% | mIoU: 59.67% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 02:33:10] INFO - Epoch [284/500] Loss: 0.0711 | Dice: 71.95% | mIoU: 59.21% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 02:34:43] INFO - Epoch [285/500] Loss: 0.0715 | Dice: 72.79% | mIoU: 60.59% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 02:36:15] INFO - Epoch [286/500] Loss: 0.0722 | Dice: 72.90% | mIoU: 60.22% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 02:37:47] INFO - Epoch [287/500] Loss: 0.0732 | Dice: 72.82% | mIoU: 60.66% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 02:39:20] INFO - Epoch [288/500] Loss: 0.0739 | Dice: 72.70% | mIoU: 60.16% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 02:40:52] INFO - Epoch [289/500] Loss: 0.0717 | Dice: 72.48% | mIoU: 60.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 02:42:25] INFO - Epoch [290/500] Loss: 0.0720 | Dice: 71.93% | mIoU: 59.54% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 02:43:58] INFO - Epoch [291/500] Loss: 0.0739 | Dice: 72.33% | mIoU: 59.42% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 02:45:30] INFO - Epoch [292/500] Loss: 0.0746 | Dice: 73.92% | mIoU: 61.34% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 02:47:02] INFO - Epoch [293/500] Loss: 0.0712 | Dice: 73.70% | mIoU: 61.21% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 02:48:35] INFO - Epoch [294/500] Loss: 0.0715 | Dice: 74.33% | mIoU: 62.04% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 02:50:08] INFO - Epoch [295/500] Loss: 0.0711 | Dice: 72.98% | mIoU: 60.82% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 02:51:40] INFO - Epoch [296/500] Loss: 0.0704 | Dice: 74.07% | mIoU: 61.76% | HD95: 0.00 | ASSD: 0.00 | Time: 87.5s
+[2026-10-23 02:53:11] INFO - Epoch [297/500] Loss: 0.0715 | Dice: 73.57% | mIoU: 60.90% | HD95: 0.00 | ASSD: 0.00 | Time: 87.5s
+[2026-10-23 02:54:44] INFO - Epoch [298/500] Loss: 0.0707 | Dice: 73.15% | mIoU: 60.57% | HD95: 0.00 | ASSD: 0.00 | Time: 87.9s
+[2026-10-23 02:56:16] INFO - Epoch [299/500] Loss: 0.0711 | Dice: 73.67% | mIoU: 61.24% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 02:57:48] INFO - Epoch [300/500] Loss: 0.0709 | Dice: 72.36% | mIoU: 59.61% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 02:59:21] INFO - Epoch [301/500] Loss: 0.0712 | Dice: 72.78% | mIoU: 60.44% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:00:54] INFO - Epoch [302/500] Loss: 0.0705 | Dice: 74.22% | mIoU: 62.25% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:02:26] INFO - Epoch [303/500] Loss: 0.0708 | Dice: 73.07% | mIoU: 60.48% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:03:59] INFO - Epoch [304/500] Loss: 0.0713 | Dice: 74.32% | mIoU: 62.39% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:05:31] INFO - Epoch [305/500] Loss: 0.0707 | Dice: 73.67% | mIoU: 61.20% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 03:07:04] INFO - Epoch [306/500] Loss: 0.0706 | Dice: 73.06% | mIoU: 60.70% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 03:08:36] INFO - Epoch [307/500] Loss: 0.0700 | Dice: 72.39% | mIoU: 59.91% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 03:10:09] INFO - Epoch [308/500] Loss: 0.0702 | Dice: 74.48% | mIoU: 62.32% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:11:42] INFO - Epoch [309/500] Loss: 0.0719 | Dice: 72.48% | mIoU: 60.20% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:13:15] INFO - Epoch [310/500] Loss: 0.0706 | Dice: 72.61% | mIoU: 60.36% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:14:48] INFO - Epoch [311/500] Loss: 0.0739 | Dice: 72.65% | mIoU: 60.02% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:16:20] INFO - Epoch [312/500] Loss: 0.0726 | Dice: 73.36% | mIoU: 61.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:17:53] INFO - Epoch [313/500] Loss: 0.0708 | Dice: 73.06% | mIoU: 60.77% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:19:26] INFO - Epoch [314/500] Loss: 0.0681 | Dice: 74.77% | mIoU: 62.50% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 03:20:59] INFO - Epoch [315/500] Loss: 0.0683 | Dice: 71.58% | mIoU: 59.21% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 03:22:32] INFO - Epoch [316/500] Loss: 0.0705 | Dice: 72.74% | mIoU: 60.25% | HD95: 0.00 | ASSD: 0.00 | Time: 88.6s
+[2026-10-23 03:24:05] INFO - Epoch [317/500] Loss: 0.0703 | Dice: 73.58% | mIoU: 61.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:25:37] INFO - Epoch [318/500] Loss: 0.0716 | Dice: 71.79% | mIoU: 59.34% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 03:27:10] INFO - Epoch [319/500] Loss: 0.0715 | Dice: 71.95% | mIoU: 59.29% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:28:43] INFO - Epoch [320/500] Loss: 0.0720 | Dice: 73.64% | mIoU: 61.36% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:30:16] INFO - Epoch [321/500] Loss: 0.0706 | Dice: 73.40% | mIoU: 61.11% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:31:48] INFO - Epoch [322/500] Loss: 0.0698 | Dice: 73.30% | mIoU: 61.33% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 03:33:20] INFO - Epoch [323/500] Loss: 0.0691 | Dice: 72.93% | mIoU: 60.70% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:34:53] INFO - Epoch [324/500] Loss: 0.0690 | Dice: 72.96% | mIoU: 60.42% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:36:25] INFO - Epoch [325/500] Loss: 0.0691 | Dice: 73.23% | mIoU: 60.78% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:37:58] INFO - Epoch [326/500] Loss: 0.0702 | Dice: 71.79% | mIoU: 59.60% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 03:39:31] INFO - Epoch [327/500] Loss: 0.0706 | Dice: 71.89% | mIoU: 59.73% | HD95: 0.00 | ASSD: 0.00 | Time: 88.4s
+[2026-10-23 03:41:03] INFO - Epoch [328/500] Loss: 0.0698 | Dice: 71.80% | mIoU: 59.21% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 03:42:36] INFO - Epoch [329/500] Loss: 0.0706 | Dice: 72.01% | mIoU: 59.47% | HD95: 0.00 | ASSD: 0.00 | Time: 88.5s
+[2026-10-23 03:44:10] INFO - Epoch [330/500] Loss: 0.0721 | Dice: 71.63% | mIoU: 59.24% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-23 03:45:46] INFO - Epoch [331/500] Loss: 0.0719 | Dice: 73.66% | mIoU: 61.17% | HD95: 0.00 | ASSD: 0.00 | Time: 90.0s
+[2026-10-23 03:47:20] INFO - Epoch [332/500] Loss: 0.0715 | Dice: 73.92% | mIoU: 61.71% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-23 03:48:54] INFO - Epoch [333/500] Loss: 0.0707 | Dice: 72.80% | mIoU: 60.45% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-23 03:50:28] INFO - Epoch [334/500] Loss: 0.0701 | Dice: 73.54% | mIoU: 61.46% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-23 03:52:02] INFO - Epoch [335/500] Loss: 0.0701 | Dice: 73.07% | mIoU: 60.60% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-23 03:53:37] INFO - Epoch [336/500] Loss: 0.0688 | Dice: 73.83% | mIoU: 61.41% | HD95: 0.00 | ASSD: 0.00 | Time: 89.8s
+[2026-10-23 03:55:11] INFO - Epoch [337/500] Loss: 0.0687 | Dice: 71.27% | mIoU: 58.86% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-23 03:56:45] INFO - Epoch [338/500] Loss: 0.0678 | Dice: 73.53% | mIoU: 61.19% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-23 03:58:20] INFO - Epoch [339/500] Loss: 0.0681 | Dice: 71.49% | mIoU: 58.63% | HD95: 0.00 | ASSD: 0.00 | Time: 89.7s
+[2026-10-23 03:59:54] INFO - Epoch [340/500] Loss: 0.0692 | Dice: 72.25% | mIoU: 60.14% | HD95: 0.00 | ASSD: 0.00 | Time: 89.6s
+[2026-10-23 04:01:28] INFO - Epoch [341/500] Loss: 0.0721 | Dice: 71.51% | mIoU: 58.67% | HD95: 0.00 | ASSD: 0.00 | Time: 89.5s
+[2026-10-23 04:03:01] INFO - Epoch [342/500] Loss: 0.0701 | Dice: 72.58% | mIoU: 60.23% | HD95: 0.00 | ASSD: 0.00 | Time: 88.3s
+[2026-10-23 04:04:33] INFO - Epoch [343/500] Loss: 0.0682 | Dice: 72.88% | mIoU: 60.55% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:06:06] INFO - Epoch [344/500] Loss: 0.0695 | Dice: 71.49% | mIoU: 58.79% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:07:38] INFO - Epoch [345/500] Loss: 0.0687 | Dice: 73.03% | mIoU: 60.47% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:09:10] INFO - Epoch [346/500] Loss: 0.0682 | Dice: 73.33% | mIoU: 60.90% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:10:43] INFO - Epoch [347/500] Loss: 0.0681 | Dice: 73.46% | mIoU: 61.12% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:12:15] INFO - Epoch [348/500] Loss: 0.0676 | Dice: 73.61% | mIoU: 61.43% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:13:47] INFO - Epoch [349/500] Loss: 0.0687 | Dice: 72.51% | mIoU: 60.10% | HD95: 0.00 | ASSD: 0.00 | Time: 87.8s
+[2026-10-23 04:15:19] INFO - Epoch [350/500] Loss: 0.0679 | Dice: 73.09% | mIoU: 60.98% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:16:52] INFO - Epoch [351/500] Loss: 0.0692 | Dice: 72.94% | mIoU: 60.45% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:18:24] INFO - Epoch [352/500] Loss: 0.0689 | Dice: 72.60% | mIoU: 59.96% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:19:57] INFO - Epoch [353/500] Loss: 0.0679 | Dice: 73.52% | mIoU: 61.24% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:21:29] INFO - Epoch [354/500] Loss: 0.0672 | Dice: 72.88% | mIoU: 60.40% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:23:02] INFO - Epoch [355/500] Loss: 0.0693 | Dice: 73.48% | mIoU: 61.04% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:24:34] INFO - Epoch [356/500] Loss: 0.0679 | Dice: 73.87% | mIoU: 61.46% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:26:06] INFO - Epoch [357/500] Loss: 0.0705 | Dice: 72.80% | mIoU: 60.79% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:27:39] INFO - Epoch [358/500] Loss: 0.0702 | Dice: 72.76% | mIoU: 60.53% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:29:11] INFO - Epoch [359/500] Loss: 0.0684 | Dice: 72.76% | mIoU: 60.33% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:30:44] INFO - Epoch [360/500] Loss: 0.0690 | Dice: 71.87% | mIoU: 59.05% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:32:17] INFO - Epoch [361/500] Loss: 0.0704 | Dice: 71.99% | mIoU: 59.23% | HD95: 0.00 | ASSD: 0.00 | Time: 88.2s
+[2026-10-23 04:33:49] INFO - Epoch [362/500] Loss: 0.0717 | Dice: 72.70% | mIoU: 60.31% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:35:21] INFO - Epoch [363/500] Loss: 0.0686 | Dice: 73.72% | mIoU: 61.19% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:36:54] INFO - Epoch [364/500] Loss: 0.0657 | Dice: 74.34% | mIoU: 62.09% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:38:26] INFO - Epoch [365/500] Loss: 0.0680 | Dice: 72.51% | mIoU: 59.94% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:39:58] INFO - Epoch [366/500] Loss: 0.0678 | Dice: 73.63% | mIoU: 61.36% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:41:30] INFO - Epoch [367/500] Loss: 0.0673 | Dice: 72.29% | mIoU: 59.90% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:43:03] INFO - Epoch [368/500] Loss: 0.0695 | Dice: 72.80% | mIoU: 60.22% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:44:35] INFO - Epoch [369/500] Loss: 0.0701 | Dice: 72.77% | mIoU: 60.28% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:46:07] INFO - Epoch [370/500] Loss: 0.0709 | Dice: 73.92% | mIoU: 61.69% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s
+[2026-10-23 04:47:40] INFO - Epoch [371/500] Loss: 0.0675 | Dice: 73.83% | mIoU: 61.42% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:49:12] INFO - Epoch [372/500] Loss: 0.0704 | Dice: 73.73% | mIoU: 61.25% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:50:44] INFO - Epoch [373/500] Loss: 0.0691 | Dice: 73.27% | mIoU: 60.97% | HD95: 0.00 | ASSD: 0.00 | Time: 88.0s
+[2026-10-23 04:52:17] INFO - Epoch [374/500] Loss: 0.0660 | Dice: 73.44% | mIoU: 61.03% | HD95: 0.00 | ASSD: 0.00 | Time: 88.1s

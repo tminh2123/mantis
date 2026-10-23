@@ -1,0 +1,68 @@
+[2026-10-22 19:01:53] INFO - ============================================================
+[2026-10-22 19:01:53] INFO - CONFIGURATION
+[2026-10-22 19:01:53] INFO - ============================================================
+[2026-10-22 19:01:53] INFO - [project]
+[2026-10-22 19:01:53] INFO -   name: c2seg
+[2026-10-22 19:01:53] INFO -   seed: 922
+[2026-10-22 19:01:53] INFO - [data]
+[2026-10-22 19:01:53] INFO -   root: ../../../dataset/MosMedDataPlus
+[2026-10-22 19:01:53] INFO -   train_dir: ../../../dataset/MosMedDataPlus/Train_Folder
+[2026-10-22 19:01:53] INFO -   val_dir: ../../../dataset/MosMedDataPlus/Val_Folder
+[2026-10-22 19:01:53] INFO -   test_dir: ../../../dataset/MosMedDataPlus/Test_Folder
+[2026-10-22 19:01:53] INFO -   image_size: 224
+[2026-10-22 19:01:53] INFO -   num_workers: 4
+[2026-10-22 19:01:53] INFO - [model]
+[2026-10-22 19:01:53] INFO -   clip_model: openai/clip-vit-base-patch32
+[2026-10-22 19:01:53] INFO -   base_channel: 64
+[2026-10-22 19:01:53] INFO -   kan_grid_size: 5
+[2026-10-22 19:01:53] INFO -   kan_spline_order: 3
+[2026-10-22 19:01:53] INFO -   max_token_len: 18
+[2026-10-22 19:01:53] INFO -   dropout: 0.5
+[2026-10-22 19:01:53] INFO -   text_mask_rate: 0.3
+[2026-10-22 19:01:53] INFO -   img_mask_rate: 0.3
+[2026-10-22 19:01:53] INFO -   mask_mode: dist
+[2026-10-22 19:01:53] INFO -   pool_mode: max_pool
+[2026-10-22 19:01:53] INFO -   frozen_clip: True
+[2026-10-22 19:01:53] INFO -   use_text: True
+[2026-10-22 19:01:53] INFO -   use_bcam: True
+[2026-10-22 19:01:53] INFO -   use_kgate: True
+[2026-10-22 19:01:53] INFO -   use_kan: True
+[2026-10-22 19:01:53] INFO -   deep_supervision: True
+[2026-10-22 19:01:53] INFO -   channel_scale: 1.0
+[2026-10-22 19:01:53] INFO -   img_size: 224
+[2026-10-22 19:01:53] INFO - [pretrain]
+[2026-10-22 19:01:53] INFO -   epochs: 100
+[2026-10-22 19:01:53] INFO -   batch_size: 256
+[2026-10-22 19:01:53] INFO -   lr: 0.0003
+[2026-10-22 19:01:53] INFO -   weight_decay: 0.0001
+[2026-10-22 19:01:53] INFO -   temperature: 0.07
+[2026-10-22 19:01:53] INFO -   eps: 0.8
+[2026-10-22 19:01:53] INFO -   checkpoint: output/checkpoints/mosmed_full/c2seg_pretrain.pth
+[2026-10-22 19:01:53] INFO - [train]
+[2026-10-22 19:01:53] INFO -   epochs: 500
+[2026-10-22 19:01:53] INFO -   batch_size: 32
+[2026-10-22 19:01:53] INFO -   lr: 0.0003
+[2026-10-22 19:01:53] INFO -   weight_decay: 0.0001
+[2026-10-22 19:01:53] INFO -   bce_weight: 0.5
+[2026-10-22 19:01:53] INFO -   grad_clip: 1.0
+[2026-10-22 19:01:53] INFO -   cosine_lr: True
+[2026-10-22 19:01:53] INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:01:53] INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:01:53] INFO -   early_stopping: True
+[2026-10-22 19:01:53] INFO -   es_patience: 50
+[2026-10-22 19:01:53] INFO -   save_after: 50
+[2026-10-22 19:01:53] INFO - [eval]
+[2026-10-22 19:01:53] INFO -   batch_size: 16
+[2026-10-22 19:01:53] INFO -   threshold: 0.5
+[2026-10-22 19:01:53] INFO -   checkpoint: output/checkpoints/mosmed_full/c2seg_best.pth
+[2026-10-22 19:01:53] INFO - [logging]
+[2026-10-22 19:01:53] INFO -   log_dir: output/logs/mosmed_full
+[2026-10-22 19:01:53] INFO -   checkpoint_dir: output/checkpoints/mosmed_full
+[2026-10-22 19:01:53] INFO -   save_every: 10
+[2026-10-22 19:01:53] INFO - [accum_steps]
+[2026-10-22 19:01:53] INFO -   1
+[2026-10-22 19:01:53] INFO - ============================================================
+[2026-10-22 19:02:11] INFO - Loaded pretrained weights from output/checkpoints/mosmed_full/c2seg_pretrain.pth
+[2026-10-22 19:02:11] INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+[2026-10-22 19:02:11] INFO - Asymmetric weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+[2026-10-22 19:02:12] INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
