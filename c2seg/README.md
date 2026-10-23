@@ -13,23 +13,23 @@ Implementation of C2Seg for COVID-19 lung infection segmentation using CLIP-guid
 
 ### QaTa-COV19 Dataset
 
-| Experiment | KAN | DeepSup | Dice (%) | mIoU (%) | HD95 ↓ | ASSD ↓ |
-|------------|-----|---------|----------|----------|--------|--------|
-| qata_nokan_deepsup | ❌ | ✅ | 84.00 | 75.23 | 15.53 | 3.03 |
-| c2seg_nokan | ❌ | ❌ | 83.81 | 75.02 | 14.40 | 2.98 |
-| c2seg_kan | ✅ | ❌ | 78.87 | 69.45 | 28.68 | 6.15 |
-| c2seg_kan_0.5 | ✅ (0.5x) | ❌ | 78.43 | 68.73 | 29.54 | 6.36 |
-| **C2Seg (paper)** | **✅** | **✅** | **—** | **—** | **—** | **—** |
+| Experiment | Dice (%) | mIoU (%) | HD95 ↓ | ASSD ↓ |
+|------------|----------|----------|--------|--------|
+| qata_nokan_deepsup | 84.00 | 75.23 | 15.53 | 3.03 |
+| qata_nokan | 83.81 | 75.02 | 14.40 | 2.98 |
+| qata_kan | 78.87 | 69.45 | 28.68 | 6.15 |
+| qata_kan_0.5 | 78.43 | 68.73 | 29.54 | 6.36 |
+| **C2Seg (paper)** | **—** | **—** | **—** | **—** |
 
 ### MosMedData+ Dataset
 
-| Experiment | KAN | DeepSup | Dice (%) | mIoU (%) | HD95 ↓ | ASSD ↓ |
-|------------|-----|---------|----------|----------|--------|--------|
-| mosmed_kan_deepsup | ✅ | ✅ | 74.04 | 60.76 | 18.20 | 3.53 |
-| mosmed_nokan_deepsup | ❌ | ✅ | 73.74 | 60.23 | 21.06 | 4.20 |
-| mosmed_nokan | ❌ | ❌ | 72.59 | 58.97 | 18.44 | 3.43 |
-| mosmed_kan_deepsup_einsum_accum2 | ✅ | ✅ | 70.32 | 56.84 | 19.70 | 4.94 |
-| **C2Seg (paper)** | **✅** | **✅** | **—** | **—** | **—** | **—** |
+| Experiment | Dice (%) | mIoU (%) | HD95 ↓ | ASSD ↓ |
+|------------|----------|----------|--------|--------|
+| mosmed_kan_deepsup | 74.04 | 60.76 | 18.20 | 3.53 |
+| mosmed_nokan_deepsup | 73.74 | 60.23 | 21.06 | 4.20 |
+| mosmed_nokan | 72.59 | 58.97 | 18.44 | 3.43 |
+| mosmed_kan_deepsup_einsum_accum2 | 70.32 | 56.84 | 19.70 | 4.94 |
+| **C2Seg (paper)** | **—** | **—** | **—** | **—** |
 
 ### Ablation Studies (QaTa-COV19)
 
