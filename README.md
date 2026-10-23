@@ -188,10 +188,10 @@
 <td>C2Seg + KAN + DeepSup + einsum</td>
 <td align="center">1.0</td>
 <td align="center">✅</td>
-<td align="center">TBD</td>
-<td align="center">TBD</td>
-<td align="center">TBD</td>
-<td align="center">TBD</td>
+<td align="center">70.32%</td>
+<td align="center">56.84%</td>
+<td align="center">19.70</td>
+<td align="center">4.94</td>
 </tr>
 <tr style="background: #e6ffe6;">
 <td>🏆 <strong><code>mosmed_c2seg_full</code></strong></td>
