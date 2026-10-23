@@ -11,6 +11,7 @@ Usage:
 import argparse
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -305,8 +306,8 @@ def evaluate(model, loader, device, threshold=0.5):
     model.eval()
     dice_m = AverageMeter()
     miou_m = AverageMeter()
-    hd95_m = AverageMeter()
-    assd_m = AverageMeter()
+    all_hd95 = []
+    all_assd = []
 
     with torch.no_grad():
         for images, masks, texts in loader:
@@ -318,13 +319,23 @@ def evaluate(model, loader, device, threshold=0.5):
             logits = outputs[0] if isinstance(outputs, tuple) else outputs
             
             B = images.size(0)
-            dice_m.update(dice_score(logits, masks, threshold), 1)
-            miou_m.update(miou_score(logits, masks, threshold), 1)
-            hd95_m.update(hd95(logits, masks, threshold), 1)
-            assd_m.update(assd(logits, masks, threshold), 1)
+            dice_m.update(dice_score(logits, masks, threshold), B)
+            miou_m.update(miou_score(logits, masks, threshold), B)
+            
+            # Compute HD95/ASSD per sample and collect
+            h = hd95(logits, masks, threshold)
+            a = assd(logits, masks, threshold)
+            if h > 0:  # Only count if valid (non-empty masks)
+                all_hd95.append(h)
+            if a > 0:
+                all_assd.append(a)
 
-    return {'dice': dice_m.avg, 'miou': miou_m.avg,
-            'hd95': hd95_m.avg, 'assd': assd_m.avg}
+    return {
+        'dice': dice_m.avg, 
+        'miou': miou_m.avg,
+        'hd95': float(np.mean(all_hd95)) if all_hd95 else 0.0, 
+        'assd': float(np.mean(all_assd)) if all_assd else 0.0
+    }
 
 
 def eval_mode(cfg):
