@@ -347,9 +347,10 @@ def evaluate(model, loader, device, threshold=0.5):
     }
 
 
-def eval_mode(cfg, checkpoint_path=None):
+def eval_mode(cfg, checkpoint_path=None, use_cpu=False):
     logger = get_logger('c2seg_eval', cfg['logging']['log_dir'])
-    device = get_device()
+    device = torch.device('cpu') if use_cpu else get_device()
+    logger.info(f"Using device: {device}")
 
     test_ds = C2SegDataset(cfg['data']['test_dir'],
                            image_size=cfg['data']['image_size'], augment=False)
@@ -381,6 +382,7 @@ def parse_args():
     p.add_argument('--batch-size', type=int, default=None, help='Override batch size')
     p.add_argument('--tag', type=str, default=None, help='Experiment tag for checkpoint naming')
     p.add_argument('--accum-steps', type=int, default=1, help='Gradient accumulation steps')
+    p.add_argument('--cpu', action='store_true', help='Force CPU mode')
     return p.parse_args()
 
 
@@ -483,4 +485,4 @@ if __name__ == '__main__':
     elif args.stage == 'train':
         train(cfg, pretrained_ckpt=args.pretrained)
     elif args.stage == 'eval':
-        eval_mode(cfg, checkpoint_path=args.checkpoint)
+        eval_mode(cfg, checkpoint_path=args.checkpoint, use_cpu=args.cpu)
