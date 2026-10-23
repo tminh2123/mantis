@@ -10,11 +10,9 @@
 
 | Dataset | Paper Target | Our Best | Gap | Model |
 |:--------|:------------:|:--------:|:---:|:------|
-| **QaTa-COV19** | 85.25% Dice | **84.00%** | -1.25% | MLP + DeepSup |
-| **QaTa-COV19** | 74.13% mIoU | **75.23%** | **+1.10%** ✨ | MLP + DeepSup |
-| **MosMedData+** | 77.81% Dice | **74.04%** | -3.77% | KAN + DeepSup |
-
-> 💡 **Key Finding:** Our mIoU on QaTa exceeds the paper's result by 1.1%!
+| **QaTa-COV19** | 85.25% Dice | **84.00%** | -1.25% | `qata_c2seg_mlp_deepsup` |
+| **QaTa-COV19** | 74.13% mIoU | **75.23%** | **+1.10%** ✨ | `qata_c2seg_mlp_deepsup` |
+| **MosMedData+** | 77.81% Dice | **75.12%** | -2.69% | `mosmed_c2seg_full` |
 
 ---
 
@@ -26,7 +24,7 @@
 <thead>
 <tr>
 <th align="left">🏷️ Tag</th>
-<th align="center">Architecture</th>
+<th align="center">Description</th>
 <th align="center">Scale</th>
 <th align="center">KAN</th>
 <th align="center">Dice ↑</th>
@@ -38,7 +36,7 @@
 <tbody>
 <tr style="background: #f0f7ff;">
 <td><strong>📄 Paper</strong></td>
-<td>C2Seg (official)</td>
+<td>C2Seg official target</td>
 <td align="center">1.0</td>
 <td align="center">✅</td>
 <td align="center"><strong>85.25%</strong></td>
@@ -47,28 +45,8 @@
 <td align="center">-</td>
 </tr>
 <tr>
-<td><code>ukan_0.5</code></td>
-<td>U-KAN baseline</td>
-<td align="center">0.5</td>
-<td align="center">✅ Full</td>
-<td align="center">79.46%</td>
-<td align="center">69.71%</td>
-<td align="center">21.69</td>
-<td align="center">4.47</td>
-</tr>
-<tr>
-<td><code>simple_kan_v1</code></td>
-<td>Custom KAN</td>
-<td align="center">1.0</td>
-<td align="center">✅</td>
-<td align="center">79.38%</td>
-<td align="center">69.51%</td>
-<td align="center">24.45</td>
-<td align="center">4.92</td>
-</tr>
-<tr>
-<td><code>efficient_kan_v1</code></td>
-<td>B-spline KAN</td>
+<td><code>qata_custom_kan</code></td>
+<td>Custom impl, B-spline KAN</td>
 <td align="center">1.0</td>
 <td align="center">✅</td>
 <td align="center">80.37%</td>
@@ -77,8 +55,28 @@
 <td align="center">4.30</td>
 </tr>
 <tr>
-<td><code>mlp_1.0</code></td>
-<td>Full MLP replacement</td>
+<td><code>qata_custom_kan_lite</code></td>
+<td>Custom impl, no base spline</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center">79.38%</td>
+<td align="center">69.51%</td>
+<td align="center">24.45</td>
+<td align="center">4.92</td>
+</tr>
+<tr>
+<td><code>qata_ukan_0.5</code></td>
+<td>U-KAN block, scale 0.5</td>
+<td align="center">0.5</td>
+<td align="center">✅</td>
+<td align="center">79.46%</td>
+<td align="center">69.71%</td>
+<td align="center">21.69</td>
+<td align="center">4.47</td>
+</tr>
+<tr>
+<td><code>qata_custom_mlp</code></td>
+<td>Custom impl, full MLP</td>
 <td align="center">1.0</td>
 <td align="center">❌</td>
 <td align="center">69.94%</td>
@@ -87,18 +85,8 @@
 <td align="center">8.97</td>
 </tr>
 <tr>
-<td><code>c2seg_nokan</code></td>
-<td>C2Seg + MLP K-Gate</td>
-<td align="center">1.0</td>
-<td align="center">❌</td>
-<td align="center">83.81%</td>
-<td align="center">75.02%</td>
-<td align="center">28.68</td>
-<td align="center">6.15</td>
-</tr>
-<tr>
-<td><code>c2seg_kan</code></td>
-<td>C2Seg + KAN K-Gate</td>
+<td><code>qata_c2seg_kan</code></td>
+<td>C2Seg origin + KAN K-Gate</td>
 <td align="center">1.0</td>
 <td align="center">✅</td>
 <td align="center">78.87%</td>
@@ -106,8 +94,28 @@
 <td align="center">28.68</td>
 <td align="center">6.15</td>
 </tr>
+<tr>
+<td><code>qata_c2seg_kan_0.5</code></td>
+<td>C2Seg origin + KAN, scale 0.5</td>
+<td align="center">0.5</td>
+<td align="center">✅</td>
+<td align="center">78.43%</td>
+<td align="center">68.73%</td>
+<td align="center">29.54</td>
+<td align="center">6.36</td>
+</tr>
+<tr>
+<td><code>qata_c2seg_mlp</code></td>
+<td>C2Seg origin + MLP K-Gate</td>
+<td align="center">1.0</td>
+<td align="center">❌</td>
+<td align="center">83.81%</td>
+<td align="center">75.02%</td>
+<td align="center">28.68</td>
+<td align="center">6.15</td>
+</tr>
 <tr style="background: #e6ffe6;">
-<td>🏆 <strong><code>qata_nokan_deepsup</code></strong></td>
+<td>🏆 <strong><code>qata_c2seg_mlp_deepsup</code></strong></td>
 <td>C2Seg + MLP + DeepSup</td>
 <td align="center">1.0</td>
 <td align="center">❌</td>
@@ -125,7 +133,7 @@
 <thead>
 <tr>
 <th align="left">🏷️ Tag</th>
-<th align="center">Architecture</th>
+<th align="center">Description</th>
 <th align="center">Scale</th>
 <th align="center">KAN</th>
 <th align="center">Dice ↑</th>
@@ -137,7 +145,7 @@
 <tbody>
 <tr style="background: #f0f7ff;">
 <td><strong>📄 Paper</strong></td>
-<td>C2Seg (official)</td>
+<td>C2Seg official target</td>
 <td align="center">1.0</td>
 <td align="center">✅</td>
 <td align="center"><strong>~77.81%</strong></td>
@@ -146,8 +154,8 @@
 <td align="center">-</td>
 </tr>
 <tr>
-<td><code>mosmed_nokan</code></td>
-<td>C2Seg + MLP K-Gate</td>
+<td><code>mosmed_c2seg_mlp</code></td>
+<td>C2Seg origin + MLP K-Gate</td>
 <td align="center">1.0</td>
 <td align="center">❌</td>
 <td align="center">72.59%</td>
@@ -156,7 +164,7 @@
 <td align="center">3.43</td>
 </tr>
 <tr>
-<td><code>mosmed_nokan_deepsup</code></td>
+<td><code>mosmed_c2seg_mlp_deepsup</code></td>
 <td>C2Seg + MLP + DeepSup</td>
 <td align="center">1.0</td>
 <td align="center">❌</td>
@@ -165,57 +173,38 @@
 <td align="center">21.06</td>
 <td align="center">4.20</td>
 </tr>
-<tr style="background: #e6ffe6;">
-<td>🏆 <strong><code>mosmed_kan_deepsup</code></strong></td>
+<tr>
+<td><code>mosmed_c2seg_kan_deepsup</code></td>
 <td>C2Seg + KAN + DeepSup</td>
 <td align="center">1.0</td>
 <td align="center">✅</td>
-<td align="center"><strong>74.04%</strong></td>
-<td align="center"><strong>60.76%</strong></td>
-<td align="center"><strong>18.20</strong></td>
-<td align="center"><strong>3.53</strong></td>
+<td align="center">74.04%</td>
+<td align="center">60.76%</td>
+<td align="center">18.20</td>
+<td align="center">3.53</td>
+</tr>
+<tr>
+<td><code>mosmed_c2seg_kan_deepsup_einsum</code></td>
+<td>C2Seg + KAN + DeepSup + einsum</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center">TBD</td>
+<td align="center">TBD</td>
+<td align="center">TBD</td>
+<td align="center">TBD</td>
+</tr>
+<tr style="background: #e6ffe6;">
+<td>🏆 <strong><code>mosmed_c2seg_full</code></strong></td>
+<td>C2Seg full sync (latest)</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center"><strong>75.12%</strong></td>
+<td align="center">TBD</td>
+<td align="center">TBD</td>
+<td align="center">TBD</td>
 </tr>
 </tbody>
 </table>
-
----
-
-## 🔑 Key Findings
-
-### 1️⃣ KAN Performance is Dataset-Dependent
-
-| Modality | Dataset | Winner | Difference |
-|:---------|:--------|:------:|:----------:|
-| X-ray | QaTa-COV19 | **MLP** | +5.0% Dice |
-| CT | MosMedData+ | **KAN** | +0.3% Dice |
-
-> 💡 KAN's regularization may benefit smaller datasets or different imaging modalities.
-
-### 2️⃣ Deep Supervision is Highly Beneficial
-
-| Dataset | Without DeepSup | With DeepSup | Improvement |
-|:--------|:---------------:|:------------:|:-----------:|
-| QaTa HD95 | 22.74 | **15.53** | **-31.7%** 🎯 |
-| QaTa Dice | 83.81% | **84.00%** | +0.19% |
-| MosMed Dice | 72.59% | **73.74%** | +1.15% |
-
-### 3️⃣ Scale Matters
-
-```
-Channel Scale Reference:
-┌──────────┬─────────────────────────────┬─────────┐
-│ Scale    │ Channels                    │ Params  │
-├──────────┼─────────────────────────────┼─────────┤
-│ 1.0      │ [64, 128, 256, 512, 512]    │ ~20.6M  │
-│ 0.5      │ [32, 64, 128, 256, 256]     │ ~5.2M   │
-└──────────┴─────────────────────────────┴─────────┘
-```
-
-### 4️⃣ Training Insights
-
-- 🎯 **Early stopping** recommended at epoch 100-150
-- 📊 Model peaks around epoch 90-100, then overfits
-- 🧮 Use **gradient accumulation** for KAN: `--accum-steps 2`
 
 ---
 
@@ -263,22 +252,22 @@ Channel Scale Reference:
 
 ```bash
 # ═══════════════════════════════════════════════════════════════
-# QaTa-COV19 Dataset (Recommended: MLP + Deep Supervision)
+# QaTa-COV19 Dataset
 # ═══════════════════════════════════════════════════════════════
 
-# Pretrain → Train → Evaluate
-python run.py --stage pretrain --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
-python run.py --stage train    --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
-python run.py --stage eval     --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
+# MLP + DeepSup (recommended)
+python run.py --stage pretrain --config configs/qata.yaml --tag qata_c2seg_mlp_deepsup --no-kan
+python run.py --stage train    --config configs/qata.yaml --tag qata_c2seg_mlp_deepsup --no-kan
+python run.py --stage eval     --config configs/qata.yaml --tag qata_c2seg_mlp_deepsup --no-kan
 
 # ═══════════════════════════════════════════════════════════════
-# MosMedData+ Dataset (Recommended: KAN + Deep Supervision)
+# MosMedData+ Dataset
 # ═══════════════════════════════════════════════════════════════
 
-# Pretrain → Train → Evaluate
-python run.py --stage pretrain --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup --accum-steps 2
-python run.py --stage train    --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup --accum-steps 2
-python run.py --stage eval     --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup
+# KAN + DeepSup (recommended)
+python run.py --stage pretrain --config configs/mosmed.yaml --tag mosmed_c2seg_full --accum-steps 2
+python run.py --stage train    --config configs/mosmed.yaml --tag mosmed_c2seg_full --accum-steps 2
+python run.py --stage eval     --config configs/mosmed.yaml --tag mosmed_c2seg_full
 ```
 
 ### Evaluation from Checkpoint
@@ -286,25 +275,8 @@ python run.py --stage eval     --config configs/mosmed.yaml --tag mosmed_kan_dee
 ```bash
 # Auto-detect tag from checkpoint path
 python run.py --stage eval --config configs/qata.yaml \
-    --checkpoint output/checkpoints/qata_nokan_deepsup/c2seg_best.pth
-
-# With explicit tag
-python run.py --stage eval --config configs/qata.yaml \
-    --tag qata_nokan_deepsup --no-kan --deep-sup
+    --checkpoint output/checkpoints/qata_c2seg_mlp_deepsup/c2seg_best.pth
 ```
-
----
-
-## 📋 Recommendations
-
-| Aspect | Recommendation |
-|:-------|:---------------|
-| **QaTa-COV19** | Use `--no-kan --deep-sup` (MLP variant) |
-| **MosMedData+** | Use `--deep-sup --accum-steps 2` (KAN variant) |
-| **Deep Supervision** | Always enable `--deep-sup` |
-| **Early Stopping** | Stop at epoch 100-150 |
-| **Channel Scale** | Use 1.0 (default); 0.5 if memory constrained |
-| **KAN Training** | Use `--accum-steps 2` for stability |
 
 ---
 
