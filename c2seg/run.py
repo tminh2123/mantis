@@ -312,6 +312,7 @@ def train(cfg, pretrained_ckpt: str = None):
 # Evaluation
 # ---------------------------------------------------------------------------
 def evaluate(model, loader, device, threshold=0.5):
+    from tqdm import tqdm
     model.eval()
     dice_m = AverageMeter()
     miou_m = AverageMeter()
@@ -319,7 +320,8 @@ def evaluate(model, loader, device, threshold=0.5):
     all_assd = []
 
     with torch.no_grad():
-        for images, masks, texts in loader:
+        pbar = tqdm(loader, desc="Evaluating", leave=True)
+        for images, masks, texts in pbar:
             images = images.to(device)
             masks  = masks.to(device).float()  # Convert long to float
             outputs = model(images, texts)
@@ -338,6 +340,8 @@ def evaluate(model, loader, device, threshold=0.5):
                 all_hd95.append(h)
             if a > 0:
                 all_assd.append(a)
+            
+            pbar.set_postfix({'dice': f'{dice_m.avg:.2f}%', 'miou': f'{miou_m.avg:.2f}%'})
 
     return {
         'dice': dice_m.avg, 
