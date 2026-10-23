@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C2Seg Architecture Documentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f5f5f5;
+      font-family: 'Geist', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #4f5d75;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.5rem;
+      font-weight: 400;
+      color: #2d3142;
+      margin-bottom: 16px;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: #4f5d75;
+      margin-bottom: 48px;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid rgba(45,49,66,0.12);
+      border-radius: 8px;
+      padding: 24px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .card:hover {
+      border-color: #bf4520;
+      transform: translateY(-2px);
+    }
+    .card-eyebrow {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #bf4520;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-family: 'Geist', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2d3142;
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 0.9rem;
+      color: #4f5d75;
+      line-height: 1.5;
+    }
+    .footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(45,49,66,0.12);
+      color: #5a6580;
+      font-size: 0.85rem;
+    }
+    .footer a {
+      color: #2e5aa8;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    .tech-stack {
+      margin-top: 48px;
+      padding: 24px;
+      background: rgba(45,49,66,0.03);
+      border-radius: 8px;
+    }
+    .tech-stack h2 {
+      font-family: 'Geist', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #2d3142;
+      margin-bottom: 16px;
+    }
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .tech-item {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 0.8rem;
+      color: #4f5d75;
+    }
+    .tech-item span {
+      color: #bf4520;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="eyebrow">Medical Image Segmentation</p>
+    <h1>C2Seg Architecture</h1>
+    <p class="subtitle">
+      Consistency-enhanced Two-stage Segmentation model for medical image analysis. 
+      These diagrams document the implementation synced with the c2seg-origin paper.
+    </p>
+    
+    <div class="cards">
+      <a href="c2seg-overall-architecture.html" class="card">
+        <p class="card-eyebrow">Level 1</p>
+        <h3 class="card-title">Overall Architecture</h3>
+        <p class="card-desc">
+          End-to-end view showing Visual Encoder, Language Encoder, BCAM fusion modules, 
+          Decoder with PixLevelModule, and Deep Supervision outputs.
+        </p>
+      </a>
+      
+      <a href="c2seg-component-details.html" class="card">
+        <p class="card-eyebrow">Level 2</p>
+        <h3 class="card-title">Component Details</h3>
+        <p class="card-desc">
+          Detailed architecture of BCAM module, K-Gate (KAN-based gating), PixLevelModule 
+          attention, and multi-scale loss functions with asymmetric weights.
+        </p>
+      </a>
+      
+      <a href="c2seg-training-stages.html" class="card">
+        <p class="card-eyebrow">Training</p>
+        <h3 class="card-title">Training Stages</h3>
+        <p class="card-desc">
+          Two-stage training pipeline: Stage I CaCL pretraining for cross-modal alignment, 
+          Stage II segmentation fine-tuning with deep supervision loss.
+        </p>
+      </a>
+    </div>
+    
+    <div class="tech-stack">
+      <h2>Technical Stack</h2>
+      <div class="tech-grid">
+        <div class="tech-item"><span>Visual Encoder:</span> 5× DownBlock (Conv)</div>
+        <div class="tech-item"><span>Language Encoder:</span> CLIP ViT-B/32 (frozen)</div>
+        <div class="tech-item"><span>Fusion:</span> BCAM × 4 + K-Gate (KAN)</div>
+        <div class="tech-item"><span>Decoder:</span> 4× UpBlock + PixLevelModule</div>
+        <div class="tech-item"><span>Loss (Stage I):</span> CaCL (τ=0.07, ε=0.8)</div>
+        <div class="tech-item"><span>Loss (Stage II):</span> DeepSupervision × 5 scales</div>
+        <div class="tech-item"><span>Input Size:</span> 224×224×3</div>
+        <div class="tech-item"><span>Output:</span> 224×224×1 (mask)</div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>
+        Implementation: <a href="../models/c2seg.py">models/c2seg.py</a> · 
+        <a href="../models/losses.py">models/losses.py</a> · 
+        <a href="../run.py">run.py</a>
+      </p>
+      <p style="margin-top: 8px;">
+        Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (C2Seg)
+      </p>
+    </div>
+  </div>
+</body>
+</html>

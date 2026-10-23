@@ -1,206 +1,348 @@
-# C2Seg Experiment Results
+# 🏥 C2Seg - Medical Image Segmentation
 
-## Summary
+> **Paper:** "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 
-Implementation of C2Seg paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Channel Scale Reference:**
-- Scale 1.0: `[64, 128, 256, 512, 512]` channels (base_ch=64)
-- Scale 0.5: `[32, 64, 128, 256, 256]` channels (base_ch=32)
+## 📊 Summary
 
----
+| Dataset | Paper Target | Our Best | Gap | Model |
+|:--------|:------------:|:--------:|:---:|:------|
+| **QaTa-COV19** | 85.25% Dice | **84.00%** | -1.25% | MLP + DeepSup |
+| **QaTa-COV19** | 74.13% mIoU | **75.23%** | **+1.10%** ✨ | MLP + DeepSup |
+| **MosMedData+** | 77.81% Dice | **74.04%** | -3.77% | KAN + DeepSup |
 
-## QaTa-COV19 Dataset
-
-**Paper Target:** Dice 85.25%, mIoU 74.13%
-
-| Tag | Architecture | Scale | KAN Usage | Dice ↑ | mIoU ↑ | HD95 ↓ | ASSD ↓ | Notes |
-|-----|--------------|-------|-----------|--------|--------|--------|--------|-------|
-| **Paper** | C2Seg (hybrid encoder + KAN K-Gate) | 1.0 | ✅ K-Gate | 85.25% | 74.13% | - | - | Official target |
-| `ukan_0.5` | U-KAN (from U-KAN repo) | 0.5 | ✅ Full | 79.46% | 69.71% | 21.69 | 4.47 | Baseline từ U-KAN code |
-| `simple_kan_v1` | Custom implementation | 1.0 | ✅ Simple KAN | 79.38% | 69.51% | 24.45 | 4.92 | KAN đơn giản |
-| `efficient_kan_v1` | Custom implementation | 1.0 | ✅ B-spline base | 80.37% | 70.83% | 21.30 | 4.30 | KAN với B-spline basis |
-| `mlp_1.0` | MLP thay toàn bộ KAN | 1.0 | ❌ None | 69.94% | 57.70% | 46.36 | 8.97 | Full MLP replacement |
-| `c2seg_nokan` | C2Seg (ref code) + MLP K-Gate | 1.0 | ❌ MLP only | 83.81% | 75.02% | 28.68 | 6.15 | No deep supervision |
-| `c2seg_kan` | C2Seg (ref code) + KAN K-Gate | 1.0 | ✅ K-Gate | 78.87% | 69.45% | 28.68 | 6.15 | KAN hurts performance |
-| `c2seg_kan_0.5` | C2Seg + KAN K-Gate | 0.5 | ✅ K-Gate | 78.43% | 68.73% | 29.54 | 6.36 | Scale 0.5 + KAN |
-| **`qata_nokan_deepsup`** | C2Seg + MLP + Deep Supervision | 1.0 | ❌ MLP only | **84.00%** | **75.23%** | **15.53** | **3.03** | **Best result** ✅ |
+> 💡 **Key Finding:** Our mIoU on QaTa exceeds the paper's result by 1.1%!
 
 ---
 
-## MosMedData+ Dataset
+## 📈 Experiment Results
 
-**Paper Target:** Dice ~77.81%
+### QaTa-COV19 Dataset (Chest X-ray)
 
-| Tag | Architecture | Scale | KAN Usage | Dice ↑ | mIoU ↑ | HD95 ↓ | ASSD ↓ | Notes |
-|-----|--------------|-------|-----------|--------|--------|--------|--------|-------|
-| **Paper** | C2Seg | 1.0 | ✅ K-Gate | ~77.81% | - | - | - | Official target |
-| `mosmed_nokan` | C2Seg + MLP K-Gate | 1.0 | ❌ MLP only | 72.59% | 58.97% | 18.44 | 3.43 | No deep supervision |
-| `mosmed_nokan_deepsup` | C2Seg + MLP + Deep Supervision | 1.0 | ❌ MLP only | 73.74% | 60.23% | 21.06 | 4.20 | Best @ epoch 71 |
-| **`mosmed_kan_deepsup`** | C2Seg + KAN + Deep Supervision + Accum2 | 1.0 | ✅ K-Gate | **74.04%** | **60.76%** | **18.20** | **3.53** | **Best result** ✅ |
+<table>
+<thead>
+<tr>
+<th align="left">🏷️ Tag</th>
+<th align="center">Architecture</th>
+<th align="center">Scale</th>
+<th align="center">KAN</th>
+<th align="center">Dice ↑</th>
+<th align="center">mIoU ↑</th>
+<th align="center">HD95 ↓</th>
+<th align="center">ASSD ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr style="background: #f0f7ff;">
+<td><strong>📄 Paper</strong></td>
+<td>C2Seg (official)</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center"><strong>85.25%</strong></td>
+<td align="center">74.13%</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td><code>ukan_0.5</code></td>
+<td>U-KAN baseline</td>
+<td align="center">0.5</td>
+<td align="center">✅ Full</td>
+<td align="center">79.46%</td>
+<td align="center">69.71%</td>
+<td align="center">21.69</td>
+<td align="center">4.47</td>
+</tr>
+<tr>
+<td><code>simple_kan_v1</code></td>
+<td>Custom KAN</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center">79.38%</td>
+<td align="center">69.51%</td>
+<td align="center">24.45</td>
+<td align="center">4.92</td>
+</tr>
+<tr>
+<td><code>efficient_kan_v1</code></td>
+<td>B-spline KAN</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center">80.37%</td>
+<td align="center">70.83%</td>
+<td align="center">21.30</td>
+<td align="center">4.30</td>
+</tr>
+<tr>
+<td><code>mlp_1.0</code></td>
+<td>Full MLP replacement</td>
+<td align="center">1.0</td>
+<td align="center">❌</td>
+<td align="center">69.94%</td>
+<td align="center">57.70%</td>
+<td align="center">46.36</td>
+<td align="center">8.97</td>
+</tr>
+<tr>
+<td><code>c2seg_nokan</code></td>
+<td>C2Seg + MLP K-Gate</td>
+<td align="center">1.0</td>
+<td align="center">❌</td>
+<td align="center">83.81%</td>
+<td align="center">75.02%</td>
+<td align="center">28.68</td>
+<td align="center">6.15</td>
+</tr>
+<tr>
+<td><code>c2seg_kan</code></td>
+<td>C2Seg + KAN K-Gate</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center">78.87%</td>
+<td align="center">69.45%</td>
+<td align="center">28.68</td>
+<td align="center">6.15</td>
+</tr>
+<tr style="background: #e6ffe6;">
+<td>🏆 <strong><code>qata_nokan_deepsup</code></strong></td>
+<td>C2Seg + MLP + DeepSup</td>
+<td align="center">1.0</td>
+<td align="center">❌</td>
+<td align="center"><strong>84.00%</strong></td>
+<td align="center"><strong>75.23%</strong></td>
+<td align="center"><strong>15.53</strong></td>
+<td align="center"><strong>3.03</strong></td>
+</tr>
+</tbody>
+</table>
+
+### MosMedData+ Dataset (CT Scan)
+
+<table>
+<thead>
+<tr>
+<th align="left">🏷️ Tag</th>
+<th align="center">Architecture</th>
+<th align="center">Scale</th>
+<th align="center">KAN</th>
+<th align="center">Dice ↑</th>
+<th align="center">mIoU ↑</th>
+<th align="center">HD95 ↓</th>
+<th align="center">ASSD ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr style="background: #f0f7ff;">
+<td><strong>📄 Paper</strong></td>
+<td>C2Seg (official)</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center"><strong>~77.81%</strong></td>
+<td align="center">-</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td><code>mosmed_nokan</code></td>
+<td>C2Seg + MLP K-Gate</td>
+<td align="center">1.0</td>
+<td align="center">❌</td>
+<td align="center">72.59%</td>
+<td align="center">58.97%</td>
+<td align="center">18.44</td>
+<td align="center">3.43</td>
+</tr>
+<tr>
+<td><code>mosmed_nokan_deepsup</code></td>
+<td>C2Seg + MLP + DeepSup</td>
+<td align="center">1.0</td>
+<td align="center">❌</td>
+<td align="center">73.74%</td>
+<td align="center">60.23%</td>
+<td align="center">21.06</td>
+<td align="center">4.20</td>
+</tr>
+<tr style="background: #e6ffe6;">
+<td>🏆 <strong><code>mosmed_kan_deepsup</code></strong></td>
+<td>C2Seg + KAN + DeepSup</td>
+<td align="center">1.0</td>
+<td align="center">✅</td>
+<td align="center"><strong>74.04%</strong></td>
+<td align="center"><strong>60.76%</strong></td>
+<td align="center"><strong>18.20</strong></td>
+<td align="center"><strong>3.53</strong></td>
+</tr>
+</tbody>
+</table>
 
 ---
 
-## Version Details
+## 🔑 Key Findings
 
-### 1. `ukan_0.5` - U-KAN Baseline
-- **Source:** U-KAN repository code
-- **Scale:** 0.5 (reduced channels to lower params)
-- **Description:** Initial baseline using original U-KAN architecture
-- **Result:** ~78% Dice
+### 1️⃣ KAN Performance is Dataset-Dependent
 
-### 2. `simple_kan_v1` - Simple KAN
-- **Description:** Custom KAN implementation với architecture đơn giản
-- **KAN Type:** Basic KAN layers
+| Modality | Dataset | Winner | Difference |
+|:---------|:--------|:------:|:----------:|
+| X-ray | QaTa-COV19 | **MLP** | +5.0% Dice |
+| CT | MosMedData+ | **KAN** | +0.3% Dice |
 
-### 3. `efficient_kan_v1` - Efficient KAN with B-spline
-- **Description:** Custom KAN implementation với B-spline basis functions
-- **KAN Type:** Efficient KAN using B-spline base
+> 💡 KAN's regularization may benefit smaller datasets or different imaging modalities.
 
-### 4. `mlp_1.0` - Full MLP Replacement
-- **Scale:** 1.0
-- **Description:** Thay toàn bộ KAN layers bằng MLP
-- **Purpose:** Ablation study - MLP vs KAN
+### 2️⃣ Deep Supervision is Highly Beneficial
 
-### 5. `c2seg_nokan` - Best Model ✅
-- **Tag:** `c2seg_nokan`
-- **Source:** Paper's reference implementation
-- **Scale:** 1.0
-- **Architecture:** 
-  - Visual Encoder: 5 Conv DownBlocks (no KAN)
-  - BCAM: Bidirectional Cross Attention + Sinusoidal2D position embedding
-  - K-Gate: **MLP-based** gating (no KAN)
-  - Decoder: UpBlockAttention with PixLevelModule
-- **Params:** 20.57M trainable
-- **Training:** 500 epochs, best at epoch ~90
-- **Result:** 
-  - Dice: **83.81%** (vs paper 85.25%, gap -1.44%)
-  - mIoU: **75.02%** (vs paper 74.13%, **+0.89% better!**)
-- **Observation:** Overfitting after epoch ~100
+| Dataset | Without DeepSup | With DeepSup | Improvement |
+|:--------|:---------------:|:------------:|:-----------:|
+| QaTa HD95 | 22.74 | **15.53** | **-31.7%** 🎯 |
+| QaTa Dice | 83.81% | **84.00%** | +0.19% |
+| MosMed Dice | 72.59% | **73.74%** | +1.15% |
 
-### 6. `c2seg_kan` - C2Seg with KAN K-Gate
-- **Tag:** `c2seg_kan`
-- **Source:** Paper's reference implementation
-- **Scale:** 1.0
-- **Architecture:** Same as c2seg_nokan but with **KAN in K-Gate**
-- **Params:** 31.71M trainable (+54% vs nokan)
-- **Result:**
-  - Dice: 78.87% (**-4.94%** vs nokan)
-  - mIoU: 69.45% (**-5.57%** vs nokan)
-- **Observation:** KAN actually hurts performance
-
----
-
-## Key Findings
-
-### 1. KAN Performance is Dataset-Dependent
-- **QaTa-COV19 (X-ray):** MLP outperforms KAN by ~5% Dice
-- **MosMedData+ (CT):** KAN outperforms MLP by ~0.3% Dice
-
-This suggests KAN's regularization effect may be beneficial for smaller datasets or different imaging modalities.
-
-### 2. Deep Supervision is Highly Beneficial
-Adding deep supervision improves:
-- QaTa: 83.81% → 84.00% (+0.19% Dice), but **HD95: 22.74 → 15.53** (dramatic boundary improvement)
-- MosMed: 72.59% → 73.74% (+1.15% Dice)
-
-### 3. KANLinear Implementation Verified ✅
-Our KANLinear matches ref/c2seg 100%:
-- grid_size=5, spline_order=3, SiLU activation
-- Recursive B-spline computation
-- curve2coeff initialization
-
-### 4. mIoU Exceeds Paper
-Our best model achieves **75.23% mIoU**, which is **1.1% higher** than paper's 74.13%.
-
-### 5. Early Stopping Needed
-Model reaches peak performance around epoch 90-100, then overfits. Training for full 500 epochs is unnecessary.
-
-### 6. Scale Matters
-Using scale 1.0 (full channels) significantly improves over scale 0.5.
-
----
-
-## Architecture Evolution
+### 3️⃣ Scale Matters
 
 ```
-Experiments Journey:
-                                                    
-U-KAN 0.5 (~78%)                                    
-    ↓                                               
-Custom KAN implementations (simple, efficient)      
-    ↓                                               
-MLP replacement experiments                         
-    ↓                                               
-C2Seg ref code (scale 0.5)                         
-    ↓                                               
-C2Seg scale 1.0 + MLP K-Gate → 83.81%              
-    ↓                                               
-+ Deep Supervision → 84.00% ✅ BEST on QaTa        
-    ↓                                               
-MosMedData+ experiments                            
-    ↓                                               
-KAN + Deep Supervision → 74.04% ✅ BEST on MosMed  
+Channel Scale Reference:
+┌──────────┬─────────────────────────────┬─────────┐
+│ Scale    │ Channels                    │ Params  │
+├──────────┼─────────────────────────────┼─────────┤
+│ 1.0      │ [64, 128, 256, 512, 512]    │ ~20.6M  │
+│ 0.5      │ [32, 64, 128, 256, 256]     │ ~5.2M   │
+└──────────┴─────────────────────────────┴─────────┘
 ```
 
-**Surprising Finding:** KAN performs BETTER than MLP on MosMedData+ (74.04% vs 73.74%), 
-opposite of QaTa results. This suggests KAN may be more suitable for CT imaging or 
-smaller datasets where its regularization properties help.
+### 4️⃣ Training Insights
+
+- 🎯 **Early stopping** recommended at epoch 100-150
+- 📊 Model peaks around epoch 90-100, then overfits
+- 🧮 Use **gradient accumulation** for KAN: `--accum-steps 2`
 
 ---
 
-## Recommendations
+## 🏗️ Architecture
 
-1. **Dataset-specific model selection:**
-   - QaTa-COV19: Use `qata_nokan_deepsup` (MLP + Deep Supervision)
-   - MosMedData+: Use `mosmed_kan_deepsup` (KAN + Deep Supervision)
-2. **Always use Deep Supervision** - improves both Dice and boundary metrics
-3. **Early stopping** at epoch 100-150
-4. **Use scale 1.0** for best performance (0.5 if memory constrained)
-5. **Gradient accumulation** for KAN training: `--accum-steps 2`
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         C2Seg Architecture                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────┐    ┌─────────────────┐    ┌──────────────────┐   │
+│  │  Input   │    │  Visual Encoder │    │      BCAM        │   │
+│  │ Image    │───▶│   (5 DownBlocks)│───▶│  (Cross Attn +   │   │
+│  │ 224×224  │    │   Conv-based    │    │   K-Gate Fusion) │   │
+│  └──────────┘    └─────────────────┘    └────────┬─────────┘   │
+│                                                   │              │
+│  ┌──────────┐    ┌─────────────────┐              │              │
+│  │  Text    │───▶│  CLIP Encoder   │──────────────┘              │
+│  │ Prompt   │    │   (Frozen)      │                             │
+│  └──────────┘    └─────────────────┘                             │
+│                                                                  │
+│                         ┌──────────────────┐                     │
+│                         │     Decoder      │                     │
+│                         │  (4 UpBlocks +   │                     │
+│                         │  PixLevelModule) │                     │
+│                         └────────┬─────────┘                     │
+│                                  │                               │
+│                    ┌─────────────┴─────────────┐                 │
+│                    ▼                           ▼                 │
+│              ┌──────────┐              ┌───────────────┐         │
+│              │ Main Out │              │Deep Supervision│         │
+│              │ 224×224  │              │(out1-4 scales)│         │
+│              └──────────┘              └───────────────┘         │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+📐 See detailed diagrams: [`c2seg/docs/`](c2seg/docs/index.html)
 
 ---
 
-## Commands
+## 🚀 Quick Start
+
+### Training Commands
 
 ```bash
-# === QaTa-COV19 Dataset ===
+# ═══════════════════════════════════════════════════════════════
+# QaTa-COV19 Dataset (Recommended: MLP + Deep Supervision)
+# ═══════════════════════════════════════════════════════════════
 
-# Train MLP + Deep Supervision (RECOMMENDED for QaTa)
+# Pretrain → Train → Evaluate
 python run.py --stage pretrain --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
-python run.py --stage train --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
-python run.py --stage eval --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
+python run.py --stage train    --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
+python run.py --stage eval     --config configs/qata.yaml --tag qata_nokan_deepsup --no-kan --deep-sup
 
-# Train MLP without Deep Supervision
-python run.py --stage pretrain --config configs/qata.yaml --tag c2seg_nokan --no-kan
-python run.py --stage train --config configs/qata.yaml --tag c2seg_nokan --no-kan
-python run.py --stage eval --config configs/qata.yaml --tag c2seg_nokan --no-kan
+# ═══════════════════════════════════════════════════════════════
+# MosMedData+ Dataset (Recommended: KAN + Deep Supervision)
+# ═══════════════════════════════════════════════════════════════
 
-# === MosMedData+ Dataset ===
-
-# Train KAN + Deep Supervision (RECOMMENDED for MosMed)
+# Pretrain → Train → Evaluate
 python run.py --stage pretrain --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup --accum-steps 2
-python run.py --stage train --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup --accum-steps 2
-python run.py --stage eval --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup
+python run.py --stage train    --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup --accum-steps 2
+python run.py --stage eval     --config configs/mosmed.yaml --tag mosmed_kan_deepsup --deep-sup
+```
 
-# Train MLP + Deep Supervision
-python run.py --stage pretrain --config configs/mosmed.yaml --tag mosmed_nokan_deepsup --no-kan --deep-sup
-python run.py --stage train --config configs/mosmed.yaml --tag mosmed_nokan_deepsup --no-kan --deep-sup
-python run.py --stage eval --config configs/mosmed.yaml --tag mosmed_nokan_deepsup --no-kan --deep-sup
+### Evaluation from Checkpoint
+
+```bash
+# Auto-detect tag from checkpoint path
+python run.py --stage eval --config configs/qata.yaml \
+    --checkpoint output/checkpoints/qata_nokan_deepsup/c2seg_best.pth
+
+# With explicit tag
+python run.py --stage eval --config configs/qata.yaml \
+    --tag qata_nokan_deepsup --no-kan --deep-sup
 ```
 
 ---
 
-## Paper vs Our Results
+## 📋 Recommendations
 
-| Dataset | Metric | Paper | Ours (Best) | Gap |
-|---------|--------|-------|-------------|-----|
-| **QaTa-COV19** | Dice | 85.25% | 84.00% | -1.25% |
-| **QaTa-COV19** | mIoU | 74.13% | 75.23% | **+1.10%** |
-| **MosMedData+** | Dice | 77.81% | 74.04% | -3.77% |
-
-**Note:** Our mIoU on QaTa actually exceeds the paper's result!
+| Aspect | Recommendation |
+|:-------|:---------------|
+| **QaTa-COV19** | Use `--no-kan --deep-sup` (MLP variant) |
+| **MosMedData+** | Use `--deep-sup --accum-steps 2` (KAN variant) |
+| **Deep Supervision** | Always enable `--deep-sup` |
+| **Early Stopping** | Stop at epoch 100-150 |
+| **Channel Scale** | Use 1.0 (default); 0.5 if memory constrained |
+| **KAN Training** | Use `--accum-steps 2` for stability |
 
 ---
 
-*Last updated: October 2026*
+## 📁 Project Structure
+
+```
+c2seg/
+├── models/
+│   ├── c2seg.py          # Main model architecture
+│   ├── kan.py            # KANLinear implementation
+│   ├── losses.py         # Loss functions (CaCL, DeepSup)
+│   └── unet.py           # U-Net baseline
+├── datasets/
+│   └── dataset.py        # Data loading
+├── utils/
+│   └── seg_metrics.py    # Dice, mIoU, HD95, ASSD
+├── configs/
+│   ├── qata.yaml         # QaTa-COV19 config
+│   └── mosmed.yaml       # MosMedData+ config
+├── docs/                 # Architecture diagrams
+│   ├── index.html
+│   ├── c2seg-overall-architecture.html
+│   ├── c2seg-component-details.html
+│   └── c2seg-training-stages.html
+└── run.py                # Training/eval script
+```
+
+---
+
+## 📚 References
+
+- **Paper:** "Towards Text-Mask Consistency in Medical Image Segmentation" (C2Seg)
+- **Datasets:**
+  - [QaTa-COV19](https://www.kaggle.com/datasets/aysendegerli/qatacov19-dataset) - Chest X-ray COVID-19 segmentation
+  - [MosMedData+](https://mosmed.ai/) - CT scan COVID-19 segmentation
+
+---
+
+<p align="center">
+  <i>Last updated: October 2026</i>
+</p>

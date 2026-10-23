@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C2Seg Component Details</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f5f5f5;
+      font-family: 'Geist', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+    }
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+    .eyebrow {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #4f5d75;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      color: #2d3142;
+      margin-bottom: 32px;
+    }
+    .diagram-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    svg {
+      display: block;
+      min-width: 1150px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="eyebrow">Component Architecture</p>
+    <h1>C2Seg Component Details</h1>
+    <div class="diagram-wrapper">
+      <svg viewBox="0 0 1150 900" role="img" aria-labelledby="components-title components-desc">
+        <title id="components-title">C2Seg Component Details</title>
+        <desc id="components-desc">Detailed architecture of BCAM module, K-Gate fusion, PixLevelModule attention, and loss functions.</desc>
+        
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="strokeWidth">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f5d75"/>
+          </marker>
+          <marker id="arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="strokeWidth">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#bf4520"/>
+          </marker>
+        </defs>
+        
+        <!-- Background -->
+        <rect width="1150" height="900" fill="#f5f5f5"/>
+        
+        <!-- Section 1: BCAM Module -->
+        <g id="bcam-section">
+          <rect x="40" y="40" width="520" height="380" rx="8" fill="rgba(191,69,32,0.04)" stroke="rgba(191,69,32,0.20)" stroke-width="1"/>
+          <text x="60" y="70" font-family="'Geist Mono', monospace" font-size="10" font-weight="500" fill="#bf4520" letter-spacing="0.12em">BCAM MODULE</text>
+          <text x="60" y="90" font-family="'Instrument Serif', serif" font-size="18" fill="#2d3142">Bidirectional Cross Attention</text>
+          
+          <!-- Visual Features Input -->
+          <rect x="60" y="120" width="100" height="50" rx="4" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="0.8"/>
+          <text x="110" y="142" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">V features</text>
+          <text x="110" y="158" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, C, H, W]</text>
+          
+          <!-- Text Features Input -->
+          <rect x="60" y="200" width="100" height="50" rx="4" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="0.8"/>
+          <text x="110" y="222" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">L features</text>
+          <text x="110" y="238" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, N, 512]</text>
+          
+          <!-- Positional Encoding -->
+          <rect x="190" y="120" width="90" height="50" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <text x="235" y="140" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">Sinusoidal</text>
+          <text x="235" y="154" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">2D PosEmb</text>
+          
+          <!-- Projections -->
+          <rect x="190" y="200" width="90" height="50" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <text x="235" y="222" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">Projections</text>
+          <text x="235" y="238" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">K, V, Q</text>
+          
+          <!-- Multi-head Attention -->
+          <rect x="310" y="140" width="100" height="90" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <text x="360" y="165" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">Multi-Head</text>
+          <text x="360" y="180" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">Cross Attention</text>
+          <text x="360" y="198" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">8 heads</text>
+          <text x="360" y="214" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">V→L & L→V</text>
+          
+          <!-- K-Gate (nested) -->
+          <rect x="310" y="250" width="100" height="70" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <text x="360" y="275" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">K-Gate</text>
+          <text x="360" y="292" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">KAN gating</text>
+          <text x="360" y="306" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">concat→conv</text>
+          
+          <!-- Output -->
+          <rect x="440" y="170" width="100" height="50" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <text x="490" y="192" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Fused Output</text>
+          <text x="490" y="208" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, C, H, W]</text>
+          
+          <!-- Arrows for BCAM -->
+          <line x1="160" y1="145" x2="186" y2="145" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="160" y1="225" x2="186" y2="225" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="280" y1="145" x2="306" y2="170" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          <line x1="280" y1="225" x2="306" y2="200" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          <line x1="360" y1="230" x2="360" y2="246" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          <line x1="410" y1="185" x2="436" y2="195" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          <line x1="410" y1="285" x2="430" y2="285" stroke="#bf4520" stroke-width="1"/>
+          <line x1="430" y1="285" x2="430" y2="195" stroke="#bf4520" stroke-width="1"/>
+          <line x1="430" y1="195" x2="436" y2="195" stroke="#bf4520" stroke-width="1"/>
+          
+          <!-- Residual connection -->
+          <path d="M 235 170 L 235 350 L 490 350 L 490 224" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+          <rect x="340" y="340" width="80" height="20" fill="#f5f5f5"/>
+          <text x="380" y="354" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">+ RESIDUAL</text>
+        </g>
+        
+        <!-- Section 2: K-Gate Detail -->
+        <g id="kgate-section">
+          <rect x="590" y="40" width="520" height="380" rx="8" fill="rgba(191,69,32,0.04)" stroke="rgba(191,69,32,0.20)" stroke-width="1"/>
+          <text x="610" y="70" font-family="'Geist Mono', monospace" font-size="10" font-weight="500" fill="#bf4520" letter-spacing="0.12em">K-GATE MODULE</text>
+          <text x="610" y="90" font-family="'Instrument Serif', serif" font-size="18" fill="#2d3142">KAN-based Attention Gating</text>
+          
+          <!-- F_l input -->
+          <rect x="620" y="130" width="80" height="40" rx="4" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="0.8"/>
+          <text x="660" y="150" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">F_l</text>
+          <text x="660" y="164" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, HW, C]</text>
+          
+          <!-- F_v input -->
+          <rect x="620" y="220" width="80" height="40" rx="4" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="0.8"/>
+          <text x="660" y="240" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">F_v</text>
+          <text x="660" y="254" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, HW, C]</text>
+          
+          <!-- KAN block for F_l -->
+          <g transform="translate(720, 110)">
+            <rect x="0" y="0" width="180" height="80" rx="4" fill="#ffffff" stroke="#bf4520" stroke-width="1"/>
+            <text x="90" y="20" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#bf4520" letter-spacing="0.08em">KCGate (Language)</text>
+            
+            <rect x="15" y="35" width="45" height="30" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="37" y="54" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#2d3142">KAN</text>
+            
+            <rect x="70" y="35" width="40" height="30" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.6"/>
+            <text x="90" y="54" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#2d3142">ReLU</text>
+            
+            <rect x="120" y="35" width="45" height="30" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="142" y="54" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#2d3142">KAN</text>
+            
+            <line x1="60" y1="50" x2="66" y2="50" stroke="#4f5d75" stroke-width="0.8" marker-end="url(#arrow)"/>
+            <line x1="110" y1="50" x2="116" y2="50" stroke="#4f5d75" stroke-width="0.8" marker-end="url(#arrow)"/>
+          </g>
+          
+          <!-- KAN block for F_v -->
+          <g transform="translate(720, 200)">
+            <rect x="0" y="0" width="180" height="80" rx="4" fill="#ffffff" stroke="#bf4520" stroke-width="1"/>
+            <text x="90" y="20" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#bf4520" letter-spacing="0.08em">KCGate (Vision)</text>
+            
+            <rect x="15" y="35" width="45" height="30" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="37" y="54" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#2d3142">KAN</text>
+            
+            <rect x="70" y="35" width="40" height="30" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.6"/>
+            <text x="90" y="54" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#2d3142">ReLU</text>
+            
+            <rect x="120" y="35" width="45" height="30" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="142" y="54" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#2d3142">KAN</text>
+            
+            <line x1="60" y1="50" x2="66" y2="50" stroke="#4f5d75" stroke-width="0.8" marker-end="url(#arrow)"/>
+            <line x1="110" y1="50" x2="116" y2="50" stroke="#4f5d75" stroke-width="0.8" marker-end="url(#arrow)"/>
+          </g>
+          
+          <!-- Tanh boxes -->
+          <rect x="920" y="130" width="50" height="30" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.6"/>
+          <text x="945" y="149" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#2d3142">Tanh</text>
+          
+          <rect x="920" y="230" width="50" height="30" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.6"/>
+          <text x="945" y="249" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#2d3142">Tanh</text>
+          
+          <!-- Multiply symbols -->
+          <circle cx="1000" cy="145" r="12" fill="#ffffff" stroke="#bf4520" stroke-width="1"/>
+          <text x="1000" y="150" text-anchor="middle" font-family="'Geist', sans-serif" font-size="14" fill="#bf4520">⊙</text>
+          
+          <circle cx="1000" cy="245" r="12" fill="#ffffff" stroke="#bf4520" stroke-width="1"/>
+          <text x="1000" y="250" text-anchor="middle" font-family="'Geist', sans-serif" font-size="14" fill="#bf4520">⊙</text>
+          
+          <!-- a_l and a_v outputs -->
+          <rect x="1030" y="130" width="50" height="30" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="0.8"/>
+          <text x="1055" y="149" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="#bf4520">a_l</text>
+          
+          <rect x="1030" y="230" width="50" height="30" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="0.8"/>
+          <text x="1055" y="249" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="#bf4520">a_v</text>
+          
+          <!-- Concat -->
+          <rect x="960" y="310" width="70" height="40" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <text x="995" y="330" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">Concat</text>
+          <text x="995" y="344" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, HW, 2C]</text>
+          
+          <!-- Conv fusion -->
+          <rect x="1040" y="310" width="60" height="40" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <text x="1070" y="330" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">Conv</text>
+          <text x="1070" y="344" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">1×1</text>
+          
+          <!-- F_out -->
+          <rect x="960" y="370" width="140" height="40" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <text x="1030" y="390" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">F_out</text>
+          <text x="1030" y="404" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, C, HW]</text>
+          
+          <!-- Arrows -->
+          <line x1="700" y1="150" x2="716" y2="150" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="700" y1="240" x2="716" y2="240" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="900" y1="150" x2="916" y2="145" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="900" y1="240" x2="916" y2="245" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="970" y1="145" x2="986" y2="145" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="970" y1="245" x2="986" y2="245" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="1012" y1="145" x2="1026" y2="145" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          <line x1="1012" y1="245" x2="1026" y2="245" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          
+          <!-- F_l and F_v bypass to multiply -->
+          <path d="M 660 130 L 660 100 L 1000 100 L 1000 131" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+          <path d="M 660 260 L 660 295 L 1000 295 L 1000 259" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+          
+          <!-- To concat -->
+          <line x1="1055" y1="160" x2="1055" y2="290" stroke="#bf4520" stroke-width="1"/>
+          <line x1="1055" y1="290" x2="1030" y2="290" stroke="#bf4520" stroke-width="1"/>
+          <line x1="1030" y1="290" x2="1030" y2="306" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          
+          <line x1="1055" y1="260" x2="1055" y2="280" stroke="#bf4520" stroke-width="1"/>
+          <line x1="1055" y1="280" x2="970" y2="280" stroke="#bf4520" stroke-width="1"/>
+          <line x1="970" y1="280" x2="970" y2="306" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+          
+          <line x1="1030" y1="330" x2="1036" y2="330" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="1070" y1="350" x2="1070" y2="366" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
+        </g>
+        
+        <!-- Section 3: PixLevelModule -->
+        <g id="pixlevel-section">
+          <rect x="40" y="450" width="520" height="200" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.15)" stroke-width="1"/>
+          <text x="60" y="480" font-family="'Geist Mono', monospace" font-size="10" font-weight="500" fill="#4f5d75" letter-spacing="0.12em">PIXLEVELMODULE</text>
+          <text x="60" y="500" font-family="'Instrument Serif', serif" font-size="18" fill="#2d3142">Pixel-Level Attention for Skip Connections</text>
+          
+          <!-- Input -->
+          <rect x="70" y="530" width="80" height="40" rx="4" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="0.8"/>
+          <text x="110" y="550" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Skip feat</text>
+          <text x="110" y="564" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">[B, C, H, W]</text>
+          
+          <!-- Conv branches -->
+          <rect x="180" y="520" width="70" height="30" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <text x="215" y="539" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#2d3142">Conv→BN→ReLU</text>
+          
+          <rect x="180" y="560" width="70" height="30" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <text x="215" y="579" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#2d3142">Conv→BN→ReLU</text>
+          
+          <!-- Pool operations -->
+          <rect x="270" y="520" width="50" height="30" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.6"/>
+          <text x="295" y="539" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#2d3142">AvgPool</text>
+          
+          <rect x="270" y="560" width="50" height="30" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.6"/>
+          <text x="295" y="579" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#2d3142">MaxPool</text>
+          
+          <!-- Concat + bottleneck -->
+          <rect x="340" y="530" width="60" height="50" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <text x="370" y="550" text-anchor="middle" font-family="'Geist', sans-serif" font-size="9" font-weight="600" fill="#2d3142">Concat</text>
+          <text x="370" y="566" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">[avg, max,</text>
+          <text x="370" y="576" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">avg+max]</text>
+          
+          <!-- MLP -->
+          <rect x="420" y="530" width="60" height="50" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <text x="450" y="550" text-anchor="middle" font-family="'Geist', sans-serif" font-size="9" font-weight="600" fill="#2d3142">MLP</text>
+          <text x="450" y="566" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">3→6→1</text>
+          
+          <!-- Multiply -->
+          <circle cx="510" cy="555" r="12" fill="#ffffff" stroke="#4f5d75" stroke-width="1"/>
+          <text x="510" y="560" text-anchor="middle" font-family="'Geist', sans-serif" font-size="14" fill="#4f5d75">×</text>
+          
+          <!-- Output -->
+          <rect x="540" y="535" width="80" height="40" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
+          <text x="580" y="555" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Attended</text>
+          <text x="580" y="569" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">x × attention</text>
+          
+          <!-- Arrows -->
+          <line x1="150" y1="550" x2="156" y2="550" stroke="#4f5d75" stroke-width="1"/>
+          <line x1="156" y1="550" x2="156" y2="535" stroke="#4f5d75" stroke-width="1"/>
+          <line x1="156" y1="535" x2="176" y2="535" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="156" y1="550" x2="156" y2="575" stroke="#4f5d75" stroke-width="1"/>
+          <line x1="156" y1="575" x2="176" y2="575" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          
+          <line x1="250" y1="535" x2="266" y2="535" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="250" y1="575" x2="266" y2="575" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="320" y1="535" x2="336" y2="555" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="320" y1="575" x2="336" y2="555" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="400" y1="555" x2="416" y2="555" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="480" y1="555" x2="496" y2="555" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          <line x1="522" y1="555" x2="536" y2="555" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+          
+          <!-- Bypass -->
+          <path d="M 110 570 L 110 620 L 510 620 L 510 569" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+          <rect x="290" y="612" width="50" height="16" fill="#f5f5f5"/>
+          <text x="315" y="623" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">INPUT x</text>
+        </g>
+        
+        <!-- Section 4: Loss Functions -->
+        <g id="loss-section">
+          <rect x="590" y="450" width="520" height="410" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.15)" stroke-width="1"/>
+          <text x="610" y="480" font-family="'Geist Mono', monospace" font-size="10" font-weight="500" fill="#4f5d75" letter-spacing="0.12em">LOSS FUNCTIONS</text>
+          <text x="610" y="500" font-family="'Instrument Serif', serif" font-size="18" fill="#2d3142">Multi-scale Deep Supervision Loss</text>
+          
+          <!-- CaCL Loss -->
+          <rect x="620" y="520" width="220" height="100" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+          <rect x="620" y="520" width="220" height="22" rx="2" fill="#2d3142"/>
+          <text x="730" y="535" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#f5f5f5" letter-spacing="0.08em">CaCL LOSS (STAGE I)</text>
+          
+          <text x="640" y="560" font-family="'Geist', sans-serif" font-size="10" fill="#2d3142">Cluster-aware Contrastive Learning</text>
+          <text x="640" y="576" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">• Temperature τ = 0.07</text>
+          <text x="640" y="590" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">• Soft-label mixing ε = 0.8</text>
+          <text x="640" y="604" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">• Cross-modal V↔L alignment</text>
+          
+          <!-- Deep Supervision Loss -->
+          <rect x="620" y="640" width="470" height="200" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <rect x="620" y="640" width="470" height="22" rx="2" fill="#bf4520"/>
+          <text x="855" y="655" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#f5f5f5" letter-spacing="0.08em">DEEP SUPERVISION LOSS (STAGE II)</text>
+          
+          <!-- Scale boxes -->
+          <g transform="translate(640, 680)">
+            <rect x="0" y="0" width="80" height="70" rx="2" fill="#ffffff" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="40" y="16" text-anchor="middle" font-family="'Geist', sans-serif" font-size="9" font-weight="600" fill="#2d3142">Scale 0</text>
+            <text x="40" y="32" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">224×224</text>
+            <text x="40" y="46" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#bf4520">w=[0.5, 0.5]</text>
+            <text x="40" y="60" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#4f5d75">λ=0.50</text>
+          </g>
+          
+          <g transform="translate(730, 680)">
+            <rect x="0" y="0" width="80" height="70" rx="2" fill="#ffffff" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="40" y="16" text-anchor="middle" font-family="'Geist', sans-serif" font-size="9" font-weight="600" fill="#2d3142">Scale 1</text>
+            <text x="40" y="32" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">112×112</text>
+            <text x="40" y="46" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#bf4520">w=[0.4, 0.6]</text>
+            <text x="40" y="60" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#4f5d75">λ=0.20</text>
+          </g>
+          
+          <g transform="translate(820, 680)">
+            <rect x="0" y="0" width="80" height="70" rx="2" fill="#ffffff" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="40" y="16" text-anchor="middle" font-family="'Geist', sans-serif" font-size="9" font-weight="600" fill="#2d3142">Scale 2</text>
+            <text x="40" y="32" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">56×56</text>
+            <text x="40" y="46" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#bf4520">w=[0.3, 0.7]</text>
+            <text x="40" y="60" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#4f5d75">λ=0.15</text>
+          </g>
+          
+          <g transform="translate(910, 680)">
+            <rect x="0" y="0" width="80" height="70" rx="2" fill="#ffffff" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="40" y="16" text-anchor="middle" font-family="'Geist', sans-serif" font-size="9" font-weight="600" fill="#2d3142">Scale 3</text>
+            <text x="40" y="32" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">28×28</text>
+            <text x="40" y="46" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#bf4520">w=[0.2, 0.8]</text>
+            <text x="40" y="60" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#4f5d75">λ=0.10</text>
+          </g>
+          
+          <g transform="translate(1000, 680)">
+            <rect x="0" y="0" width="80" height="70" rx="2" fill="#ffffff" stroke="#bf4520" stroke-width="0.6"/>
+            <text x="40" y="16" text-anchor="middle" font-family="'Geist', sans-serif" font-size="9" font-weight="600" fill="#2d3142">Scale 4</text>
+            <text x="40" y="32" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#5a6580">14×14</text>
+            <text x="40" y="46" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#bf4520">w=[0.1, 0.9]</text>
+            <text x="40" y="60" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="7" fill="#4f5d75">λ=0.05</text>
+          </g>
+          
+          <!-- Loss formula -->
+          <text x="640" y="780" font-family="'Geist', sans-serif" font-size="10" fill="#2d3142">Loss = Σ λᵢ × WeightedDiceBCE(outᵢ, maskᵢ)</text>
+          <text x="640" y="798" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">• WeightedDiceBCE = 0.5×Dice + 0.5×BCE with asymmetric weights</text>
+          <text x="640" y="814" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">• PatchMaskGenerator creates patch-level targets for scales 1-4</text>
+        </g>
+        
+        <!-- Legend -->
+        <g transform="translate(40, 860)">
+          <rect x="0" y="0" width="1070" height="32" rx="4" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+          
+          <rect x="20" y="10" width="12" height="12" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+          <text x="40" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">FOCAL / KAN-BASED</text>
+          
+          <rect x="180" y="10" width="12" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+          <text x="200" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">CONV / LINEAR</text>
+          
+          <rect x="320" y="10" width="12" height="12" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
+          <text x="340" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">ACTIVATION / POOL</text>
+          
+          <rect x="500" y="10" width="12" height="12" rx="2" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="0.8"/>
+          <text x="520" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">INPUT / INTERMEDIATE</text>
+          
+          <line x1="700" y1="16" x2="730" y2="16" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="740" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">RESIDUAL / SKIP</text>
+          
+          <circle cx="880" cy="16" r="8" fill="#ffffff" stroke="#bf4520" stroke-width="1"/>
+          <text x="880" y="20" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" fill="#bf4520">⊙</text>
+          <text x="900" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">ELEMENT-WISE OP</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
