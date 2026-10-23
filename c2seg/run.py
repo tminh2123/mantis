@@ -231,6 +231,7 @@ def train(cfg, pretrained_ckpt: str = None):
     ckpt_dir = Path(cfg['logging']['checkpoint_dir'])
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     best_dice = 0.0
+    no_improve = 0
     
     # Gradient accumulation
     accum_steps = cfg.get('accum_steps', 1)
@@ -288,13 +289,21 @@ def train(cfg, pretrained_ckpt: str = None):
 
         if metrics['dice'] > best_dice:
             best_dice = metrics['dice']
+            no_improve = 0
             save_checkpoint({'epoch': epoch+1, 'model': model.state_dict(),
                              'best_dice': best_dice},
                             str(ckpt_dir / 'c2seg_best.pth'))
+        else:
+            no_improve += 1
 
         if (epoch + 1) % cfg['logging']['save_every'] == 0:
             save_checkpoint({'epoch': epoch+1, 'model': model.state_dict()},
                             str(ckpt_dir / f'c2seg_epoch{epoch+1}.pth'))
+
+        # Early stopping
+        if tcfg.get('early_stopping', False) and no_improve >= tcfg.get('es_patience', 50):
+            logger.info(f"Early stopping at epoch {epoch+1} (no improvement for {no_improve} epochs)")
+            break
 
     logger.info(f"Training done. Best Dice: {best_dice:.2f}%")
 
