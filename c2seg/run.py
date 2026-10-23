@@ -434,10 +434,6 @@ if __name__ == '__main__':
     # Apply experiment tag to checkpoint and log paths
     if args.tag:
         tag = args.tag
-        # Append accum steps to tag if > 1
-        accum = getattr(args, 'accum_steps', 1)
-        if accum > 1:
-            tag = f"{tag}_accum{accum}"
         cfg['logging']['checkpoint_dir'] = f"output/checkpoints/{tag}"
         cfg['logging']['log_dir'] = f"output/logs/{tag}"
         cfg['pretrain']['checkpoint'] = f"output/checkpoints/{tag}/c2seg_pretrain.pth"
