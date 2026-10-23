@@ -441,6 +441,15 @@ if __name__ == '__main__':
         print(f"Experiment tag: {tag}")
         print(f"Checkpoints: output/checkpoints/{tag}/")
         print(f"Logs: output/logs/{tag}/")
+    elif args.checkpoint:
+        # Extract tag from checkpoint path: output/checkpoints/{tag}/c2seg_*.pth
+        import re
+        match = re.search(r'output/checkpoints/([^/]+)/', args.checkpoint)
+        if match:
+            tag = match.group(1)
+            cfg['logging']['log_dir'] = f"output/logs/{tag}"
+            print(f"Auto-detected tag from checkpoint: {tag}")
+            print(f"Logs: output/logs/{tag}/")
     
     # Log settings
     stage = args.stage
