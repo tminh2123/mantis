@@ -347,7 +347,7 @@ def evaluate(model, loader, device, threshold=0.5):
     }
 
 
-def eval_mode(cfg):
+def eval_mode(cfg, checkpoint_path=None):
     logger = get_logger('c2seg_eval', cfg['logging']['log_dir'])
     device = get_device()
 
@@ -357,7 +357,8 @@ def eval_mode(cfg):
                          shuffle=False, num_workers=cfg['data']['num_workers'])
 
     model = C2Seg(**cfg['model']).to(device)
-    load_checkpoint(cfg['eval']['checkpoint'], model)
+    ckpt = checkpoint_path or cfg['eval']['checkpoint']
+    load_checkpoint(ckpt, model)
 
     metrics = evaluate(model, loader, device, cfg['eval']['threshold'])
     logger.info(
@@ -374,6 +375,7 @@ def parse_args():
     p.add_argument('--stage',  required=True, choices=['pretrain', 'train', 'eval'])
     p.add_argument('--config', default='configs/qata.yaml')
     p.add_argument('--pretrained', default=None, help='Path to pretrained ckpt for stage II')
+    p.add_argument('--checkpoint', default=None, help='Path to checkpoint for eval (overrides tag)')
     p.add_argument('--epochs', type=int, default=None, help='Override number of epochs')
     p.add_argument('--lr', type=float, default=None, help='Override learning rate')
     p.add_argument('--batch-size', type=int, default=None, help='Override batch size')
@@ -481,4 +483,4 @@ if __name__ == '__main__':
     elif args.stage == 'train':
         train(cfg, pretrained_ckpt=args.pretrained)
     elif args.stage == 'eval':
-        eval_mode(cfg)
+        eval_mode(cfg, checkpoint_path=args.checkpoint)
