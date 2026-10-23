@@ -38,8 +38,16 @@ def _surface_distances(pred_bin: np.ndarray, gt_bin: np.ndarray):
     if not pred_border.any() or not gt_border.any():
         return np.array([]), np.array([])
 
+    # Ensure 2D arrays
+    if pred_bin.ndim != 2 or gt_bin.ndim != 2:
+        return np.array([]), np.array([])
+
     dt_pred = distance_transform_edt(~pred_bin)
     dt_gt   = distance_transform_edt(~gt_bin)
+
+    # Verify distance transforms have correct shape
+    if dt_pred.shape != pred_bin.shape or dt_gt.shape != gt_bin.shape:
+        return np.array([]), np.array([])
 
     sds_pred2gt = dt_gt[pred_border]
     sds_gt2pred = dt_pred[gt_border]
