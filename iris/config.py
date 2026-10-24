@@ -118,6 +118,8 @@ def parse_args():
     # Paths
     parser.add_argument('--output_dir', type=str, default='output',
                         help='Output directory for logs and checkpoints')
+    parser.add_argument('--checkpoint', type=str,
+                        help='Override checkpoint path for eval mode')
     
     # Other
     parser.add_argument('--exp_name', type=str)
