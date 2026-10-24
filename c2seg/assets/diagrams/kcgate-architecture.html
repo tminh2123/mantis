@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>KCGate Architecture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 5px;
+      font-size: 26px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #7f8c8d;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+    .formula {
+      text-align: center;
+      background: #f8f9fa;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      font-family: 'Times New Roman', serif;
+      font-size: 16px;
+      color: #2c3e50;
+      border-left: 4px solid #3498db;
+    }
+    svg { display: block; }
+    .block { filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.1)); }
+    .input-block { fill: #e8f6f3; stroke: #1abc9c; }
+    .kan-block { fill: #fef9e7; stroke: #f39c12; }
+    .activation-block { fill: #ebf5fb; stroke: #3498db; }
+    .multiply-circle { fill: #fadbd8; stroke: #e74c3c; }
+    .arrow { fill: none; stroke: #34495e; stroke-width: 2.5; marker-end: url(#arrowhead); }
+    .label { font-size: 16px; font-weight: 600; fill: #2c3e50; }
+    .dim-label { font-size: 12px; fill: #7f8c8d; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>KCGate: KAN-based Channel Gate</h1>
+  <p class="subtitle">Element-wise gating mechanism using Kolmogorov-Arnold Networks</p>
+  <div class="formula">
+    g = tanh(KAN<sub>2</sub>(ReLU(KAN<sub>1</sub>(x))))  &nbsp;&nbsp;→&nbsp;&nbsp;  output = x ⊙ g
+  </div>
+  
+  <svg width="900" height="280" viewBox="0 0 900 280">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+      </marker>
+    </defs>
+    
+    <!-- Input x -->
+    <rect x="30" y="100" width="100" height="60" rx="8" class="block input-block" stroke-width="2"/>
+    <text x="80" y="132" text-anchor="middle" class="label">x</text>
+    <text x="80" y="152" text-anchor="middle" class="dim-label">[B, N, C]</text>
+    
+    <!-- Arrow to KAN1 -->
+    <path d="M130,130 L170,130" class="arrow"/>
+    
+    <!-- KAN1 -->
+    <rect x="180" y="100" width="120" height="60" rx="8" class="block kan-block" stroke-width="2"/>
+    <text x="240" y="135" text-anchor="middle" class="label">KAN₁</text>
+    
+    <!-- Arrow to ReLU -->
+    <path d="M300,130 L340,130" class="arrow"/>
+    
+    <!-- ReLU -->
+    <rect x="350" y="100" width="90" height="60" rx="8" class="block activation-block" stroke-width="2"/>
+    <text x="395" y="135" text-anchor="middle" class="label">ReLU</text>
+    
+    <!-- Arrow to KAN2 -->
+    <path d="M440,130 L480,130" class="arrow"/>
+    
+    <!-- KAN2 -->
+    <rect x="490" y="100" width="120" height="60" rx="8" class="block kan-block" stroke-width="2"/>
+    <text x="550" y="135" text-anchor="middle" class="label">KAN₂</text>
+    
+    <!-- Arrow to Tanh -->
+    <path d="M610,130 L650,130" class="arrow"/>
+    
+    <!-- Tanh -->
+    <rect x="660" y="100" width="90" height="60" rx="8" class="block activation-block" stroke-width="2"/>
+    <text x="705" y="130" text-anchor="middle" class="label">Tanh</text>
+    <text x="705" y="152" text-anchor="middle" class="dim-label">g: [-1, 1]</text>
+    
+    <!-- Arrow to Multiply -->
+    <path d="M750,130 L780,130" class="arrow"/>
+    
+    <!-- Multiply circle -->
+    <circle cx="810" cy="130" r="25" class="block multiply-circle" stroke-width="2"/>
+    <text x="810" y="138" text-anchor="middle" class="label" font-size="24">⊙</text>
+    
+    <!-- Skip connection from input -->
+    <path d="M80,100 L80,40 L810,40 L810,103" class="arrow" stroke-dasharray="6,4"/>
+    <text x="450" y="30" text-anchor="middle" class="dim-label">skip connection (x)</text>
+    
+    <!-- Arrow to Output -->
+    <path d="M835,130 L865,130" class="arrow"/>
+    
+    <!-- Output -->
+    <text x="900" y="125" text-anchor="start" class="label" fill="#27ae60">x ⊙ g</text>
+    <text x="900" y="145" text-anchor="start" class="dim-label">[B, N, C]</text>
+  </svg>
+</body>
+</html>

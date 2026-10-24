@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BCAM Architecture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 5px;
+      font-size: 22px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #7f8c8d;
+      margin-bottom: 12px;
+      font-size: 11px;
+    }
+    svg { display: block; }
+    .block { filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1)); }
+    .input-img { fill: #dbeafe; stroke: #3b82f6; }
+    .input-txt { fill: #fce7f3; stroke: #ec4899; }
+    .pos-embed { fill: #fef3c7; stroke: #f59e0b; }
+    .proj-block { fill: #e0e7ff; stroke: #6366f1; }
+    .attn-block { fill: #fef9c3; stroke: #eab308; }
+    .kgate-block { fill: #fed7aa; stroke: #f97316; }
+    .output-block { fill: #fee2e2; stroke: #ef4444; }
+    .add-circle { fill: #dbeafe; stroke: #3b82f6; }
+    .arrow { fill: none; stroke: #475569; stroke-width: 1.8; marker-end: url(#arrowhead); }
+    .arrow-skip { fill: none; stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 4,3; marker-end: url(#arrowhead-gray); }
+    .label { font-size: 11px; font-weight: 600; fill: #1e293b; }
+    .label-small { font-size: 9px; font-weight: 500; fill: #1e293b; }
+    .dim-label { font-size: 8px; fill: #64748b; font-style: italic; }
+    .section-label { font-size: 9px; fill: #64748b; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>BCAModule: Bidirectional Cross Attention</h1>
+  <p class="subtitle">Cross-attention between Image and Text features with KAN-based K-Gate fusion</p>
+  
+  <svg width="1100" height="480" viewBox="0 0 1100 480">
+    <defs>
+      <marker id="arrowhead" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+        <polygon points="0 0, 7 2.5, 0 5" fill="#475569"/>
+      </marker>
+      <marker id="arrowhead-gray" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+        <polygon points="0 0, 7 2.5, 0 5" fill="#94a3b8"/>
+      </marker>
+    </defs>
+    
+    <!-- Section labels -->
+    <rect x="15" y="25" width="180" height="430" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="105" y="45" text-anchor="middle" class="section-label">INPUTS</text>
+    
+    <rect x="205" y="25" width="250" height="430" rx="8" fill="#eef2ff" fill-opacity="0.4" stroke="#c7d2fe"/>
+    <text x="330" y="45" text-anchor="middle" class="section-label">PROJECTIONS (K, V)</text>
+    
+    <rect x="465" y="25" width="220" height="430" rx="8" fill="#fefce8" fill-opacity="0.4" stroke="#fde047"/>
+    <text x="575" y="45" text-anchor="middle" class="section-label">CROSS ATTENTION</text>
+    
+    <rect x="695" y="25" width="390" height="430" rx="8" fill="#fff7ed" fill-opacity="0.4" stroke="#fed7aa"/>
+    <text x="890" y="45" text-anchor="middle" class="section-label">K-GATE FUSION + OUTPUT</text>
+    
+    <!-- ===== INPUTS ===== -->
+    <!-- Image input -->
+    <rect x="30" y="100" width="90" height="55" rx="5" class="block input-img" stroke-width="2"/>
+    <text x="75" y="123" text-anchor="middle" class="label">img_feat</text>
+    <text x="75" y="140" text-anchor="middle" class="dim-label">[B, C, H, W]</text>
+    
+    <!-- Pos embedding -->
+    <rect x="30" y="175" width="90" height="45" rx="5" class="block pos-embed" stroke-width="1.5"/>
+    <text x="75" y="195" text-anchor="middle" class="label-small">Sin2D Pos</text>
+    <text x="75" y="210" text-anchor="middle" class="dim-label">+ position</text>
+    
+    <path d="M75,155 L75,173" class="arrow"/>
+    
+    <!-- Text input -->
+    <rect x="30" y="320" width="90" height="55" rx="5" class="block input-txt" stroke-width="2"/>
+    <text x="75" y="343" text-anchor="middle" class="label">text_feat</text>
+    <text x="75" y="360" text-anchor="middle" class="dim-label">[B, N, 512]</text>
+    
+    <!-- ===== PROJECTIONS ===== -->
+    <!-- Flatten for image -->
+    <rect x="140" y="100" width="60" height="40" rx="4" class="block proj-block" stroke-width="1.5"/>
+    <text x="170" y="118" text-anchor="middle" class="label-small">Flatten</text>
+    <text x="170" y="132" text-anchor="middle" class="dim-label">[B,C,HW]</text>
+    
+    <path d="M120,127 L138,127" class="arrow"/>
+    
+    <!-- V_key, V_value -->
+    <rect x="220" y="70" width="75" height="40" rx="4" class="block proj-block" stroke-width="1.5"/>
+    <text x="257" y="88" text-anchor="middle" class="label-small">V_key</text>
+    <text x="257" y="102" text-anchor="middle" class="dim-label">Conv1d</text>
+    
+    <rect x="220" y="125" width="75" height="40" rx="4" class="block proj-block" stroke-width="1.5"/>
+    <text x="257" y="143" text-anchor="middle" class="label-small">V_value</text>
+    <text x="257" y="157" text-anchor="middle" class="dim-label">Conv1d</text>
+    
+    <path d="M200,115 L210,115 L210,90 L218,90" class="arrow"/>
+    <path d="M200,135 L210,135 L210,145 L218,145" class="arrow"/>
+    
+    <!-- Transpose for text -->
+    <rect x="140" y="320" width="60" height="40" rx="4" class="block proj-block" stroke-width="1.5"/>
+    <text x="170" y="338" text-anchor="middle" class="label-small">Transpose</text>
+    <text x="170" y="352" text-anchor="middle" class="dim-label">[B,512,N]</text>
+    
+    <path d="M120,347 L138,347" class="arrow"/>
+    
+    <!-- L_key, L_value -->
+    <rect x="220" y="280" width="75" height="40" rx="4" class="block proj-block" stroke-width="1.5"/>
+    <text x="257" y="298" text-anchor="middle" class="label-small">L_key</text>
+    <text x="257" y="312" text-anchor="middle" class="dim-label">512→C</text>
+    
+    <rect x="220" y="335" width="75" height="40" rx="4" class="block proj-block" stroke-width="1.5"/>
+    <text x="257" y="353" text-anchor="middle" class="label-small">L_value</text>
+    <text x="257" y="367" text-anchor="middle" class="dim-label">512→C</text>
+    
+    <path d="M200,330 L210,330 L210,300 L218,300" class="arrow"/>
+    <path d="M200,350 L210,350 L210,355 L218,355" class="arrow"/>
+    
+    <!-- ===== ATTENTION ===== -->
+    <!-- Similarity computation -->
+    <rect x="320" y="170" width="100" height="55" rx="5" class="block attn-block" stroke-width="1.5"/>
+    <text x="370" y="192" text-anchor="middle" class="label-small">V_key × L_key.T</text>
+    <text x="370" y="208" text-anchor="middle" class="dim-label">÷ √d</text>
+    
+    <path d="M295,90 L310,90 L310,185 L318,185" class="arrow"/>
+    <path d="M295,300 L310,300 L310,205 L318,205" class="arrow"/>
+    
+    <!-- sim_map label -->
+    <text x="370" y="240" text-anchor="middle" class="dim-label">sim_map [B,H,HW,N]</text>
+    
+    <!-- Softmax branches -->
+    <rect x="480" y="130" width="85" height="45" rx="4" class="block attn-block" stroke-width="1.5"/>
+    <text x="522" y="150" text-anchor="middle" class="label-small">Softmax</text>
+    <text x="522" y="165" text-anchor="middle" class="dim-label">dim=-1</text>
+    
+    <rect x="480" y="200" width="85" height="45" rx="4" class="block attn-block" stroke-width="1.5"/>
+    <text x="522" y="220" text-anchor="middle" class="label-small">Softmax.T</text>
+    <text x="522" y="235" text-anchor="middle" class="dim-label">dim=-1</text>
+    
+    <path d="M420,185 L440,185 L440,152 L478,152" class="arrow"/>
+    <path d="M420,205 L440,205 L440,222 L478,222" class="arrow"/>
+    
+    <!-- Attention labels -->
+    <text x="522" y="115" text-anchor="middle" class="dim-label">attn_v2l</text>
+    <text x="522" y="260" text-anchor="middle" class="dim-label">attn_l2v</text>
+    
+    <!-- Attention outputs -->
+    <rect x="590" y="130" width="85" height="45" rx="4" class="block input-img" stroke-width="1.5"/>
+    <text x="632" y="148" text-anchor="middle" class="label-small">attn × L_val</text>
+    <text x="632" y="165" text-anchor="middle" class="dim-label">F_v [B,HW,C]</text>
+    
+    <rect x="590" y="200" width="85" height="45" rx="4" class="block input-txt" stroke-width="1.5"/>
+    <text x="632" y="218" text-anchor="middle" class="label-small">attn × V_val</text>
+    <text x="632" y="235" text-anchor="middle" class="dim-label">F_l [B,HW,C]</text>
+    
+    <path d="M565,152 L588,152" class="arrow"/>
+    <path d="M565,222 L588,222" class="arrow"/>
+    
+    <!-- L_value and V_value to attention outputs -->
+    <path d="M295,355 L430,355 L430,380 L620,380 L620,247" class="arrow"/>
+    <path d="M295,145 L430,145 L430,100 L620,100 L620,128" class="arrow"/>
+    
+    <!-- ===== K-GATE ===== -->
+    <rect x="715" y="145" width="150" height="130" rx="6" class="block kgate-block" stroke-width="2"/>
+    <text x="790" y="175" text-anchor="middle" class="label">KGateModule</text>
+    <text x="790" y="200" text-anchor="middle" class="label-small">KCGate_L(F_l)</text>
+    <text x="790" y="220" text-anchor="middle" class="label-small">KCGate_V(F_v)</text>
+    <text x="790" y="245" text-anchor="middle" class="label-small">Concat → Conv</text>
+    <text x="790" y="265" text-anchor="middle" class="dim-label">[B, C, HW]</text>
+    
+    <path d="M675,152 L713,152 L713,190" class="arrow"/>
+    <path d="M675,222 L713,222 L713,220" class="arrow"/>
+    
+    <!-- ===== RESIDUAL + OUTPUT ===== -->
+    <!-- Add -->
+    <circle cx="905" cy="210" r="20" class="block add-circle" stroke-width="2"/>
+    <text x="905" y="216" text-anchor="middle" class="label" font-size="16">+</text>
+    
+    <path d="M865,210 L883,210" class="arrow"/>
+    
+    <!-- Residual skip -->
+    <path d="M170,140 L170,420 L905,420 L905,232" class="arrow-skip"/>
+    <text x="540" y="435" text-anchor="middle" class="dim-label">residual: img_flat [B, C, HW]</text>
+    
+    <!-- Project -->
+    <rect x="950" y="175" width="80" height="70" rx="5" class="block proj-block" stroke-width="1.5"/>
+    <text x="990" y="200" text-anchor="middle" class="label-small">Project</text>
+    <text x="990" y="218" text-anchor="middle" class="dim-label">Conv1d</text>
+    <text x="990" y="232" text-anchor="middle" class="dim-label">GELU</text>
+    
+    <path d="M925,210 L948,210" class="arrow"/>
+    
+    <!-- Output -->
+    <rect x="950" y="275" width="80" height="50" rx="5" class="block output-block" stroke-width="2"/>
+    <text x="990" y="297" text-anchor="middle" class="label">Output</text>
+    <text x="990" y="315" text-anchor="middle" class="dim-label">[B,C,H,W]</text>
+    
+    <path d="M990,245 L990,273" class="arrow"/>
+    <text x="1020" y="262" text-anchor="start" class="dim-label">reshape</text>
+    
+    <!-- Formula box -->
+    <rect x="720" y="380" width="350" height="60" rx="5" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="895" y="400" text-anchor="middle" class="label-small">BCAM Formula:</text>
+    <text x="895" y="418" text-anchor="middle" class="dim-label">F_v = attn_v2l @ L_value (vision attended by language)</text>
+    <text x="895" y="432" text-anchor="middle" class="dim-label">F_l = attn_l2v @ V_value (language attended by vision)</text>
+  </svg>
+</body>
+</html>

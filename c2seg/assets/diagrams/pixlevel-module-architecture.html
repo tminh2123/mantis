@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PixLevelModule Architecture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 5px;
+      font-size: 26px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #7f8c8d;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    svg { display: block; }
+    .block { filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.1)); }
+    .input-block { fill: #dbeafe; stroke: #3b82f6; }
+    .conv-block { fill: #e0e7ff; stroke: #6366f1; }
+    .pool-block { fill: #fef3c7; stroke: #f59e0b; }
+    .concat-block { fill: #fce7f3; stroke: #ec4899; }
+    .mlp-block { fill: #d1fae5; stroke: #10b981; }
+    .output-block { fill: #fee2e2; stroke: #ef4444; }
+    .multiply-circle { fill: #f3e8ff; stroke: #a855f7; }
+    .arrow { fill: none; stroke: #475569; stroke-width: 2; marker-end: url(#arrowhead); }
+    .arrow-skip { fill: none; stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 5,3; marker-end: url(#arrowhead-gray); }
+    .label { font-size: 13px; font-weight: 600; fill: #1e293b; }
+    .label-small { font-size: 11px; font-weight: 500; fill: #1e293b; }
+    .dim-label { font-size: 10px; fill: #64748b; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>PixLevelModule: Pixel-Level Attention</h1>
+  <p class="subtitle">Spatial attention for skip connections using avg/max pooling combination</p>
+  
+  <svg width="1000" height="400" viewBox="0 0 1000 400">
+    <defs>
+      <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+      </marker>
+      <marker id="arrowhead-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+      </marker>
+    </defs>
+    
+    <!-- Input -->
+    <rect x="30" y="160" width="100" height="70" rx="6" class="block input-block" stroke-width="2"/>
+    <text x="80" y="190" text-anchor="middle" class="label">x</text>
+    <text x="80" y="210" text-anchor="middle" class="dim-label">[B, C, H, W]</text>
+    
+    <!-- Split -->
+    <path d="M130,195 L170,195" class="arrow"/>
+    <path d="M170,195 L170,110 L210,110" stroke="#475569" stroke-width="2" fill="none"/>
+    <path d="M170,195 L170,280 L210,280" stroke="#475569" stroke-width="2" fill="none"/>
+    
+    <!-- AVG Branch -->
+    <rect x="220" y="80" width="110" height="60" rx="5" class="block conv-block" stroke-width="2"/>
+    <text x="275" y="105" text-anchor="middle" class="label">Conv1x1</text>
+    <text x="275" y="122" text-anchor="middle" class="dim-label">BN + ReLU</text>
+    
+    <path d="M330,110 L370,110" class="arrow"/>
+    
+    <rect x="380" y="80" width="100" height="60" rx="5" class="block pool-block" stroke-width="2"/>
+    <text x="430" y="105" text-anchor="middle" class="label">Mean</text>
+    <text x="430" y="122" text-anchor="middle" class="dim-label">dim=1</text>
+    
+    <path d="M480,110 L510,110" class="arrow"/>
+    
+    <rect x="520" y="85" width="70" height="50" rx="5" class="block pool-block" stroke-width="2"/>
+    <text x="555" y="108" text-anchor="middle" class="label-small">avg_feat</text>
+    <text x="555" y="125" text-anchor="middle" class="dim-label">[B,1,H,W]</text>
+    
+    <!-- MAX Branch -->
+    <rect x="220" y="250" width="110" height="60" rx="5" class="block conv-block" stroke-width="2"/>
+    <text x="275" y="275" text-anchor="middle" class="label">Conv1x1</text>
+    <text x="275" y="292" text-anchor="middle" class="dim-label">BN + ReLU</text>
+    
+    <path d="M330,280 L370,280" class="arrow"/>
+    
+    <rect x="380" y="250" width="100" height="60" rx="5" class="block pool-block" stroke-width="2"/>
+    <text x="430" y="275" text-anchor="middle" class="label">Max</text>
+    <text x="430" y="292" text-anchor="middle" class="dim-label">dim=1</text>
+    
+    <path d="M480,280 L510,280" class="arrow"/>
+    
+    <rect x="520" y="255" width="70" height="50" rx="5" class="block pool-block" stroke-width="2"/>
+    <text x="555" y="278" text-anchor="middle" class="label-small">max_feat</text>
+    <text x="555" y="295" text-anchor="middle" class="dim-label">[B,1,H,W]</text>
+    
+    <!-- Concat -->
+    <path d="M590,110 L620,110 L620,170 L660,170" class="arrow"/>
+    <path d="M590,280 L620,280 L620,210 L660,210" class="arrow"/>
+    <path d="M555,135 L555,160 L640,160 L640,190 L660,190" class="arrow"/>
+    <text x="600" y="155" text-anchor="middle" class="dim-label">avg+max</text>
+    
+    <rect x="670" y="155" width="90" height="80" rx="6" class="block concat-block" stroke-width="2"/>
+    <text x="715" y="185" text-anchor="middle" class="label">Concat</text>
+    <text x="715" y="205" text-anchor="middle" class="dim-label">[avg, max,</text>
+    <text x="715" y="220" text-anchor="middle" class="dim-label">avg+max]</text>
+    
+    <path d="M760,195 L790,195" class="arrow"/>
+    
+    <!-- MLP Bottleneck -->
+    <rect x="800" y="145" width="100" height="100" rx="6" class="block mlp-block" stroke-width="2"/>
+    <text x="850" y="175" text-anchor="middle" class="label">Bottleneck</text>
+    <text x="850" y="195" text-anchor="middle" class="dim-label">Linear(3→6)</text>
+    <text x="850" y="210" text-anchor="middle" class="dim-label">ReLU</text>
+    <text x="850" y="225" text-anchor="middle" class="dim-label">Linear(6→1)</text>
+    
+    <path d="M850,245 L850,280" class="arrow"/>
+    
+    <!-- Attention map -->
+    <rect x="800" y="285" width="100" height="50" rx="5" class="block output-block" stroke-width="2"/>
+    <text x="850" y="308" text-anchor="middle" class="label-small">attention</text>
+    <text x="850" y="325" text-anchor="middle" class="dim-label">[B,1,H,W]</text>
+    
+    <!-- Multiply -->
+    <path d="M850,335 L850,360 L950,360 L950,195" class="arrow"/>
+    
+    <!-- Skip from input -->
+    <path d="M80,230 L80,360 L920,360" class="arrow-skip"/>
+    <text x="500" y="375" text-anchor="middle" class="dim-label">skip: original x [B,C,H,W]</text>
+    
+    <circle cx="950" cy="195" r="22" class="block multiply-circle" stroke-width="2"/>
+    <text x="950" y="202" text-anchor="middle" class="label" font-size="18">×</text>
+    
+    <!-- Output -->
+    <path d="M972,195 L1000,195" class="arrow"/>
+    <text x="1020" y="190" text-anchor="start" class="label" fill="#10b981">x × att</text>
+    <text x="1020" y="208" text-anchor="start" class="dim-label">[B,C,H,W]</text>
+  </svg>
+</body>
+</html>

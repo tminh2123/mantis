@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C2Seg: Experiment Results</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/white.css">
+    <style>
+        :root {
+            --r-heading-color: #2c3e50;
+            --r-main-color: #34495e;
+        }
+        .reveal h1, .reveal h2 { font-weight: 600; }
+        .reveal h1 { font-size: 2.2em; }
+        .reveal h2 { font-size: 1.5em; }
+        .reveal table { font-size: 0.5em; margin: 0 auto; }
+        .reveal th { background: #3498db; color: white; padding: 6px 10px; }
+        .reveal td { padding: 5px 8px; border-bottom: 1px solid #ddd; }
+        .reveal tr:hover { background: #f5f5f5; }
+        .best { background: #d4edda !important; font-weight: bold; }
+        .diagram-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        .diagram-section {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .reveal section.diagram-slide {
+            padding: 0;
+            margin: 0;
+        }
+        @media print {
+            .reveal .slides section { page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Title Slide -->
+            <section>
+                <h1>C2Seg</h1>
+                <h3>Experiment Results</h3>
+                <p style="margin-top: 50px;">
+                    <strong>Nguyen Tuan Minh</strong><br>
+                    <small>October 2026</small>
+                </p>
+            </section>
+
+            <!-- Full Experiment Results - QaTa -->
+            <section>
+                <h2>QaTa-COV19 (Chest X-ray)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Description</th>
+                            <th>Dice</th>
+                            <th>mIoU</th>
+                            <th>HD95</th>
+                            <th>ASSD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>qata_custom_kan</td><td>Custom impl, B-spline KAN</td><td>80.37%</td><td>70.83%</td><td>21.30</td><td>4.30</td></tr>
+                        <tr><td>qata_custom_kan_lite</td><td>Custom impl, no base spline</td><td>79.38%</td><td>69.51%</td><td>24.45</td><td>4.92</td></tr>
+                        <tr><td>qata_ukan_0.5</td><td>U-KAN block, scale 0.5</td><td>79.46%</td><td>69.71%</td><td>21.69</td><td>4.47</td></tr>
+                        <tr><td>qata_custom_mlp</td><td>Custom impl, full MLP</td><td>69.94%</td><td>57.70%</td><td>46.36</td><td>8.97</td></tr>
+                        <tr><td>qata_c2seg_kan</td><td>C2Seg origin + KAN K-Gate</td><td>78.87%</td><td>69.45%</td><td>28.68</td><td>6.15</td></tr>
+                        <tr><td>qata_c2seg_kan_0.5</td><td>C2Seg origin + KAN, scale 0.5</td><td>78.43%</td><td>68.73%</td><td>29.54</td><td>6.36</td></tr>
+                        <tr><td>qata_c2seg_mlp</td><td>C2Seg origin + MLP K-Gate</td><td>83.81%</td><td>75.02%</td><td>28.68</td><td>6.15</td></tr>
+                        <tr class="best"><td><strong>qata_c2seg_mlp_deepsup</strong></td><td>C2Seg + MLP + DeepSup</td><td><strong>84.00%</strong></td><td><strong>75.23%</strong></td><td><strong>15.53</strong></td><td><strong>3.03</strong></td></tr>
+                        <tr><td>qata_c2seg_full</td><td>C2Seg full sync (latest)</td><td>83.64%</td><td>74.77%</td><td>-</td><td>-</td></tr>
+                        <tr style="background:#e3f2fd;"><td>MedLangViT</td><td>Wang et al., 2025</td><td>84.27%</td><td>75.93%</td><td>14.51</td><td>3.97</td></tr>
+                        <tr style="background:#e3f2fd;"><td>ARSeg</td><td>Wang et al., 2026</td><td>84.09%</td><td>72.64%</td><td>19.90</td><td>5.24</td></tr>
+                        <tr style="background:#fff3e0;"><td><strong>C2Seg (Paper)</strong></td><td><strong>Target</strong></td><td><strong>85.25%</strong></td><td><strong>76.97%</strong></td><td><strong>12.71</strong></td><td><strong>3.38</strong></td></tr>
+                    </tbody>
+                </table>
+                <p style="margin-top: 10px; font-size: 0.5em;">
+                    <span style="background:#d4edda; padding: 2px 8px;">Our Best</span>
+                    <span style="background:#e3f2fd; padding: 2px 8px; margin-left: 10px;">SOTA</span>
+                    <span style="background:#fff3e0; padding: 2px 8px; margin-left: 10px;">Paper Target</span>
+                </p>
+            </section>
+
+            <!-- Full Experiment Results - MosMed -->
+            <section>
+                <h2>MosMed (Chest CT)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Description</th>
+                            <th>Dice</th>
+                            <th>mIoU</th>
+                            <th>HD95</th>
+                            <th>ASSD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>mosmed_c2seg_full</td><td>C2Seg full sync (latest)</td><td>57.02%</td><td>45.17%</td><td>-</td><td>-</td></tr>
+                        <tr class="best"><td><strong>mosmed_c2seg_mlp_deepsup</strong></td><td>C2Seg + MLP + DeepSup</td><td><strong>57.92%</strong></td><td><strong>45.91%</strong></td><td><strong>40.33</strong></td><td><strong>12.42</strong></td></tr>
+                        <tr><td>mosmed_c2seg_mlp</td><td>C2Seg origin + MLP K-Gate</td><td>54.74%</td><td>43.04%</td><td>62.28</td><td>17.83</td></tr>
+                        <tr><td>mosmed_c2seg_kan_deepsup</td><td>C2Seg + KAN + DeepSup</td><td>54.66%</td><td>43.23%</td><td>56.27</td><td>14.44</td></tr>
+                        <tr><td>mosmed_c2seg_kan_deepsup_einsum</td><td>C2Seg + KAN + DeepSup einsum</td><td>55.05%</td><td>43.41%</td><td>51.91</td><td>13.54</td></tr>
+                        <tr style="background:#e3f2fd;"><td>MedLangViT</td><td>Wang et al., 2025</td><td>62.44%</td><td>52.01%</td><td>24.57</td><td>6.13</td></tr>
+                        <tr style="background:#e3f2fd;"><td>ARSeg</td><td>Wang et al., 2026</td><td>60.19%</td><td>43.05%</td><td>35.94</td><td>9.30</td></tr>
+                        <tr style="background:#fff3e0;"><td><strong>C2Seg (Paper)</strong></td><td><strong>Target</strong></td><td><strong>64.90%</strong></td><td><strong>53.68%</strong></td><td><strong>21.47</strong></td><td><strong>5.85</strong></td></tr>
+                    </tbody>
+                </table>
+                <p style="margin-top: 10px; font-size: 0.5em;">
+                    <span style="background:#d4edda; padding: 2px 8px;">Our Best</span>
+                    <span style="background:#e3f2fd; padding: 2px 8px; margin-left: 10px;">SOTA</span>
+                    <span style="background:#fff3e0; padding: 2px 8px; margin-left: 10px;">Paper Target</span>
+                </p>
+            </section>
+
+            <!-- C2Seg Overall Architecture -->
+            <section class="diagram-slide" data-background-iframe="../diagrams/c2seg-overall-architecture.html">
+            </section>
+
+            <!-- KAN Architecture -->
+            <section class="diagram-slide" data-background-iframe="../diagrams/kan-architecture.html">
+            </section>
+
+            <!-- KCGate Architecture -->
+            <section class="diagram-slide" data-background-iframe="../diagrams/kcgate-architecture.html">
+            </section>
+
+            <!-- KGateModule Architecture -->
+            <section class="diagram-slide" data-background-iframe="../diagrams/kgate-module-architecture.html">
+            </section>
+
+            <!-- BCAM Architecture -->
+            <section class="diagram-slide" data-background-iframe="../diagrams/bcam-architecture.html">
+            </section>
+
+            <!-- PixLevelModule Architecture -->
+            <section class="diagram-slide" data-background-iframe="../diagrams/pixlevel-module-architecture.html">
+            </section>
+
+            <!-- Deep Supervision Loss -->
+            <section class="diagram-slide" data-background-iframe="../diagrams/deep-supervision-loss.html">
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            transition: 'slide',
+            center: true,
+            width: 1200,
+            height: 700
+        });
+    </script>
+</body>
+</html>

@@ -1,272 +1,214 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>C2Seg Overall Architecture</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #f5f5f5;
-      font-family: 'Geist', system-ui, sans-serif;
-      min-height: 100vh;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
-      padding: 48px 24px;
+      padding: 20px;
     }
-    .container {
-      max-width: 1100px;
-      width: 100%;
-    }
-    .eyebrow {
-      font-family: 'Geist Mono', ui-monospace, monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #4f5d75;
-      margin-bottom: 8px;
-    }
-    h1 {
-      font-family: 'Instrument Serif', serif;
-      font-size: 2rem;
-      font-weight: 400;
-      color: #2d3142;
-      margin-bottom: 32px;
-    }
-    .diagram-wrapper {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    svg {
-      display: block;
-      min-width: 1050px;
-    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
+    .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 15px; font-size: 12px; }
+    svg { display: block; }
+    .block { filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.1)); }
+    .input-img { fill: #dbeafe; stroke: #3b82f6; }
+    .input-txt { fill: #fce7f3; stroke: #ec4899; }
+    .encoder-block { fill: #e0e7ff; stroke: #6366f1; }
+    .decoder-block { fill: #d1fae5; stroke: #10b981; }
+    .bcam-block { fill: #fef3c7; stroke: #f59e0b; }
+    .output-block { fill: #fee2e2; stroke: #ef4444; }
+    .clip-block { fill: #f3e8ff; stroke: #a855f7; }
+    .arrow-main { fill: none; stroke: #475569; stroke-width: 2; marker-end: url(#arrow); }
+    .arrow-skip { fill: none; stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 6,3; marker-end: url(#arrow-gray); }
+    .arrow-text { fill: none; stroke: #ec4899; stroke-width: 2; marker-end: url(#arrow-pink); }
+    .label { font-size: 13px; font-weight: 600; fill: #1e293b; }
+    .dim-label { font-size: 10px; fill: #64748b; }
+    .section-label { font-size: 12px; fill: #64748b; font-weight: 600; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <p class="eyebrow">Medical Image Segmentation</p>
-    <h1>C2Seg Overall Architecture</h1>
-    <div class="diagram-wrapper">
-      <svg viewBox="0 0 1050 680" role="img" aria-labelledby="overall-title overall-desc">
-        <title id="overall-title">C2Seg Overall Architecture</title>
-        <desc id="overall-desc">End-to-end architecture showing visual encoder, language encoder, BCAM fusion modules, and decoder with deep supervision outputs.</desc>
-        
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="strokeWidth">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f5d75"/>
-          </marker>
-          <marker id="arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto" markerUnits="strokeWidth">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#bf4520"/>
-          </marker>
-        </defs>
-        
-        <!-- Background -->
-        <rect width="1050" height="680" fill="#f5f5f5"/>
-        
-        <!-- Input Section -->
-        <g id="input-section">
-          <!-- Image Input -->
-          <rect x="40" y="280" width="100" height="80" rx="6" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="1"/>
-          <text x="90" y="312" text-anchor="middle" font-family="'Geist', sans-serif" font-size="12" font-weight="600" fill="#2d3142">Input Image</text>
-          <text x="90" y="330" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">[B, 3, 224, 224]</text>
-          
-          <!-- Text Input -->
-          <rect x="40" y="400" width="100" height="80" rx="6" fill="rgba(79,93,117,0.10)" stroke="#5a6580" stroke-width="1"/>
-          <text x="90" y="432" text-anchor="middle" font-family="'Geist', sans-serif" font-size="12" font-weight="600" fill="#2d3142">Text Prompt</text>
-          <text x="90" y="450" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">"infection area"</text>
-        </g>
-        
-        <!-- Visual Encoder -->
-        <g id="visual-encoder">
-          <rect x="180" y="180" width="160" height="280" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <rect x="180" y="180" width="160" height="24" rx="2" fill="#2d3142"/>
-          <text x="260" y="196" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#f5f5f5" letter-spacing="0.1em">VISUAL ENCODER</text>
-          
-          <!-- Down blocks -->
-          <rect x="200" y="220" width="120" height="36" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="260" y="242" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Down0</text>
-          
-          <rect x="200" y="264" width="120" height="36" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="260" y="286" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Down1</text>
-          
-          <rect x="200" y="308" width="120" height="36" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="260" y="330" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Down2</text>
-          
-          <rect x="200" y="352" width="120" height="36" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="260" y="374" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Down3</text>
-          
-          <rect x="200" y="396" width="120" height="36" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="260" y="418" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Down4</text>
-        </g>
-        
-        <!-- Language Encoder -->
-        <g id="language-encoder">
-          <rect x="180" y="500" width="160" height="100" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <rect x="180" y="500" width="160" height="24" rx="2" fill="#2d3142"/>
-          <text x="260" y="516" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#f5f5f5" letter-spacing="0.1em">LANGUAGE ENCODER</text>
-          
-          <rect x="200" y="540" width="120" height="44" rx="4" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="0.8"/>
-          <text x="260" y="558" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">CLIP Text</text>
-          <text x="260" y="574" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">frozen</text>
-        </g>
-        
-        <!-- BCAM Modules (Focal) -->
-        <g id="bcam-modules">
-          <rect x="380" y="180" width="140" height="420" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1.2"/>
-          <rect x="380" y="180" width="140" height="24" rx="2" fill="#bf4520"/>
-          <text x="450" y="196" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#f5f5f5" letter-spacing="0.1em">BCAM FUSION</text>
-          
-          <!-- BCAM blocks -->
-          <rect x="400" y="220" width="100" height="80" rx="4" fill="#ffffff" stroke="#bf4520" stroke-width="0.8"/>
-          <text x="450" y="250" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">BCAM 1</text>
-          <text x="450" y="266" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">112×112</text>
-          <text x="450" y="282" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">+ K-Gate</text>
-          
-          <rect x="400" y="308" width="100" height="80" rx="4" fill="#ffffff" stroke="#bf4520" stroke-width="0.8"/>
-          <text x="450" y="338" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">BCAM 2</text>
-          <text x="450" y="354" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">56×56</text>
-          <text x="450" y="370" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">+ K-Gate</text>
-          
-          <rect x="400" y="396" width="100" height="80" rx="4" fill="#ffffff" stroke="#bf4520" stroke-width="0.8"/>
-          <text x="450" y="426" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">BCAM 3</text>
-          <text x="450" y="442" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">28×28</text>
-          <text x="450" y="458" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">+ K-Gate</text>
-          
-          <rect x="400" y="484" width="100" height="80" rx="4" fill="#ffffff" stroke="#bf4520" stroke-width="0.8"/>
-          <text x="450" y="514" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">BCAM 4</text>
-          <text x="450" y="530" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">14×14</text>
-          <text x="450" y="546" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">+ K-Gate</text>
-        </g>
-        
-        <!-- Decoder -->
-        <g id="decoder">
-          <rect x="560" y="180" width="160" height="280" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <rect x="560" y="180" width="160" height="24" rx="2" fill="#2d3142"/>
-          <text x="640" y="196" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#f5f5f5" letter-spacing="0.1em">DECODER</text>
-          
-          <!-- Up blocks -->
-          <rect x="580" y="220" width="120" height="44" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="640" y="238" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Up3</text>
-          <text x="640" y="254" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">+ PixLevelModule</text>
-          
-          <rect x="580" y="272" width="120" height="44" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="640" y="290" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Up2</text>
-          <text x="640" y="306" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">+ PixLevelModule</text>
-          
-          <rect x="580" y="324" width="120" height="44" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="640" y="342" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Up1</text>
-          <text x="640" y="358" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">+ PixLevelModule</text>
-          
-          <rect x="580" y="376" width="120" height="44" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="640" y="394" text-anchor="middle" font-family="'Geist', sans-serif" font-size="11" font-weight="600" fill="#2d3142">Up0</text>
-          <text x="640" y="410" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">+ PixLevelModule</text>
-        </g>
-        
-        <!-- Deep Supervision Outputs -->
-        <g id="deep-supervision">
-          <rect x="760" y="180" width="120" height="280" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
-          <rect x="760" y="180" width="120" height="24" rx="2" fill="#4f5d75"/>
-          <text x="820" y="196" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" fill="#f5f5f5" letter-spacing="0.1em">DEEP SUPERVISION</text>
-          
-          <rect x="775" y="220" width="90" height="36" rx="4" fill="#ffffff" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="820" y="238" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">out4</text>
-          <text x="820" y="250" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">14×14</text>
-          
-          <rect x="775" y="264" width="90" height="36" rx="4" fill="#ffffff" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="820" y="282" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">out3</text>
-          <text x="820" y="294" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">28×28</text>
-          
-          <rect x="775" y="308" width="90" height="36" rx="4" fill="#ffffff" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="820" y="326" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">out2</text>
-          <text x="820" y="338" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">56×56</text>
-          
-          <rect x="775" y="352" width="90" height="36" rx="4" fill="#ffffff" stroke="#4f5d75" stroke-width="0.8"/>
-          <text x="820" y="370" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">out1</text>
-          <text x="820" y="382" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#5a6580">112×112</text>
-          
-          <rect x="775" y="396" width="90" height="44" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
-          <text x="820" y="414" text-anchor="middle" font-family="'Geist', sans-serif" font-size="10" font-weight="600" fill="#2d3142">out0</text>
-          <text x="820" y="426" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="8" fill="#bf4520">224×224</text>
-        </g>
-        
-        <!-- Final Output -->
-        <g id="output">
-          <rect x="920" y="310" width="100" height="80" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1.2"/>
-          <text x="970" y="342" text-anchor="middle" font-family="'Geist', sans-serif" font-size="12" font-weight="600" fill="#2d3142">Segmentation</text>
-          <text x="970" y="358" text-anchor="middle" font-family="'Geist', sans-serif" font-size="12" font-weight="600" fill="#2d3142">Mask</text>
-          <text x="970" y="378" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="#bf4520">[B, 1, 224, 224]</text>
-        </g>
-        
-        <!-- Arrows -->
-        <!-- Input to Encoder -->
-        <line x1="140" y1="320" x2="176" y2="320" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
-        <line x1="140" y1="440" x2="156" y2="440" stroke="#4f5d75" stroke-width="1"/>
-        <line x1="156" y1="440" x2="156" y2="550" stroke="#4f5d75" stroke-width="1"/>
-        <line x1="156" y1="550" x2="176" y2="550" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
-        
-        <!-- Encoder to BCAM -->
-        <line x1="320" y1="282" x2="396" y2="260" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
-        <line x1="320" y1="326" x2="396" y2="348" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
-        <line x1="320" y1="370" x2="396" y2="436" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
-        <line x1="320" y1="414" x2="396" y2="524" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
-        
-        <!-- Language to BCAM -->
-        <line x1="340" y1="550" x2="340" y2="610" stroke="#bf4520" stroke-width="1"/>
-        <line x1="340" y1="610" x2="450" y2="610" stroke="#bf4520" stroke-width="1"/>
-        <line x1="450" y1="610" x2="450" y2="568" stroke="#bf4520" stroke-width="1" marker-end="url(#arrow-accent)"/>
-        
-        <!-- BCAM to Decoder -->
-        <line x1="500" y1="260" x2="556" y2="242" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
-        <line x1="500" y1="348" x2="556" y2="294" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
-        <line x1="500" y1="436" x2="556" y2="346" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
-        <line x1="500" y1="524" x2="556" y2="398" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
-        
-        <!-- Decoder to Deep Supervision -->
-        <line x1="700" y1="242" x2="756" y2="238" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-        <line x1="700" y1="294" x2="756" y2="282" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-        <line x1="700" y1="346" x2="756" y2="326" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-        <line x1="700" y1="398" x2="756" y2="370" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-        
-        <!-- Main output path -->
-        <line x1="720" y1="398" x2="740" y2="398" stroke="#bf4520" stroke-width="1.2"/>
-        <line x1="740" y1="398" x2="740" y2="418" stroke="#bf4520" stroke-width="1.2"/>
-        <line x1="740" y1="418" x2="771" y2="418" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
-        
-        <!-- To final output -->
-        <line x1="865" y1="418" x2="890" y2="418" stroke="#bf4520" stroke-width="1.2"/>
-        <line x1="890" y1="418" x2="890" y2="350" stroke="#bf4520" stroke-width="1.2"/>
-        <line x1="890" y1="350" x2="916" y2="350" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
-        
-        <!-- Skip connections (dashed) -->
-        <line x1="260" y1="460" x2="260" y2="480" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
-        <line x1="260" y1="480" x2="556" y2="480" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
-        <line x1="556" y1="480" x2="556" y2="460" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
-        
-        <!-- Legend -->
-        <g transform="translate(40, 640)">
-          <rect x="0" y="0" width="970" height="32" rx="4" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
-          
-          <rect x="20" y="10" width="12" height="12" rx="2" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
-          <text x="40" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">FOCAL / OUTPUT</text>
-          
-          <rect x="160" y="10" width="12" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="180" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">ENCODER / DECODER</text>
-          
-          <rect x="340" y="10" width="12" height="12" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8" stroke-dasharray="4,3"/>
-          <text x="360" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">OPTIONAL (DEEP SUP)</text>
-          
-          <line x1="520" y1="16" x2="550" y2="16" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
-          <text x="560" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">CROSS-MODAL FUSION</text>
-          
-          <line x1="720" y1="16" x2="750" y2="16" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
-          <text x="760" y="20" font-family="'Geist Mono', monospace" font-size="9" fill="#5a6580">SKIP / AUXILIARY</text>
-        </g>
-      </svg>
-    </div>
-  </div>
+  <h1>C2Seg: Overall Architecture</h1>
+  <p class="subtitle">U-Net with Bidirectional Cross Attention Module (BCAM) for Text-Image Fusion</p>
+  
+  <svg width="1300" height="850" viewBox="0 0 1300 850">
+    <defs>
+      <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+      </marker>
+      <marker id="arrow-gray" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+      </marker>
+      <marker id="arrow-pink" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#ec4899"/>
+      </marker>
+    </defs>
+    
+    <!-- ===== ENCODER COLUMN ===== -->
+    <text x="140" y="35" text-anchor="middle" class="section-label">ENCODER</text>
+    
+    <rect x="30" y="55" width="95" height="55" rx="6" class="block input-img" stroke-width="2"/>
+    <text x="77" y="78" text-anchor="middle" class="label">Image</text>
+    <text x="77" y="96" text-anchor="middle" class="dim-label">[B,3,224,224]</text>
+    
+    <rect x="160" y="55" width="95" height="55" rx="6" class="block encoder-block" stroke-width="2"/>
+    <text x="207" y="78" text-anchor="middle" class="label">Down0</text>
+    <text x="207" y="96" text-anchor="middle" class="dim-label">[64, 224]</text>
+    
+    <rect x="160" y="160" width="95" height="55" rx="6" class="block encoder-block" stroke-width="2"/>
+    <text x="207" y="183" text-anchor="middle" class="label">Down1</text>
+    <text x="207" y="201" text-anchor="middle" class="dim-label">[128, 112]</text>
+    
+    <rect x="160" y="265" width="95" height="55" rx="6" class="block encoder-block" stroke-width="2"/>
+    <text x="207" y="288" text-anchor="middle" class="label">Down2</text>
+    <text x="207" y="306" text-anchor="middle" class="dim-label">[256, 56]</text>
+    
+    <rect x="160" y="370" width="95" height="55" rx="6" class="block encoder-block" stroke-width="2"/>
+    <text x="207" y="393" text-anchor="middle" class="label">Down3</text>
+    <text x="207" y="411" text-anchor="middle" class="dim-label">[512, 28]</text>
+    
+    <rect x="160" y="475" width="95" height="55" rx="6" class="block encoder-block" stroke-width="2"/>
+    <text x="207" y="498" text-anchor="middle" class="label">Down4</text>
+    <text x="207" y="516" text-anchor="middle" class="dim-label">[512, 14]</text>
+    
+    <!-- Encoder flow -->
+    <path d="M125,82 L158,82" class="arrow-main"/>
+    <path d="M207,110 L207,158" class="arrow-main"/>
+    <path d="M207,215 L207,263" class="arrow-main"/>
+    <path d="M207,320 L207,368" class="arrow-main"/>
+    <path d="M207,425 L207,473" class="arrow-main"/>
+    
+    <!-- ===== TEXT + CLIP ===== -->
+    <rect x="30" y="620" width="95" height="55" rx="6" class="block input-txt" stroke-width="2"/>
+    <text x="77" y="643" text-anchor="middle" class="label">Text</text>
+    <text x="77" y="661" text-anchor="middle" class="dim-label">"COVID-19..."</text>
+    
+    <rect x="160" y="620" width="95" height="55" rx="6" class="block clip-block" stroke-width="2"/>
+    <text x="207" y="643" text-anchor="middle" class="label">CLIP</text>
+    <text x="207" y="661" text-anchor="middle" class="dim-label">(frozen)</text>
+    
+    <path d="M125,647 L158,647" class="arrow-main"/>
+    
+    <!-- Text L to all BCAMs - vertical line on right side, branches to each BCAM -->
+    <!-- CLIP output goes right, then up along x=880, then branches left into each BCAM right side -->
+    <path d="M255,647 L880,647 L880,510 L777,510" class="arrow-text"/>
+    <line x1="880" y1="510" x2="880" y2="195" stroke="#ec4899" stroke-width="2"/>
+    <path d="M880,405 L777,405" class="arrow-text"/>
+    <path d="M880,300 L777,300" class="arrow-text"/>
+    <path d="M880,195 L777,195" class="arrow-text"/>
+    <text x="885" y="580" text-anchor="start" class="dim-label">L [B,N,512]</text>
+    
+    <!-- ===== BCAM4: v4 → BCAM4 ===== -->
+    <rect x="680" y="475" width="95" height="55" rx="6" class="block bcam-block" stroke-width="2"/>
+    <text x="727" y="498" text-anchor="middle" class="label">BCAM4</text>
+    <text x="727" y="516" text-anchor="middle" class="dim-label">14x14</text>
+    <path d="M255,502 L678,502" class="arrow-main"/>
+    
+    <!-- ===== Up3: f4 + v3 → Up3 ===== -->
+    <rect x="500" y="370" width="95" height="55" rx="6" class="block decoder-block" stroke-width="2"/>
+    <text x="547" y="393" text-anchor="middle" class="label">Up3</text>
+    <text x="547" y="411" text-anchor="middle" class="dim-label">[256, 28]</text>
+    <!-- f4 → Up3: from BCAM4 right side, go right then up then left into Up3 bottom -->
+    <path d="M775,502 L820,502 L820,440 L547,440 L547,427" class="arrow-main"/>
+    <!-- v3 skip -->
+    <path d="M255,397 L498,397" class="arrow-skip"/>
+    
+    <!-- ===== BCAM3: up3 → BCAM3 ===== -->
+    <rect x="680" y="370" width="95" height="55" rx="6" class="block bcam-block" stroke-width="2"/>
+    <text x="727" y="393" text-anchor="middle" class="label">BCAM3</text>
+    <text x="727" y="411" text-anchor="middle" class="dim-label">28x28</text>
+    <path d="M595,397 L678,397" class="arrow-main"/>
+    
+    <!-- ===== Up2: f3 + v2 → Up2 ===== -->
+    <rect x="500" y="265" width="95" height="55" rx="6" class="block decoder-block" stroke-width="2"/>
+    <text x="547" y="288" text-anchor="middle" class="label">Up2</text>
+    <text x="547" y="306" text-anchor="middle" class="dim-label">[128, 56]</text>
+    <!-- f3 → Up2: go right then up then left into Up2 bottom -->
+    <path d="M775,397 L820,397 L820,335 L547,335 L547,322" class="arrow-main"/>
+    <!-- v2 skip -->
+    <path d="M255,292 L498,292" class="arrow-skip"/>
+    
+    <!-- ===== BCAM2: up2 → BCAM2 ===== -->
+    <rect x="680" y="265" width="95" height="55" rx="6" class="block bcam-block" stroke-width="2"/>
+    <text x="727" y="288" text-anchor="middle" class="label">BCAM2</text>
+    <text x="727" y="306" text-anchor="middle" class="dim-label">56x56</text>
+    <path d="M595,292 L678,292" class="arrow-main"/>
+    
+    <!-- ===== Up1: f2 + v1 → Up1 ===== -->
+    <rect x="500" y="160" width="95" height="55" rx="6" class="block decoder-block" stroke-width="2"/>
+    <text x="547" y="183" text-anchor="middle" class="label">Up1</text>
+    <text x="547" y="201" text-anchor="middle" class="dim-label">[64, 112]</text>
+    <!-- f2 → Up1: go right then up then left into Up1 bottom -->
+    <path d="M775,292 L835,292 L835,230 L547,230 L547,217" class="arrow-main"/>
+    <!-- v1 skip -->
+    <path d="M255,187 L498,187" class="arrow-skip"/>
+    
+    <!-- ===== BCAM1: up1 → BCAM1 ===== -->
+    <rect x="680" y="160" width="95" height="55" rx="6" class="block bcam-block" stroke-width="2"/>
+    <text x="727" y="183" text-anchor="middle" class="label">BCAM1</text>
+    <text x="727" y="201" text-anchor="middle" class="dim-label">112x112</text>
+    <path d="M595,187 L678,187" class="arrow-main"/>
+    
+    <!-- ===== Up0: f1 + v0 → Up0 ===== -->
+    <rect x="500" y="55" width="95" height="55" rx="6" class="block decoder-block" stroke-width="2"/>
+    <text x="547" y="78" text-anchor="middle" class="label">Up0</text>
+    <text x="547" y="96" text-anchor="middle" class="dim-label">[64, 224]</text>
+    <!-- f1 → Up0: go right then up then left into Up0 bottom -->
+    <path d="M775,187 L850,187 L850,125 L547,125 L547,112" class="arrow-main"/>
+    <!-- v0 skip -->
+    <path d="M255,82 L498,82" class="arrow-skip"/>
+    
+    <!-- ===== OUTPUT ===== -->
+    <text x="980" y="35" text-anchor="middle" class="section-label">OUTPUT</text>
+    
+    <rect x="900" y="55" width="95" height="55" rx="6" class="block output-block" stroke-width="2"/>
+    <text x="947" y="78" text-anchor="middle" class="label">Conv 1x1</text>
+    <text x="947" y="96" text-anchor="middle" class="dim-label">+Sigmoid</text>
+    
+    <rect x="1040" y="55" width="110" height="55" rx="6" class="block output-block" stroke-width="2"/>
+    <text x="1095" y="78" text-anchor="middle" class="label">Mask</text>
+    <text x="1095" y="96" text-anchor="middle" class="dim-label">[B,1,224,224]</text>
+    
+    <path d="M595,82 L898,82" class="arrow-main"/>
+    <path d="M995,82 L1038,82" class="arrow-main"/>
+    
+    <!-- ===== LEGEND ===== -->
+    <rect x="900" y="160" width="250" height="290" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+    <text x="1025" y="192" text-anchor="middle" class="section-label">LEGEND</text>
+    
+    <rect x="925" y="220" width="26" height="18" rx="3" class="encoder-block" stroke-width="1.5"/>
+    <text x="962" y="234" text-anchor="start" class="dim-label">Encoder (DownBlock)</text>
+    
+    <rect x="925" y="252" width="26" height="18" rx="3" class="decoder-block" stroke-width="1.5"/>
+    <text x="962" y="266" text-anchor="start" class="dim-label">Decoder (UpBlock)</text>
+    
+    <rect x="925" y="284" width="26" height="18" rx="3" class="bcam-block" stroke-width="1.5"/>
+    <text x="962" y="298" text-anchor="start" class="dim-label">BCAM (fuses img + text)</text>
+    
+    <rect x="925" y="316" width="26" height="18" rx="3" class="clip-block" stroke-width="1.5"/>
+    <text x="962" y="330" text-anchor="start" class="dim-label">CLIP text encoder</text>
+    
+    <line x1="925" y1="360" x2="951" y2="360" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="962" y="364" text-anchor="start" class="dim-label">Feature flow</text>
+    
+    <line x1="925" y1="392" x2="951" y2="392" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrow-gray)"/>
+    <text x="962" y="396" text-anchor="start" class="dim-label">Skip connection</text>
+    
+    <line x1="925" y1="424" x2="951" y2="424" stroke="#ec4899" stroke-width="2" marker-end="url(#arrow-pink)"/>
+    <text x="962" y="428" text-anchor="start" class="dim-label">Text L (shared)</text>
+    
+    <!-- Notes -->
+    <text x="550" y="760" text-anchor="middle" font-size="11px" fill="#475569" font-weight="500">Data Flow</text>
+    <text x="550" y="790" text-anchor="middle" class="dim-label">Down4 → BCAM4 → Up3(+v3) → BCAM3 → Up2(+v2) → BCAM2 → Up1(+v1) → BCAM1 → Up0(+v0) → Output</text>
+    <text x="550" y="820" text-anchor="middle" class="dim-label">Each BCAM fuses decoder output with shared text embedding L from CLIP</text>
+  </svg>
 </body>
 </html>

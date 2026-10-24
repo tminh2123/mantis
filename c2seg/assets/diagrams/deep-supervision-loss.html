@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Deep Supervision Loss</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 { text-align: center; color: #2c3e50; margin-bottom: 5px; font-size: 24px; }
+    .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 20px; font-size: 12px; }
+    svg { display: block; }
+    .block { filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.1)); }
+    .output-block { fill: #d1fae5; stroke: #10b981; }
+    .gt-block { fill: #fef3c7; stroke: #f59e0b; }
+    .loss-block { fill: #fee2e2; stroke: #ef4444; }
+    .patch-block { fill: #e0e7ff; stroke: #6366f1; }
+    .arrow-main { fill: none; stroke: #475569; stroke-width: 2; marker-end: url(#arrow); }
+    .label { font-size: 12px; font-weight: 600; fill: #1e293b; }
+    .dim-label { font-size: 10px; fill: #64748b; }
+    .section-label { font-size: 11px; fill: #475569; font-weight: 600; }
+    .weight-label { font-size: 10px; fill: #dc2626; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Deep Supervision Loss</h1>
+  <p class="subtitle">Multi-scale Loss with Patch Mask Generation and Asymmetric Weighting</p>
+  
+  <svg width="1200" height="650" viewBox="0 0 1200 650">
+    <defs>
+      <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+      </marker>
+    </defs>
+    
+    <!-- Section Labels -->
+    <text x="150" y="35" text-anchor="middle" class="section-label">MODEL OUTPUTS</text>
+    <text x="450" y="35" text-anchor="middle" class="section-label">PATCH MASK GENERATOR</text>
+    <text x="750" y="35" text-anchor="middle" class="section-label">GT MASKS</text>
+    <text x="1000" y="35" text-anchor="middle" class="section-label">LOSS</text>
+    
+    <!-- ===== SCALE 0 (Full Resolution) ===== -->
+    <text x="30" y="80" text-anchor="start" class="section-label">Scale 0</text>
+    
+    <rect x="80" y="55" width="120" height="50" rx="6" class="block output-block" stroke-width="2"/>
+    <text x="140" y="77" text-anchor="middle" class="label">out0</text>
+    <text x="140" y="93" text-anchor="middle" class="dim-label">[B,1,224,224]</text>
+    
+    <text x="450" y="80" text-anchor="middle" class="dim-label">(no downsampling)</text>
+    
+    <rect x="680" y="55" width="120" height="50" rx="6" class="block gt-block" stroke-width="2"/>
+    <text x="740" y="77" text-anchor="middle" class="label">GT</text>
+    <text x="740" y="93" text-anchor="middle" class="dim-label">[B,1,224,224]</text>
+    
+    <rect x="920" y="55" width="160" height="50" rx="6" class="block loss-block" stroke-width="2"/>
+    <text x="1000" y="72" text-anchor="middle" class="label">WeightedDiceBCE</text>
+    <text x="1000" y="90" text-anchor="middle" class="dim-label">weights=(0.5, 0.5)</text>
+    
+    <path d="M200,80 L678,80" class="arrow-main"/>
+    <path d="M800,80 L918,80" class="arrow-main"/>
+    <text x="1100" y="85" text-anchor="middle" class="weight-label">× 0.50</text>
+    
+    <!-- ===== SCALE 1 (patch_size=2) ===== -->
+    <text x="30" y="170" text-anchor="start" class="section-label">Scale 1</text>
+    
+    <rect x="80" y="145" width="120" height="50" rx="6" class="block output-block" stroke-width="2"/>
+    <text x="140" y="167" text-anchor="middle" class="label">out1 (f1)</text>
+    <text x="140" y="183" text-anchor="middle" class="dim-label">[B,1,112,112]</text>
+    
+    <rect x="380" y="145" width="140" height="50" rx="6" class="block patch-block" stroke-width="2"/>
+    <text x="450" y="162" text-anchor="middle" class="label">PatchMaskGen</text>
+    <text x="450" y="180" text-anchor="middle" class="dim-label">patch_size=2</text>
+    
+    <rect x="680" y="145" width="120" height="50" rx="6" class="block gt-block" stroke-width="2"/>
+    <text x="740" y="167" text-anchor="middle" class="label">Patch GT</text>
+    <text x="740" y="183" text-anchor="middle" class="dim-label">[B,1,112,112]</text>
+    
+    <rect x="920" y="145" width="160" height="50" rx="6" class="block loss-block" stroke-width="2"/>
+    <text x="1000" y="162" text-anchor="middle" class="label">WeightedDiceBCE</text>
+    <text x="1000" y="180" text-anchor="middle" class="dim-label">weights=(0.4, 0.6)</text>
+    
+    <path d="M200,170 L378,170" class="arrow-main"/>
+    <path d="M520,170 L678,170" class="arrow-main"/>
+    <path d="M800,170 L918,170" class="arrow-main"/>
+    <text x="1100" y="175" text-anchor="middle" class="weight-label">× 0.20</text>
+    
+    <!-- GT arrow to PatchMaskGen -->
+    <path d="M740,105 L740,125 L450,125 L450,143" class="arrow-main"/>
+    
+    <!-- ===== SCALE 2 (patch_size=4) ===== -->
+    <text x="30" y="260" text-anchor="start" class="section-label">Scale 2</text>
+    
+    <rect x="80" y="235" width="120" height="50" rx="6" class="block output-block" stroke-width="2"/>
+    <text x="140" y="257" text-anchor="middle" class="label">out2 (f2)</text>
+    <text x="140" y="273" text-anchor="middle" class="dim-label">[B,1,56,56]</text>
+    
+    <rect x="380" y="235" width="140" height="50" rx="6" class="block patch-block" stroke-width="2"/>
+    <text x="450" y="252" text-anchor="middle" class="label">PatchMaskGen</text>
+    <text x="450" y="270" text-anchor="middle" class="dim-label">patch_size=4</text>
+    
+    <rect x="680" y="235" width="120" height="50" rx="6" class="block gt-block" stroke-width="2"/>
+    <text x="740" y="257" text-anchor="middle" class="label">Patch GT</text>
+    <text x="740" y="273" text-anchor="middle" class="dim-label">[B,1,56,56]</text>
+    
+    <rect x="920" y="235" width="160" height="50" rx="6" class="block loss-block" stroke-width="2"/>
+    <text x="1000" y="252" text-anchor="middle" class="label">WeightedDiceBCE</text>
+    <text x="1000" y="270" text-anchor="middle" class="dim-label">weights=(0.3, 0.7)</text>
+    
+    <path d="M200,260 L378,260" class="arrow-main"/>
+    <path d="M520,260 L678,260" class="arrow-main"/>
+    <path d="M800,260 L918,260" class="arrow-main"/>
+    <text x="1100" y="265" text-anchor="middle" class="weight-label">× 0.15</text>
+    
+    <path d="M740,105 L740,125 L330,125 L330,260 L378,260" class="arrow-main"/>
+    
+    <!-- ===== SCALE 3 (patch_size=8) ===== -->
+    <text x="30" y="350" text-anchor="start" class="section-label">Scale 3</text>
+    
+    <rect x="80" y="325" width="120" height="50" rx="6" class="block output-block" stroke-width="2"/>
+    <text x="140" y="347" text-anchor="middle" class="label">out3 (f3)</text>
+    <text x="140" y="363" text-anchor="middle" class="dim-label">[B,1,28,28]</text>
+    
+    <rect x="380" y="325" width="140" height="50" rx="6" class="block patch-block" stroke-width="2"/>
+    <text x="450" y="342" text-anchor="middle" class="label">PatchMaskGen</text>
+    <text x="450" y="360" text-anchor="middle" class="dim-label">patch_size=8</text>
+    
+    <rect x="680" y="325" width="120" height="50" rx="6" class="block gt-block" stroke-width="2"/>
+    <text x="740" y="347" text-anchor="middle" class="label">Patch GT</text>
+    <text x="740" y="363" text-anchor="middle" class="dim-label">[B,1,28,28]</text>
+    
+    <rect x="920" y="325" width="160" height="50" rx="6" class="block loss-block" stroke-width="2"/>
+    <text x="1000" y="342" text-anchor="middle" class="label">WeightedDiceBCE</text>
+    <text x="1000" y="360" text-anchor="middle" class="dim-label">weights=(0.2, 0.8)</text>
+    
+    <path d="M200,350 L378,350" class="arrow-main"/>
+    <path d="M520,350 L678,350" class="arrow-main"/>
+    <path d="M800,350 L918,350" class="arrow-main"/>
+    <text x="1100" y="355" text-anchor="middle" class="weight-label">× 0.10</text>
+    
+    <path d="M330,260 L330,350 L378,350" class="arrow-main"/>
+    
+    <!-- ===== SCALE 4 (patch_size=16) ===== -->
+    <text x="30" y="440" text-anchor="start" class="section-label">Scale 4</text>
+    
+    <rect x="80" y="415" width="120" height="50" rx="6" class="block output-block" stroke-width="2"/>
+    <text x="140" y="437" text-anchor="middle" class="label">out4 (f4)</text>
+    <text x="140" y="453" text-anchor="middle" class="dim-label">[B,1,14,14]</text>
+    
+    <rect x="380" y="415" width="140" height="50" rx="6" class="block patch-block" stroke-width="2"/>
+    <text x="450" y="432" text-anchor="middle" class="label">PatchMaskGen</text>
+    <text x="450" y="450" text-anchor="middle" class="dim-label">patch_size=16</text>
+    
+    <rect x="680" y="415" width="120" height="50" rx="6" class="block gt-block" stroke-width="2"/>
+    <text x="740" y="437" text-anchor="middle" class="label">Patch GT</text>
+    <text x="740" y="453" text-anchor="middle" class="dim-label">[B,1,14,14]</text>
+    
+    <rect x="920" y="415" width="160" height="50" rx="6" class="block loss-block" stroke-width="2"/>
+    <text x="1000" y="432" text-anchor="middle" class="label">WeightedDiceBCE</text>
+    <text x="1000" y="450" text-anchor="middle" class="dim-label">weights=(0.1, 0.9)</text>
+    
+    <path d="M200,440 L378,440" class="arrow-main"/>
+    <path d="M520,440 L678,440" class="arrow-main"/>
+    <path d="M800,440 L918,440" class="arrow-main"/>
+    <text x="1100" y="445" text-anchor="middle" class="weight-label">× 0.05</text>
+    
+    <path d="M330,350 L330,440 L378,440" class="arrow-main"/>
+    
+    <!-- ===== TOTAL LOSS ===== -->
+    <rect x="920" y="500" width="160" height="50" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="2" class="block"/>
+    <text x="1000" y="522" text-anchor="middle" class="label" fill="#dc2626">Total Loss</text>
+    <text x="1000" y="540" text-anchor="middle" class="dim-label">Σ weighted losses</text>
+    
+    <path d="M1000,105 L1000,115 L1130,115 L1130,525 L1082,525" class="arrow-main"/>
+    <path d="M1000,195 L1000,205 L1130,205" stroke="#475569" stroke-width="2" fill="none"/>
+    <path d="M1000,285 L1000,295 L1130,295" stroke="#475569" stroke-width="2" fill="none"/>
+    <path d="M1000,375 L1000,385 L1130,385" stroke="#475569" stroke-width="2" fill="none"/>
+    <path d="M1000,465 L1000,475 L1130,475" stroke="#475569" stroke-width="2" fill="none"/>
+    
+    <!-- ===== LEGEND / NOTES ===== -->
+    <rect x="30" y="520" width="350" height="110" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+    <text x="205" y="545" text-anchor="middle" class="section-label">PatchMaskGenerator</text>
+    <text x="45" y="570" text-anchor="start" class="dim-label">Conv2d(kernel=patch_size, stride=patch_size, weights=1)</text>
+    <text x="45" y="590" text-anchor="start" class="dim-label">patch_mean = conv(GT) / patch_size²</text>
+    <text x="45" y="610" text-anchor="start" class="dim-label">patch_mask = (patch_mean > 0) → 1 if any foreground pixel</text>
+    
+    <rect x="420" y="520" width="350" height="110" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+    <text x="595" y="545" text-anchor="middle" class="section-label">Asymmetric Weighting Rationale</text>
+    <text x="435" y="570" text-anchor="start" class="dim-label">At coarse scales (14x14), one foreground pixel makes</text>
+    <text x="435" y="590" text-anchor="start" class="dim-label">entire 16x16 patch positive → more positive patches</text>
+    <text x="435" y="610" text-anchor="start" class="dim-label">→ Higher positive weight (0.9) to balance loss</text>
+  </svg>
+</body>
+</html>

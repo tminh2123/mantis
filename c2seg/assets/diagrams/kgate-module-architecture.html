@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>KGateModule Architecture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: white;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 5px;
+      font-size: 26px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #7f8c8d;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    svg { display: block; }
+    .block { filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.1)); }
+    .input-lang { fill: #e8daef; stroke: #8e44ad; }
+    .input-vis { fill: #d5f5e3; stroke: #27ae60; }
+    .kcgate-block { fill: #fef9e7; stroke: #f39c12; }
+    .concat-block { fill: #fdebd0; stroke: #e67e22; }
+    .conv-block { fill: #ebf5fb; stroke: #3498db; }
+    .output-block { fill: #fadbd8; stroke: #e74c3c; }
+    .arrow { fill: none; stroke: #34495e; stroke-width: 2.5; marker-end: url(#arrowhead); }
+    .label { font-size: 14px; font-weight: 600; fill: #2c3e50; }
+    .dim-label { font-size: 11px; fill: #7f8c8d; font-style: italic; }
+    .section-label { font-size: 12px; fill: #95a5a6; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <h1>KGateModule: KAN-based Attention Gating</h1>
+  <p class="subtitle">Dual-branch gating for Language-Vision feature fusion</p>
+  
+  <svg width="1000" height="380" viewBox="0 0 1000 380">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/>
+      </marker>
+    </defs>
+    
+    <!-- Background sections -->
+    <rect x="15" y="25" width="230" height="330" rx="10" fill="#f8f9fa" stroke="#ecf0f1" stroke-width="1"/>
+    <text x="130" y="50" text-anchor="middle" class="section-label">INPUTS</text>
+    
+    <rect x="260" y="25" width="430" height="330" rx="10" fill="#fef9e7" fill-opacity="0.3" stroke="#f39c12" stroke-width="1" stroke-dasharray="5,3"/>
+    <text x="475" y="50" text-anchor="middle" class="section-label">KCGate BRANCHES</text>
+    
+    <rect x="705" y="25" width="280" height="330" rx="10" fill="#ebf5fb" fill-opacity="0.3" stroke="#3498db" stroke-width="1" stroke-dasharray="5,3"/>
+    <text x="845" y="50" text-anchor="middle" class="section-label">FUSION</text>
+    
+    <!-- Language Branch -->
+    <rect x="40" y="90" width="110" height="60" rx="8" class="block input-lang" stroke-width="2"/>
+    <text x="95" y="115" text-anchor="middle" class="label">F_l</text>
+    <text x="95" y="132" text-anchor="middle" class="dim-label">Language</text>
+    <text x="95" y="165" text-anchor="middle" class="dim-label">[B, HW, C]</text>
+    
+    <path d="M150,120 L280,120" class="arrow"/>
+    
+    <!-- KCGate for Language -->
+    <rect x="290" y="80" width="180" height="80" rx="8" class="block kcgate-block" stroke-width="2"/>
+    <text x="380" y="110" text-anchor="middle" class="label">KCGate_L</text>
+    <text x="380" y="130" text-anchor="middle" class="dim-label">KAN→ReLU→KAN→Tanh</text>
+    <text x="380" y="148" text-anchor="middle" class="dim-label">⊙ F_l</text>
+    
+    <path d="M470,120 L520,120" class="arrow"/>
+    
+    <rect x="530" y="90" width="80" height="60" rx="8" class="block input-lang" stroke-width="2"/>
+    <text x="570" y="125" text-anchor="middle" class="label">a_l</text>
+    
+    <!-- Vision Branch -->
+    <rect x="40" y="230" width="110" height="60" rx="8" class="block input-vis" stroke-width="2"/>
+    <text x="95" y="255" text-anchor="middle" class="label">F_v</text>
+    <text x="95" y="272" text-anchor="middle" class="dim-label">Vision</text>
+    <text x="95" y="305" text-anchor="middle" class="dim-label">[B, HW, C]</text>
+    
+    <path d="M150,260 L280,260" class="arrow"/>
+    
+    <!-- KCGate for Vision -->
+    <rect x="290" y="220" width="180" height="80" rx="8" class="block kcgate-block" stroke-width="2"/>
+    <text x="380" y="250" text-anchor="middle" class="label">KCGate_V</text>
+    <text x="380" y="270" text-anchor="middle" class="dim-label">KAN→ReLU→KAN→Tanh</text>
+    <text x="380" y="288" text-anchor="middle" class="dim-label">⊙ F_v</text>
+    
+    <path d="M470,260 L520,260" class="arrow"/>
+    
+    <rect x="530" y="230" width="80" height="60" rx="8" class="block input-vis" stroke-width="2"/>
+    <text x="570" y="265" text-anchor="middle" class="label">a_v</text>
+    
+    <!-- Arrows to Concat -->
+    <path d="M610,120 L660,120 L660,175 L730,175" class="arrow"/>
+    <path d="M610,260 L660,260 L660,205 L730,205" class="arrow"/>
+    
+    <!-- Concat -->
+    <rect x="740" y="155" width="100" height="70" rx="8" class="block concat-block" stroke-width="2"/>
+    <text x="790" y="185" text-anchor="middle" class="label">Concat</text>
+    <text x="790" y="205" text-anchor="middle" class="dim-label">[B, HW, 2C]</text>
+    
+    <!-- Arrow to Conv -->
+    <path d="M840,190 L870,190" class="arrow"/>
+    
+    <!-- Conv1d -->
+    <rect x="880" y="140" width="100" height="100" rx="8" class="block conv-block" stroke-width="2"/>
+    <text x="930" y="170" text-anchor="middle" class="label">Conv1d</text>
+    <text x="930" y="190" text-anchor="middle" class="dim-label">InstNorm</text>
+    <text x="930" y="208" text-anchor="middle" class="dim-label">GELU</text>
+    
+    <!-- Output -->
+    <path d="M930,240 L930,290 L930,310" class="arrow"/>
+    <rect x="870" y="310" width="120" height="45" rx="8" class="block output-block" stroke-width="2"/>
+    <text x="930" y="335" text-anchor="middle" class="label">F_out</text>
+    <text x="930" y="352" text-anchor="middle" class="dim-label">[B, C, HW]</text>
+  </svg>
+</body>
+</html>
