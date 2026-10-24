@@ -8,7 +8,7 @@ Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 |---------|--------------|----------|-----|-------|
 | QaTa-COV19 | 85.25% Dice | 84.00% | -1.25% | `qata_c2seg_mlp_deepsup` |
 | QaTa-COV19 | 74.13% mIoU | 75.23% | +1.10% | `qata_c2seg_mlp_deepsup` |
-| MosMedData+ | 77.81% Dice | 75.18% | -2.63% | `mosmed_c2seg_full` |
+| MosMedData+ | 77.81% Dice | 75.18% | -2.63% | `mosmed_full` |
 
 ---
 
@@ -38,7 +38,7 @@ Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 | `mosmed_c2seg_mlp_deepsup` | C2Seg + MLP + DeepSup | 73.74% | 60.23% | 21.06 | 4.20 |
 | `mosmed_c2seg_kan_deepsup` | C2Seg + KAN + DeepSup | 74.04% | 60.76% | 18.20 | 3.53 |
 | `mosmed_c2seg_kan_deepsup_einsum` | C2Seg + KAN + DeepSup + einsum | 70.32% | 56.84% | 19.70 | 4.94 |
-| **`mosmed_c2seg_full`** | C2Seg full sync (latest) | **75.18%** | **61.99%** | - | - |
+| **`mosmed_full`** | C2Seg full sync (latest) | **75.18%** | **61.99%** | - | - |
 
 ---
 
