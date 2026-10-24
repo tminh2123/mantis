@@ -173,4 +173,8 @@ def load_config(args) -> Config:
     config.logging.log_dir = f"{output_dir}/logs/{config.exp_name}"
     config.logging.checkpoint_dir = f"{output_dir}/checkpoints/{config.exp_name}"
     
+    # Override checkpoint if specified
+    if args.checkpoint:
+        config.eval.checkpoint = args.checkpoint
+    
     return config
