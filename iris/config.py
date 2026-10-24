@@ -40,7 +40,7 @@ class ModelConfig:
 class PretrainConfig:
     enabled: bool = True
     epochs: int = 100
-    batch_size: int = 256
+    batch_size: int = 64  # Reduced for mix encoder compatibility
     lr: float = 1e-3
     weight_decay: float = 1e-4
     temperature: float = 0.07
