@@ -221,14 +221,14 @@ def pretrain(cfg: Config, model: IRIS, device: torch.device, logger: logging.Log
             best_loss = loss_meter.avg
             save_checkpoint(
                 {'epoch': epoch+1, 'model': model.state_dict(), 'best_loss': best_loss},
-                str(ckpt_dir / 'iris_pretrain_best.pth')
+                str(ckpt_dir / 'pretrain_best.pth')
             )
         
         # Save checkpoint periodically
         if (epoch + 1) % cfg.logging.save_every == 0:
             save_checkpoint(
                 {'epoch': epoch+1, 'model': model.state_dict()},
-                str(ckpt_dir / f'iris_pretrain_epoch{epoch+1}.pth')
+                str(ckpt_dir / f'pretrain_epoch{epoch+1}.pth')
             )
     
     # Save final checkpoint
@@ -401,7 +401,7 @@ def train(cfg: Config, model: IRIS, device: torch.device, logger: logging.Logger
             no_improve = 0
             save_checkpoint(
                 {'epoch': epoch+1, 'model': model.state_dict(), 'best_dice': best_dice},
-                str(ckpt_dir / 'iris_best.pth')
+                str(ckpt_dir / 'best.pth')
             )
         else:
             no_improve += 1
@@ -410,7 +410,7 @@ def train(cfg: Config, model: IRIS, device: torch.device, logger: logging.Logger
         if (epoch + 1) % cfg.logging.save_every == 0:
             save_checkpoint(
                 {'epoch': epoch+1, 'model': model.state_dict()},
-                str(ckpt_dir / f'iris_epoch{epoch+1}.pth')
+                str(ckpt_dir / f'epoch{epoch+1}.pth')
             )
         
         # Early stopping
