@@ -115,6 +115,10 @@ def parse_args():
     parser.add_argument('--lr', type=float)
     parser.add_argument('--es_patience', type=int)
     
+    # Paths
+    parser.add_argument('--output_dir', type=str, default='output',
+                        help='Output directory for logs and checkpoints')
+    
     # Other
     parser.add_argument('--exp_name', type=str)
     parser.add_argument('--resume', type=str)
@@ -162,9 +166,11 @@ def load_config(args) -> Config:
         pretrain_str = "pretrain" if config.pretrain.enabled else "nopretrain"
         config.exp_name = f"baseline_{pretrain_str}_{config.model.encoder_type}"
     
-    # Auto-set paths
-    config.pretrain.checkpoint = f"output/checkpoints/{config.exp_name}_pretrain.pth"
-    config.eval.checkpoint = f"output/checkpoints/{config.exp_name}_best.pth"
-    config.logging.log_dir = f"output/logs/{config.exp_name}"
+    # Set output paths
+    output_dir = args.output_dir
+    config.pretrain.checkpoint = f"{output_dir}/checkpoints/{config.exp_name}_pretrain.pth"
+    config.eval.checkpoint = f"{output_dir}/checkpoints/{config.exp_name}_best.pth"
+    config.logging.log_dir = f"{output_dir}/logs/{config.exp_name}"
+    config.logging.checkpoint_dir = f"{output_dir}/checkpoints"
     
     return config

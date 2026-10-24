@@ -3,11 +3,17 @@
 # Usage: ./scripts/run_ablation.sh [qata|mosmed]
 
 DATASET=${1:-qata}
+
+# Auto-detect base path
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+IRIS_DIR="$(dirname "$SCRIPT_DIR")"
+
 echo "======================================"
 echo "IRIS Ablation - Dataset: $DATASET"
+echo "Working dir: $IRIS_DIR"
 echo "======================================"
 
-cd /dscilab_hvch261_tuanminh/workspace/code/iris
+cd "$IRIS_DIR"
 
 # 1. CNN + Pretrain
 echo "[1/4] baseline_pretrain_cnn"
