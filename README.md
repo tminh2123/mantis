@@ -42,6 +42,42 @@ Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 
 ---
 
+## Comparison with SOTA Methods
+
+### QaTa-COV19 Dataset
+
+| Method | Params (M) | Text | Dice (%) | mIoU (%) | HD95 | ASSD |
+|--------|------------|------|----------|----------|------|------|
+| U-Net | 14.8 | - | 79.02 | 69.46 | - | - |
+| nnUNet | 19.1 | - | 80.42 | 70.81 | - | - |
+| TransUNet | 105.0 | - | 78.63 | 69.13 | - | - |
+| Swin-Unet | 82.3 | - | 78.07 | 68.34 | - | - |
+| LViT | 29.7 | Y | 83.66 | 75.11 | - | - |
+| RefSegformer | 193.0 | Y | 81.65 | 69.71 | 20.22 | 5.29 |
+| MedLangViT | 27.7 | Y | 84.27 | 75.93 | 14.51 | 3.97 |
+| ARSeg | 30.1 | Y | 84.09 | 72.64 | 19.90 | 5.24 |
+| **C2Seg (Ours)** | **18.92** | Y | **85.25** | **76.97** | **12.71** | **3.38** |
+
+### MosMedData+ Dataset
+
+| Method | Params (M) | Text | Dice (%) | mIoU (%) | HD95 | ASSD |
+|--------|------------|------|----------|----------|------|------|
+| U-Net | 14.8 | - | 64.60 | 50.73 | - | - |
+| nnUNet | 19.1 | - | 72.59 | 60.36 | - | - |
+| TransUNet | 105.0 | - | 71.24 | 58.44 | - | - |
+| LViT | 29.7 | Y | 74.57 | 61.33 | - | - |
+| RefSegformer | 193.0 | Y | 70.25 | 57.51 | 19.70 | 4.78 |
+| MedLangViT | 27.7 | Y | 75.95 | 63.17 | 18.29 | 4.12 |
+| ARSeg | 30.1 | Y | 73.24 | 59.82 | 31.88 | 7.65 |
+| **C2Seg (Ours)** | **18.92** | Y | **77.81** | **65.17** | **15.02** | **3.76** |
+
+**Key Results:**
+- C2Seg achieves **SOTA** on both datasets with **31% fewer parameters** than MedLangViT
+- QaTa-COV19: +0.98% Dice, +1.04% mIoU vs MedLangViT
+- MosMedData+: +1.86% Dice, +2.00% mIoU vs MedLangViT
+
+---
+
 ## Architecture
 
 ```

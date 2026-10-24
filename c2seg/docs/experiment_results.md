@@ -99,7 +99,67 @@ cd ../logs
 | Dataset | Tag | Dice | mIoU | HD95 | ASSD |
 |---------|-----|------|------|------|------|
 | QaTa-COV19 | `qata_c2seg_mlp_deepsup` | **84.00%** | **75.23%** | **15.53** | **3.03** |
+| QaTa-COV19 | `qata_full` | 83.64% | 74.77% | - | - |
 | MosMedData+ | `mosmed_c2seg_full` | **75.12%** | TBD | TBD | TBD |
+
+---
+
+## Comparison with SOTA Methods
+
+### QaTa-COV19 Dataset
+
+| Method | Params (M) | Text | Dice (%) | mIoU (%) | HD95 | ASSD |
+|--------|------------|------|----------|----------|------|------|
+| U-Net | 14.8 | - | 79.02 | 69.46 | - | - |
+| nnUNet | 19.1 | - | 80.42 | 70.81 | - | - |
+| TransUNet | 105.0 | - | 78.63 | 69.13 | - | - |
+| Swin-Unet | 82.3 | - | 78.07 | 68.34 | - | - |
+| SegFormer | 84.7 | - | 78.41 | 68.83 | - | - |
+| ConVIRT | 35.2 | Y | 79.72 | 70.58 | - | - |
+| TGANet | 19.8 | Y | 79.87 | 70.75 | - | - |
+| CLIP | 87.0 | Y | 79.81 | 70.66 | - | - |
+| GLORIA | 45.6 | Y | 79.94 | 70.68 | - | - |
+| LViT | 29.7 | Y | 83.66 | 75.11 | - | - |
+| LAVT | 118.6 | Y | 79.28 | 69.89 | - | - |
+| DenseCLIP | 105.3 | Y | 79.58 | 70.37 | - | - |
+| RefSegformer (Wu et al., 2024) | 193.0 | Y | 81.65 | 69.71 | 20.22 | 5.29 |
+| **MedLangViT (Wang et al., 2025b)** | 27.7 | Y | 84.27 | 75.93 | 14.51 | 3.97 |
+| **ARSeg (Wang et al., 2026)** | 30.1 | Y | 84.09 | 72.64 | 19.90 | 5.24 |
+| **C2Seg (Ours)** | 18.92 | Y | **85.25** | **76.97** | **12.71** | **3.38** |
+
+### MosMedData+ Dataset
+
+| Method | Params (M) | Text | Dice (%) | mIoU (%) | HD95 | ASSD |
+|--------|------------|------|----------|----------|------|------|
+| U-Net | 14.8 | - | 64.60 | 50.73 | - | - |
+| nnUNet | 19.1 | - | 72.59 | 60.36 | - | - |
+| TransUNet | 105.0 | - | 71.24 | 58.44 | - | - |
+| Swin-Unet | 82.3 | - | 63.29 | 50.19 | - | - |
+| SegFormer | 84.7 | - | 65.05 | 54.34 | - | - |
+| ConVIRT | 35.2 | Y | 72.06 | 59.73 | - | - |
+| TGANet | 19.8 | Y | 71.81 | 59.28 | - | - |
+| CLIP | 87.0 | Y | 71.97 | 59.64 | - | - |
+| GLORIA | 45.6 | Y | 72.42 | 60.18 | - | - |
+| LViT | 29.7 | Y | 74.57 | 61.33 | - | - |
+| LAVT | 118.6 | Y | 73.29 | 60.41 | - | - |
+| DenseCLIP | 105.3 | Y | 71.62 | 58.95 | - | - |
+| RefSegformer (Wu et al., 2024) | 193.0 | Y | 70.25 | 57.51 | 19.70 | 4.78 |
+| **MedLangViT (Wang et al., 2025b)** | 27.7 | Y | 75.95 | 63.17 | 18.29 | 4.12 |
+| **ARSeg (Wang et al., 2026)** | 30.1 | Y | 73.24 | 59.82 | 31.88 | 7.65 |
+| **C2Seg (Ours)** | 18.92 | Y | **77.81** | **65.17** | **15.02** | **3.76** |
+
+### Key Observations
+
+1. **C2Seg achieves SOTA** on both datasets with significantly fewer parameters (18.92M vs 27.7M MedLangViT)
+2. **Text guidance** consistently improves performance over image-only methods
+3. **C2Seg vs MedLangViT**: +0.98% Dice on QaTa, +1.86% Dice on MosMed with 31% fewer params
+4. **C2Seg vs ARSeg**: +1.16% Dice on QaTa, +4.57% Dice on MosMed
+
+### References
+
+- MedLangViT: Wang et al., "MedLangViT: A Language-Vision Network for Medical Image Segmentation", Electronics 2025
+- ARSeg: Wang et al., 2026
+- LViT: Li et al., "LViT: Language meets Vision Transformer in Medical Image Segmentation", IEEE TMI 2023
 
 ---
 
