@@ -18,9 +18,6 @@ Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 
 | Tag | Description | Dice | mIoU | HD95 | ASSD |
 |-----|-------------|------|------|------|------|
-| Paper | C2Seg official target | 85.25% | 76.97% | 12.71 | 3.38 |
-| MedLangViT | SOTA (Wang et al., 2025) | 84.27% | 75.93% | 14.51 | 3.97 |
-| ARSeg | SOTA (Wang et al., 2026) | 84.09% | 72.64% | 19.90 | 5.24 |
 | `qata_custom_kan` | Custom impl, B-spline KAN | 80.37% | 70.83% | 21.30 | 4.30 |
 | `qata_custom_kan_lite` | Custom impl, no base spline | 79.38% | 69.51% | 24.45 | 4.92 |
 | `qata_ukan_0.5` | U-KAN block, scale 0.5 | 79.46% | 69.71% | 21.69 | 4.47 |
@@ -30,19 +27,22 @@ Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 | `qata_c2seg_mlp` | C2Seg origin + MLP K-Gate | 83.81% | 75.02% | 28.68 | 6.15 |
 | **`qata_c2seg_mlp_deepsup`** | C2Seg + MLP + DeepSup | **84.00%** | **75.23%** | **15.53** | **3.03** |
 | `qata_c2seg_full` | C2Seg full sync (latest) | 83.64% | 74.77% | - | - |
+| MedLangViT | Wang et al., 2025 | 84.27% | 75.93% | 14.51 | 3.97 |
+| ARSeg | Wang et al., 2026 | 84.09% | 72.64% | 19.90 | 5.24 |
+| **C2Seg (Paper)** | **Target** | **85.25%** | **76.97%** | **12.71** | **3.38** |
 
 ### MosMedData+ Dataset (CT Scan)
 
 | Tag | Description | Dice | mIoU | HD95 | ASSD |
 |-----|-------------|------|------|------|------|
-| Paper | C2Seg official target | 77.81% | 65.17% | 15.02 | 3.76 |
-| MedLangViT | SOTA (Wang et al., 2025) | 75.95% | 63.17% | 18.29 | 4.12 |
-| ARSeg | SOTA (Wang et al., 2026) | 73.24% | 59.82% | 31.88 | 7.65 |
 | `mosmed_c2seg_mlp` | C2Seg origin + MLP K-Gate | 72.59% | 58.97% | 18.44 | 3.43 |
 | `mosmed_c2seg_mlp_deepsup` | C2Seg + MLP + DeepSup | 73.74% | 60.23% | 21.06 | 4.20 |
 | `mosmed_c2seg_kan_deepsup` | C2Seg + KAN + DeepSup | 74.04% | 60.76% | 18.20 | 3.53 |
 | `mosmed_c2seg_kan_deepsup_einsum` | C2Seg + KAN + DeepSup + einsum | 70.32% | 56.84% | 19.70 | 4.94 |
 | **`mosmed_full`** | C2Seg full sync (latest) | **75.18%** | **61.99%** | - | - |
+| MedLangViT | Wang et al., 2025 | 75.95% | 63.17% | 18.29 | 4.12 |
+| ARSeg | Wang et al., 2026 | 73.24% | 59.82% | 31.88 | 7.65 |
+| **C2Seg (Paper)** | **Target** | **77.81%** | **65.17%** | **15.02** | **3.76** |
 
 ---
 
