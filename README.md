@@ -18,7 +18,9 @@ Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 
 | Tag | Description | Dice | mIoU | HD95 | ASSD |
 |-----|-------------|------|------|------|------|
-| Paper | C2Seg official target | 85.25% | 74.13% | - | - |
+| Paper | C2Seg official target | 85.25% | 76.97% | 12.71 | 3.38 |
+| MedLangViT | SOTA (Wang et al., 2025) | 84.27% | 75.93% | 14.51 | 3.97 |
+| ARSeg | SOTA (Wang et al., 2026) | 84.09% | 72.64% | 19.90 | 5.24 |
 | `qata_custom_kan` | Custom impl, B-spline KAN | 80.37% | 70.83% | 21.30 | 4.30 |
 | `qata_custom_kan_lite` | Custom impl, no base spline | 79.38% | 69.51% | 24.45 | 4.92 |
 | `qata_ukan_0.5` | U-KAN block, scale 0.5 | 79.46% | 69.71% | 21.69 | 4.47 |
@@ -33,48 +35,14 @@ Paper: "Towards Text-Mask Consistency in Medical Image Segmentation" (ICLR 2026)
 
 | Tag | Description | Dice | mIoU | HD95 | ASSD |
 |-----|-------------|------|------|------|------|
-| Paper | C2Seg official target | ~77.81% | - | - | - |
+| Paper | C2Seg official target | 77.81% | 65.17% | 15.02 | 3.76 |
+| MedLangViT | SOTA (Wang et al., 2025) | 75.95% | 63.17% | 18.29 | 4.12 |
+| ARSeg | SOTA (Wang et al., 2026) | 73.24% | 59.82% | 31.88 | 7.65 |
 | `mosmed_c2seg_mlp` | C2Seg origin + MLP K-Gate | 72.59% | 58.97% | 18.44 | 3.43 |
 | `mosmed_c2seg_mlp_deepsup` | C2Seg + MLP + DeepSup | 73.74% | 60.23% | 21.06 | 4.20 |
 | `mosmed_c2seg_kan_deepsup` | C2Seg + KAN + DeepSup | 74.04% | 60.76% | 18.20 | 3.53 |
 | `mosmed_c2seg_kan_deepsup_einsum` | C2Seg + KAN + DeepSup + einsum | 70.32% | 56.84% | 19.70 | 4.94 |
 | **`mosmed_full`** | C2Seg full sync (latest) | **75.18%** | **61.99%** | - | - |
-
----
-
-## Comparison with SOTA Methods
-
-### QaTa-COV19 Dataset
-
-| Method | Params (M) | Text | Dice (%) | mIoU (%) | HD95 | ASSD |
-|--------|------------|------|----------|----------|------|------|
-| U-Net | 14.8 | - | 79.02 | 69.46 | - | - |
-| nnUNet | 19.1 | - | 80.42 | 70.81 | - | - |
-| TransUNet | 105.0 | - | 78.63 | 69.13 | - | - |
-| Swin-Unet | 82.3 | - | 78.07 | 68.34 | - | - |
-| LViT | 29.7 | Y | 83.66 | 75.11 | - | - |
-| RefSegformer | 193.0 | Y | 81.65 | 69.71 | 20.22 | 5.29 |
-| MedLangViT | 27.7 | Y | 84.27 | 75.93 | 14.51 | 3.97 |
-| ARSeg | 30.1 | Y | 84.09 | 72.64 | 19.90 | 5.24 |
-| **C2Seg (Ours)** | **18.92** | Y | **85.25** | **76.97** | **12.71** | **3.38** |
-
-### MosMedData+ Dataset
-
-| Method | Params (M) | Text | Dice (%) | mIoU (%) | HD95 | ASSD |
-|--------|------------|------|----------|----------|------|------|
-| U-Net | 14.8 | - | 64.60 | 50.73 | - | - |
-| nnUNet | 19.1 | - | 72.59 | 60.36 | - | - |
-| TransUNet | 105.0 | - | 71.24 | 58.44 | - | - |
-| LViT | 29.7 | Y | 74.57 | 61.33 | - | - |
-| RefSegformer | 193.0 | Y | 70.25 | 57.51 | 19.70 | 4.78 |
-| MedLangViT | 27.7 | Y | 75.95 | 63.17 | 18.29 | 4.12 |
-| ARSeg | 30.1 | Y | 73.24 | 59.82 | 31.88 | 7.65 |
-| **C2Seg (Ours)** | **18.92** | Y | **77.81** | **65.17** | **15.02** | **3.76** |
-
-**Key Results:**
-- C2Seg achieves **SOTA** on both datasets with **31% fewer parameters** than MedLangViT
-- QaTa-COV19: +0.98% Dice, +1.04% mIoU vs MedLangViT
-- MosMedData+: +1.86% Dice, +2.00% mIoU vs MedLangViT
 
 ---
 
