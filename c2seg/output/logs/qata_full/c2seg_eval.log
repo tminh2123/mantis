@@ -1,0 +1,3 @@
+[2026-10-23 05:12:37] INFO - Using device: cpu
+[2026-10-24 00:02:04] INFO - Using device: cuda
+[2026-10-24 00:03:23] INFO - Test Results | Dice: 83.64% | mIoU: 74.77% | HD95: 0.00 | ASSD: 0.00
