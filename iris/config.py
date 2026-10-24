@@ -166,11 +166,11 @@ def load_config(args) -> Config:
         pretrain_str = "pretrain" if config.pretrain.enabled else "nopretrain"
         config.exp_name = f"baseline_{pretrain_str}_{config.model.encoder_type}"
     
-    # Set output paths
+    # Set output paths - each exp has its own folder
     output_dir = args.output_dir
-    config.pretrain.checkpoint = f"{output_dir}/checkpoints/{config.exp_name}_pretrain.pth"
-    config.eval.checkpoint = f"{output_dir}/checkpoints/{config.exp_name}_best.pth"
+    config.pretrain.checkpoint = f"{output_dir}/checkpoints/{config.exp_name}/pretrain.pth"
+    config.eval.checkpoint = f"{output_dir}/checkpoints/{config.exp_name}/best.pth"
     config.logging.log_dir = f"{output_dir}/logs/{config.exp_name}"
-    config.logging.checkpoint_dir = f"{output_dir}/checkpoints"
+    config.logging.checkpoint_dir = f"{output_dir}/checkpoints/{config.exp_name}"
     
     return config
