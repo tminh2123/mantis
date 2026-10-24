@@ -360,7 +360,7 @@ def train(cfg: Config, model: IRIS, device: torch.device, logger: logging.Logger
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{tcfg.epochs}", leave=False)
         for batch_idx, (images, masks, texts) in enumerate(pbar):
             images = images.to(device)
-            masks = masks.to(device).float()
+            masks = masks.to(device).float().unsqueeze(1)  # [B, 1, H, W]
             
             # Forward
             outputs = model(images, texts)
