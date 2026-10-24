@@ -1,0 +1,8 @@
+# QaTa-COV19 Dataset
+dataset: qata
+
+data:
+  root: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg"
+  train_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train"
+  val_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val"
+  test_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test"

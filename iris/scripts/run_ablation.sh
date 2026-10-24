@@ -1,39 +1,28 @@
 #!/bin/bash
-# IRIS Ablation Study - QaTa-COV19 Dataset
-# Run all 4 experiments sequentially
+# IRIS Ablation Study
+# Usage: ./scripts/run_ablation.sh [qata|mosmed]
 
+DATASET=${1:-qata}
 echo "======================================"
-echo "IRIS Ablation Study"
+echo "IRIS Ablation - Dataset: $DATASET"
 echo "======================================"
 
 cd /dscilab_hvch261_tuanminh/workspace/code/iris
 
-# Experiment 1: CNN + Pretrain
-echo ""
-echo "[1/4] Running: CNN encoder + Pretrain"
-echo "======================================"
-python run.py --config configs/qata_cnn.yaml --mode full
+# 1. CNN + Pretrain
+echo "[1/4] baseline_pretrain_cnn"
+python run.py --config configs/${DATASET}.yaml --mode full
 
-# Experiment 2: CNN + No Pretrain
-echo ""
-echo "[2/4] Running: CNN encoder + No Pretrain"
-echo "======================================"
-python run.py --config configs/qata_cnn_nopretrain.yaml --mode full
+# 2. CNN + No Pretrain
+echo "[2/4] baseline_nopretrain_cnn"
+python run.py --config configs/${DATASET}.yaml --mode full --no_pretrain
 
-# Experiment 3: Mix + Pretrain
-echo ""
-echo "[3/4] Running: Mix encoder + Pretrain"
-echo "======================================"
-python run.py --config configs/qata_mix.yaml --mode full
+# 3. Mix + Pretrain
+echo "[3/4] baseline_pretrain_mix"
+python run.py --config configs/${DATASET}.yaml --mode full --encoder_type mix
 
-# Experiment 4: Mix + No Pretrain
-echo ""
-echo "[4/4] Running: Mix encoder + No Pretrain"
-echo "======================================"
-python run.py --config configs/qata_mix_nopretrain.yaml --mode full
+# 4. Mix + No Pretrain
+echo "[4/4] baseline_nopretrain_mix"
+python run.py --config configs/${DATASET}.yaml --mode full --encoder_type mix --no_pretrain
 
-echo ""
-echo "======================================"
-echo "All experiments completed!"
-echo "Check results in output/logs/"
-echo "======================================"
+echo "Done! Check output/logs/"

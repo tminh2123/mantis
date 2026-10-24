@@ -377,11 +377,7 @@ def full_evaluate(cfg: Config, model: IRIS, device: torch.device, logger: loggin
 # -----------------------------------------------------------------------------
 def main():
     args = parse_args()
-    cfg = load_config(args.config)
-    
-    # Override experiment name if provided
-    if args.exp_name:
-        cfg.exp_name = args.exp_name
+    cfg = load_config(args)
     
     # Setup
     setup_seed(cfg.seed)

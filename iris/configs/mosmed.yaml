@@ -1,29 +1,8 @@
-# MosMed Dataset Configuration
-exp_name: iris_mosmed_baseline
+# MosMed Dataset
+dataset: mosmed
 
 data:
-  dataset: mosmed
-  data_root: ../../dataset/MosMed/c2seg/
-  image_size: 224
-  num_workers: 4
-
-model:
-  backbone: resnet50
-  pretrained: true
-  text_encoder: microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224
-  freeze_text: true
-  fusion_type: cross_attention
-  decoder_channels: [256, 128, 64, 32]
-  deep_supervision: true
-  num_classes: 1
-
-training:
-  pretrain_epochs: 50
-  pretrain_lr: 0.0001
-  train_epochs: 100
-  train_lr: 0.0001
-  batch_size: 16
-  optimizer: adamw
-  weight_decay: 0.0001
-  scheduler: cosine
-  loss_type: deep_supervision
+  root: "../../../dataset/MosMed/c2seg"
+  train_dir: "../../../dataset/MosMed/c2seg/train"
+  val_dir: "../../../dataset/MosMed/c2seg/val"
+  test_dir: "../../../dataset/MosMed/c2seg/test"
