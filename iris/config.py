@@ -161,12 +161,13 @@ def load_config(args) -> Config:
     if args.seed:
         config.seed = args.seed
     
-    # Auto-generate exp_name: baseline_(pretrain|nopretrain)_(cnn|mix)
+    # Auto-generate exp_name: {dataset}_baseline_(pretrain|nopretrain)_(cnn|mix)
     if args.exp_name:
         config.exp_name = args.exp_name
     else:
+        dataset_name = yaml_cfg.get('dataset', 'unknown')
         pretrain_str = "pretrain" if config.pretrain.enabled else "nopretrain"
-        config.exp_name = f"baseline_{pretrain_str}_{config.model.encoder_type}"
+        config.exp_name = f"{dataset_name}_baseline_{pretrain_str}_{config.model.encoder_type}"
     
     # Set output paths - each exp has its own folder
     output_dir = args.output_dir
