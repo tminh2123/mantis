@@ -71,12 +71,20 @@ def setup_logger(log_dir: str, mode: str) -> logging.Logger:
     console.setFormatter(logging.Formatter('%(asctime)s - %(message)s', '%H:%M:%S'))
     logger.addHandler(console)
     
-    # File handler
+    # File handler - overwrite mode ('w')
     log_file = os.path.join(log_dir, f'iris_{mode}.log')
-    file_handler = logging.FileHandler(log_file)
+    file_handler = logging.FileHandler(log_file, mode='w')
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logger.addHandler(file_handler)
+    
+    # Write header with timestamp
+    logger.info("")
+    logger.info("=" * 60)
+    logger.info(f"IRIS - {mode.upper()}")
+    logger.info(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("=" * 60)
+    logger.info("")
     
     return logger
 
@@ -509,15 +517,12 @@ def main():
     
     logger = setup_logger(cfg.logging.log_dir, args.mode)
     
-    # Log start
-    logger.info("=" * 60)
-    logger.info(f"IRIS - {args.mode.upper()}")
-    logger.info("=" * 60)
-    logger.info(f"Start time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    # Log experiment info
     logger.info(f"Experiment: {cfg.exp_name}")
     logger.info(f"Device: {device}")
     if torch.cuda.is_available():
         logger.info(f"GPU: {torch.cuda.get_device_name(0)}")
+    logger.info("")
     
     # Build model
     model = build_model(cfg, device)
@@ -545,8 +550,9 @@ def main():
         train(cfg, model, device, logger)
         full_evaluate(cfg, model, device, logger)
     
+    logger.info("")
     logger.info("=" * 60)
-    logger.info(f"Done! End time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
 
 

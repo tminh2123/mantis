@@ -101,6 +101,9 @@ def parse_args():
     # Required
     parser.add_argument('--config', type=str, required=True, 
                         help='Dataset config (configs/qata.yaml or configs/mosmed.yaml)')
+    parser.add_argument('--tag', type=str, required=True,
+                        help='Experiment tag (e.g., baseline_cnn, attn_v2). '
+                             'Output: output/{logs,checkpoints}/{dataset}_{tag}/')
     parser.add_argument('--mode', type=str, default='full', 
                         choices=['pretrain', 'train', 'eval', 'full'])
     
@@ -122,7 +125,6 @@ def parse_args():
                         help='Override checkpoint path for eval mode')
     
     # Other
-    parser.add_argument('--exp_name', type=str)
     parser.add_argument('--resume', type=str)
     parser.add_argument('--seed', type=int)
     
@@ -137,7 +139,8 @@ def load_config(args) -> Config:
     with open(args.config, 'r') as f:
         yaml_cfg = yaml.safe_load(f)
     
-    config.dataset = yaml_cfg.get('dataset', '')
+    dataset_name = yaml_cfg.get('dataset', 'unknown')
+    config.dataset = dataset_name
     config.data.root = yaml_cfg['data']['root']
     config.data.train_dir = yaml_cfg['data']['train_dir']
     config.data.val_dir = yaml_cfg['data']['val_dir']
@@ -161,13 +164,8 @@ def load_config(args) -> Config:
     if args.seed:
         config.seed = args.seed
     
-    # Auto-generate exp_name: {dataset}_baseline_(pretrain|nopretrain)_(cnn|mix)
-    if args.exp_name:
-        config.exp_name = args.exp_name
-    else:
-        dataset_name = yaml_cfg.get('dataset', 'unknown')
-        pretrain_str = "pretrain" if config.pretrain.enabled else "nopretrain"
-        config.exp_name = f"{dataset_name}_baseline_{pretrain_str}_{config.model.encoder_type}"
+    # Experiment name: {dataset}_{tag}
+    config.exp_name = f"{dataset_name}_{args.tag}"
     
     # Set output paths - each exp has its own folder
     output_dir = args.output_dir
@@ -176,7 +174,7 @@ def load_config(args) -> Config:
     config.logging.log_dir = f"{output_dir}/logs/{config.exp_name}"
     config.logging.checkpoint_dir = f"{output_dir}/checkpoints/{config.exp_name}"
     
-    # Override checkpoint if specified
+    # Override checkpoint if specified (for eval mode)
     if args.checkpoint:
         config.eval.checkpoint = args.checkpoint
     
