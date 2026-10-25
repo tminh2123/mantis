@@ -1,0 +1,274 @@
+2026-10-24 16:10:55,840 - INFO - Start time: 2026-10-24 16:10:55
+2026-10-24 16:10:55,840 - INFO - Device: cuda
+2026-10-24 16:10:55,861 - INFO - GPU: NVIDIA A100-PCIE-40GB
+2026-10-24 16:10:55,861 - INFO - GPU Memory: 39.4 GB
+2026-10-24 16:10:55,861 - INFO - Mode: full
+2026-10-24 16:10:55,861 - INFO - ============================================================
+2026-10-24 16:10:55,861 - INFO - Configuration Summary
+2026-10-24 16:10:55,861 - INFO - ============================================================
+2026-10-24 16:10:55,861 - INFO - Experiment: baseline_pretrain_cnn
+2026-10-24 16:10:55,861 - INFO - Seed: 922
+2026-10-24 16:10:55,861 - INFO - ----------------------------------------
+2026-10-24 16:10:55,861 - INFO - Model:
+2026-10-24 16:10:55,861 - INFO -   encoder_type: cnn
+2026-10-24 16:10:55,861 - INFO -   base_channel: 64
+2026-10-24 16:10:55,861 - INFO -   num_heads: 8
+2026-10-24 16:10:55,861 - INFO -   expansion: 4
+2026-10-24 16:10:55,861 - INFO -   deep_supervision: True
+2026-10-24 16:10:55,861 - INFO -   clip_model: openai/clip-vit-base-patch32
+2026-10-24 16:10:55,861 - INFO - ----------------------------------------
+2026-10-24 16:10:55,861 - INFO - Data:
+2026-10-24 16:10:55,861 - INFO -   image_size: 224
+2026-10-24 16:10:55,861 - INFO -   train_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+2026-10-24 16:10:55,861 - INFO -   val_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+2026-10-24 16:10:55,861 - INFO -   test_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
+2026-10-24 16:10:55,862 - INFO - ----------------------------------------
+2026-10-24 16:10:55,862 - INFO - Pretrain:
+2026-10-24 16:10:55,862 - INFO -   enabled: True
+2026-10-24 16:10:55,862 - INFO -   epochs: 100
+2026-10-24 16:10:55,862 - INFO -   batch_size: 256
+2026-10-24 16:10:55,862 - INFO -   lr: 0.001
+2026-10-24 16:10:55,862 - INFO - ----------------------------------------
+2026-10-24 16:10:55,862 - INFO - Train:
+2026-10-24 16:10:55,862 - INFO -   epochs: 300
+2026-10-24 16:10:55,862 - INFO -   batch_size: 32
+2026-10-24 16:10:55,862 - INFO -   lr: 0.001
+2026-10-24 16:10:55,862 - INFO -   early_stopping: True
+2026-10-24 16:10:55,862 - INFO -   es_patience: 10
+2026-10-24 16:10:55,862 - INFO - ----------------------------------------
+2026-10-24 16:10:55,862 - INFO - Output:
+2026-10-24 16:10:55,862 - INFO -   log_dir: output/logs/baseline_pretrain_cnn
+2026-10-24 16:10:55,862 - INFO -   checkpoint_dir: output/checkpoints/baseline_pretrain_cnn
+2026-10-24 16:10:55,862 - INFO - ============================================================
+2026-10-24 16:10:58,761 - INFO - Model parameters: 92,804,737 (trainable: 29,638,785)
+2026-10-24 16:10:58,761 - INFO - ============================================================
+2026-10-24 16:10:58,761 - INFO - Stage I: Pretraining (CaCL)
+2026-10-24 16:10:58,761 - INFO - ============================================================
+2026-10-24 16:10:58,977 - INFO - Train samples: 5716
+2026-10-24 16:10:58,977 - INFO - Batches per epoch: 22
+2026-10-24 16:10:58,977 - INFO - Batch size: 256
+2026-10-24 16:11:16,455 - INFO - Epoch 1/100 | Loss: 5.7610 | Time: 17.1s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:11:17,224 - INFO -   -> Saved pretrain checkpoint (loss: 5.7610)
+2026-10-24 16:11:30,428 - INFO - Epoch 2/100 | Loss: 5.5452 | Time: 13.2s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:11:31,596 - INFO -   -> Saved pretrain checkpoint (loss: 5.5452)
+2026-10-24 16:11:44,831 - INFO - Epoch 3/100 | Loss: 5.5432 | Time: 13.2s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:11:45,983 - INFO -   -> Saved pretrain checkpoint (loss: 5.5432)
+2026-10-24 16:11:59,120 - INFO - Epoch 4/100 | Loss: 5.5426 | Time: 13.1s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:12:00,304 - INFO -   -> Saved pretrain checkpoint (loss: 5.5426)
+2026-10-24 16:12:13,555 - INFO - Epoch 5/100 | Loss: 5.5422 | Time: 13.3s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:12:14,550 - INFO -   -> Saved pretrain checkpoint (loss: 5.5422)
+2026-10-24 16:12:27,847 - INFO - Epoch 6/100 | Loss: 5.5418 | Time: 13.3s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:12:28,995 - INFO -   -> Saved pretrain checkpoint (loss: 5.5418)
+2026-10-24 16:12:42,181 - INFO - Epoch 7/100 | Loss: 5.5411 | Time: 13.2s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:12:43,217 - INFO -   -> Saved pretrain checkpoint (loss: 5.5411)
+2026-10-24 16:12:56,464 - INFO - Epoch 8/100 | Loss: 5.5397 | Time: 13.2s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:12:57,599 - INFO -   -> Saved pretrain checkpoint (loss: 5.5397)
+2026-10-24 16:13:10,937 - INFO - Epoch 9/100 | Loss: 5.5386 | Time: 13.3s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:13:12,095 - INFO -   -> Saved pretrain checkpoint (loss: 5.5386)
+2026-10-24 16:13:25,479 - INFO - Epoch 10/100 | Loss: 5.5379 | Time: 13.4s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:13:26,652 - INFO -   -> Saved pretrain checkpoint (loss: 5.5379)
+2026-10-24 16:13:39,923 - INFO - Epoch 11/100 | Loss: 5.5310 | Time: 13.3s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:13:41,081 - INFO -   -> Saved pretrain checkpoint (loss: 5.5310)
+2026-10-24 16:13:54,651 - INFO - Epoch 12/100 | Loss: 5.5137 | Time: 13.6s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:13:55,781 - INFO -   -> Saved pretrain checkpoint (loss: 5.5137)
+2026-10-24 16:14:09,132 - INFO - Epoch 13/100 | Loss: 5.5040 | Time: 13.3s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:14:10,117 - INFO -   -> Saved pretrain checkpoint (loss: 5.5040)
+2026-10-24 16:14:23,725 - INFO - Epoch 14/100 | Loss: 5.4977 | Time: 13.6s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:14:24,879 - INFO -   -> Saved pretrain checkpoint (loss: 5.4977)
+2026-10-24 16:14:38,481 - INFO - Epoch 15/100 | Loss: 5.4923 | Time: 13.6s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:14:39,500 - INFO -   -> Saved pretrain checkpoint (loss: 5.4923)
+2026-10-24 16:14:53,150 - INFO - Epoch 16/100 | Loss: 5.4921 | Time: 13.6s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:14:54,337 - INFO -   -> Saved pretrain checkpoint (loss: 5.4921)
+2026-10-24 16:15:08,119 - INFO - Epoch 17/100 | Loss: 5.4890 | Time: 13.8s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:15:09,310 - INFO -   -> Saved pretrain checkpoint (loss: 5.4890)
+2026-10-24 16:15:23,163 - INFO - Epoch 18/100 | Loss: 5.4836 | Time: 13.9s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:15:24,187 - INFO -   -> Saved pretrain checkpoint (loss: 5.4836)
+2026-10-24 16:15:37,816 - INFO - Epoch 19/100 | Loss: 5.4833 | Time: 13.6s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:15:38,806 - INFO -   -> Saved pretrain checkpoint (loss: 5.4833)
+2026-10-24 16:15:52,321 - INFO - Epoch 20/100 | Loss: 5.4749 | Time: 13.5s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:15:53,473 - INFO -   -> Saved pretrain checkpoint (loss: 5.4749)
+2026-10-24 16:16:07,163 - INFO - Epoch 21/100 | Loss: 5.4753 | Time: 13.7s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:16:21,085 - INFO - Epoch 22/100 | Loss: 5.4734 | Time: 13.9s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:16:22,243 - INFO -   -> Saved pretrain checkpoint (loss: 5.4734)
+2026-10-24 16:16:35,929 - INFO - Epoch 23/100 | Loss: 5.4703 | Time: 13.7s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:16:37,199 - INFO -   -> Saved pretrain checkpoint (loss: 5.4703)
+2026-10-24 16:16:51,096 - INFO - Epoch 24/100 | Loss: 5.4657 | Time: 13.9s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:16:52,249 - INFO -   -> Saved pretrain checkpoint (loss: 5.4657)
+2026-10-24 16:17:06,201 - INFO - Epoch 25/100 | Loss: 5.4633 | Time: 14.0s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:17:07,270 - INFO -   -> Saved pretrain checkpoint (loss: 5.4633)
+2026-10-24 16:17:21,201 - INFO - Epoch 26/100 | Loss: 5.4643 | Time: 13.9s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:17:34,684 - INFO - Epoch 27/100 | Loss: 5.4619 | Time: 13.5s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:17:35,837 - INFO -   -> Saved pretrain checkpoint (loss: 5.4619)
+2026-10-24 16:17:49,474 - INFO - Epoch 28/100 | Loss: 5.4610 | Time: 13.6s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:17:50,496 - INFO -   -> Saved pretrain checkpoint (loss: 5.4610)
+2026-10-24 16:18:04,308 - INFO - Epoch 29/100 | Loss: 5.4597 | Time: 13.8s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:18:05,306 - INFO -   -> Saved pretrain checkpoint (loss: 5.4597)
+2026-10-24 16:18:19,135 - INFO - Epoch 30/100 | Loss: 5.4592 | Time: 13.8s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:18:20,204 - INFO -   -> Saved pretrain checkpoint (loss: 5.4592)
+2026-10-24 16:18:33,712 - INFO - Epoch 31/100 | Loss: 5.4747 | Time: 13.5s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:18:47,237 - INFO - Epoch 32/100 | Loss: 5.4715 | Time: 13.5s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:19:00,855 - INFO - Epoch 33/100 | Loss: 5.4703 | Time: 13.6s | GPU: 0.6GB | MaxGPU: 28.5GB
+2026-10-24 16:23:44,293 - INFO - ============================================================
+2026-10-24 16:23:44,294 - INFO - IRIS - FULL
+2026-10-24 16:23:44,294 - INFO - ============================================================
+2026-10-24 16:23:44,294 - INFO - Start time: 2026-10-24 16:23:44
+2026-10-24 16:23:44,294 - INFO - Experiment: baseline_pretrain_cnn
+2026-10-24 16:23:44,294 - INFO - Device: cuda
+2026-10-24 16:23:44,314 - INFO - GPU: NVIDIA A100-PCIE-40GB
+2026-10-24 16:23:47,397 - INFO - Model parameters: 92,804,737
+2026-10-24 16:23:47,397 - INFO - ============================================================
+2026-10-24 16:23:47,397 - INFO - CONFIGURATION
+2026-10-24 16:23:47,397 - INFO - ============================================================
+2026-10-24 16:23:47,397 - INFO - [experiment]
+2026-10-24 16:23:47,397 - INFO -   exp_name: baseline_pretrain_cnn
+2026-10-24 16:23:47,397 - INFO -   seed: 922
+2026-10-24 16:23:47,397 - INFO - [model]
+2026-10-24 16:23:47,397 - INFO -   encoder_type: cnn
+2026-10-24 16:23:47,397 - INFO -   base_channel: 64
+2026-10-24 16:23:47,397 - INFO -   expansion: 4
+2026-10-24 16:23:47,397 - INFO -   deep_supervision: True
+2026-10-24 16:23:47,397 - INFO - [data]
+2026-10-24 16:23:47,397 - INFO -   image_size: 224
+2026-10-24 16:23:47,397 - INFO -   train_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+2026-10-24 16:23:47,398 - INFO - [pretrain]
+2026-10-24 16:23:47,398 - INFO -   epochs: 100
+2026-10-24 16:23:47,398 - INFO -   batch_size: 256
+2026-10-24 16:23:47,398 - INFO -   lr: 0.001
+2026-10-24 16:23:47,398 - INFO -   temperature: 0.07
+2026-10-24 16:23:47,398 - INFO -   eps: 0.8
+2026-10-24 16:23:47,398 - INFO - ============================================================
+2026-10-24 16:23:47,646 - INFO - Trainable params: 29,638,785 / 92,804,737 (31.9%)
+2026-10-24 16:23:47,962 - INFO - Dataset: 5716 samples | Batch size: 256 | Steps/epoch: 22
+2026-10-24 16:23:47,962 - INFO - Config: τ=0.07, ρ=0.8, lr=0.001
+2026-10-24 16:23:47,962 - INFO - ------------------------------------------------------------
+2026-10-24 16:24:05,318 - INFO - Epoch [01/100] Loss: 5.7611 | LR: 1.00e-03 | Time: 17.4s
+2026-10-24 16:24:19,399 - INFO - Epoch [02/100] Loss: 5.5452 | LR: 9.99e-04 | Time: 13.4s
+2026-10-24 16:24:33,973 - INFO - Epoch [03/100] Loss: 5.5432 | LR: 9.98e-04 | Time: 13.6s
+2026-10-24 16:24:48,218 - INFO - Epoch [04/100] Loss: 5.5425 | LR: 9.96e-04 | Time: 13.2s
+2026-10-24 16:25:02,406 - INFO - Epoch [05/100] Loss: 5.5418 | LR: 9.94e-04 | Time: 13.2s
+2026-10-24 16:25:16,688 - INFO - Epoch [06/100] Loss: 5.5406 | LR: 9.91e-04 | Time: 13.3s
+2026-10-24 16:25:30,962 - INFO - Epoch [07/100] Loss: 5.5339 | LR: 9.88e-04 | Time: 13.3s
+2026-10-24 16:25:45,331 - INFO - Epoch [08/100] Loss: 5.5168 | LR: 9.84e-04 | Time: 13.3s
+2026-10-24 16:25:59,644 - INFO - Epoch [09/100] Loss: 5.5061 | LR: 9.80e-04 | Time: 13.3s
+2026-10-24 16:26:13,984 - INFO - Epoch [10/100] Loss: 5.4971 | LR: 9.76e-04 | Time: 13.3s
+2026-10-24 16:26:28,890 - INFO - Epoch [11/100] Loss: 5.4956 | LR: 9.70e-04 | Time: 13.3s
+2026-10-24 16:26:43,496 - INFO - Epoch [12/100] Loss: 5.4907 | LR: 9.65e-04 | Time: 13.6s
+2026-10-24 16:26:57,933 - INFO - Epoch [13/100] Loss: 5.4882 | LR: 9.59e-04 | Time: 13.5s
+2026-10-24 16:27:12,588 - INFO - Epoch [14/100] Loss: 5.4828 | LR: 9.52e-04 | Time: 13.7s
+2026-10-24 16:27:26,972 - INFO - Epoch [15/100] Loss: 5.4877 | LR: 9.46e-04 | Time: 13.5s
+2026-10-24 16:27:40,553 - INFO - Epoch [16/100] Loss: 5.4814 | LR: 9.38e-04 | Time: 13.6s
+2026-10-24 16:27:55,132 - INFO - Epoch [17/100] Loss: 5.4849 | LR: 9.30e-04 | Time: 13.6s
+2026-10-24 16:28:08,688 - INFO - Epoch [18/100] Loss: 5.4792 | LR: 9.22e-04 | Time: 13.6s
+2026-10-24 16:28:23,267 - INFO - Epoch [19/100] Loss: 5.4815 | LR: 9.14e-04 | Time: 13.6s
+2026-10-24 16:28:36,586 - INFO - Epoch [20/100] Loss: 5.4766 | LR: 9.05e-04 | Time: 13.3s
+2026-10-24 16:28:51,610 - INFO - Epoch [21/100] Loss: 5.4732 | LR: 8.95e-04 | Time: 13.4s
+2026-10-24 16:29:06,224 - INFO - Epoch [22/100] Loss: 5.4722 | LR: 8.85e-04 | Time: 13.6s
+2026-10-24 16:29:20,923 - INFO - Epoch [23/100] Loss: 5.4728 | LR: 8.75e-04 | Time: 13.6s
+2026-10-24 16:29:34,643 - INFO - Epoch [24/100] Loss: 5.4767 | LR: 8.64e-04 | Time: 13.7s
+2026-10-24 16:29:48,559 - INFO - Epoch [25/100] Loss: 5.4715 | LR: 8.54e-04 | Time: 13.9s
+2026-10-24 16:30:03,377 - INFO - Epoch [26/100] Loss: 5.4736 | LR: 8.42e-04 | Time: 13.8s
+2026-10-24 16:30:16,877 - INFO - Epoch [27/100] Loss: 5.4729 | LR: 8.31e-04 | Time: 13.5s
+2026-10-24 16:30:30,549 - INFO - Epoch [28/100] Loss: 5.4688 | LR: 8.19e-04 | Time: 13.7s
+2026-10-24 16:30:45,230 - INFO - Epoch [29/100] Loss: 5.4647 | LR: 8.06e-04 | Time: 13.7s
+2026-10-24 16:30:59,966 - INFO - Epoch [30/100] Loss: 5.4647 | LR: 7.94e-04 | Time: 13.7s
+2026-10-24 16:31:14,981 - INFO - Epoch [31/100] Loss: 5.4629 | LR: 7.81e-04 | Time: 13.4s
+2026-10-24 16:31:29,366 - INFO - Epoch [32/100] Loss: 5.4608 | LR: 7.68e-04 | Time: 13.4s
+2026-10-24 16:31:43,908 - INFO - Epoch [33/100] Loss: 5.4619 | LR: 7.55e-04 | Time: 13.5s
+2026-10-24 16:31:57,300 - INFO - Epoch [34/100] Loss: 5.4649 | LR: 7.41e-04 | Time: 13.4s
+2026-10-24 16:32:10,889 - INFO - Epoch [35/100] Loss: 5.4595 | LR: 7.27e-04 | Time: 13.6s
+2026-10-24 16:32:25,710 - INFO - Epoch [36/100] Loss: 5.4644 | LR: 7.13e-04 | Time: 13.8s
+2026-10-24 16:32:39,556 - INFO - Epoch [37/100] Loss: 5.4614 | LR: 6.99e-04 | Time: 13.8s
+2026-10-24 16:32:53,266 - INFO - Epoch [38/100] Loss: 5.4632 | LR: 6.84e-04 | Time: 13.7s
+2026-10-24 16:33:06,917 - INFO - Epoch [39/100] Loss: 5.4561 | LR: 6.69e-04 | Time: 13.6s
+2026-10-24 16:33:21,570 - INFO - Epoch [40/100] Loss: 5.4525 | LR: 6.55e-04 | Time: 13.6s
+2026-10-24 16:33:36,845 - INFO - Epoch [41/100] Loss: 5.4528 | LR: 6.39e-04 | Time: 13.7s
+2026-10-24 16:33:50,580 - INFO - Epoch [42/100] Loss: 5.4592 | LR: 6.24e-04 | Time: 13.7s
+2026-10-24 16:34:03,820 - INFO - Epoch [43/100] Loss: 5.4590 | LR: 6.09e-04 | Time: 13.2s
+2026-10-24 16:34:17,390 - INFO - Epoch [44/100] Loss: 5.4547 | LR: 5.94e-04 | Time: 13.6s
+2026-10-24 16:34:30,984 - INFO - Epoch [45/100] Loss: 5.4520 | LR: 5.78e-04 | Time: 13.6s
+2026-10-24 16:34:45,259 - INFO - Epoch [46/100] Loss: 5.4552 | LR: 5.63e-04 | Time: 13.4s
+2026-10-24 16:34:58,535 - INFO - Epoch [47/100] Loss: 5.4552 | LR: 5.47e-04 | Time: 13.3s
+2026-10-24 16:35:12,115 - INFO - Epoch [48/100] Loss: 5.4528 | LR: 5.31e-04 | Time: 13.6s
+2026-10-24 16:35:25,504 - INFO - Epoch [49/100] Loss: 5.4513 | LR: 5.16e-04 | Time: 13.4s
+2026-10-24 16:35:40,323 - INFO - Epoch [50/100] Loss: 5.4522 | LR: 5.00e-04 | Time: 13.8s
+2026-10-24 16:35:54,450 - INFO - Epoch [51/100] Loss: 5.4464 | LR: 4.84e-04 | Time: 13.5s
+2026-10-24 16:36:08,986 - INFO - Epoch [52/100] Loss: 5.4487 | LR: 4.69e-04 | Time: 13.7s
+2026-10-24 16:36:22,592 - INFO - Epoch [53/100] Loss: 5.4495 | LR: 4.53e-04 | Time: 13.6s
+2026-10-24 16:36:36,028 - INFO - Epoch [54/100] Loss: 5.4463 | LR: 4.37e-04 | Time: 13.4s
+2026-10-24 16:36:50,598 - INFO - Epoch [55/100] Loss: 5.4470 | LR: 4.22e-04 | Time: 13.6s
+2026-10-24 16:37:04,020 - INFO - Epoch [56/100] Loss: 5.4441 | LR: 4.06e-04 | Time: 13.4s
+2026-10-24 16:37:18,480 - INFO - Epoch [57/100] Loss: 5.4463 | LR: 3.91e-04 | Time: 13.5s
+2026-10-24 16:37:32,095 - INFO - Epoch [58/100] Loss: 5.4427 | LR: 3.76e-04 | Time: 13.6s
+2026-10-24 16:37:46,334 - INFO - Epoch [59/100] Loss: 5.4418 | LR: 3.61e-04 | Time: 13.5s
+2026-10-24 16:38:00,765 - INFO - Epoch [60/100] Loss: 5.4389 | LR: 3.45e-04 | Time: 13.4s
+2026-10-24 16:38:15,850 - INFO - Epoch [61/100] Loss: 5.4404 | LR: 3.31e-04 | Time: 13.5s
+2026-10-24 16:38:29,426 - INFO - Epoch [62/100] Loss: 5.4464 | LR: 3.16e-04 | Time: 13.6s
+2026-10-24 16:38:42,822 - INFO - Epoch [63/100] Loss: 5.4370 | LR: 3.01e-04 | Time: 13.4s
+2026-10-24 16:38:57,483 - INFO - Epoch [64/100] Loss: 5.4380 | LR: 2.87e-04 | Time: 13.4s
+2026-10-24 16:39:10,967 - INFO - Epoch [65/100] Loss: 5.4364 | LR: 2.73e-04 | Time: 13.5s
+2026-10-24 16:39:25,731 - INFO - Epoch [66/100] Loss: 5.4340 | LR: 2.59e-04 | Time: 13.8s
+2026-10-24 16:39:40,149 - INFO - Epoch [67/100] Loss: 5.4348 | LR: 2.45e-04 | Time: 13.4s
+2026-10-24 16:39:53,568 - INFO - Epoch [68/100] Loss: 5.4350 | LR: 2.32e-04 | Time: 13.4s
+2026-10-24 16:40:07,231 - INFO - Epoch [69/100] Loss: 5.4327 | LR: 2.19e-04 | Time: 13.7s
+2026-10-24 16:40:21,648 - INFO - Epoch [70/100] Loss: 5.4341 | LR: 2.06e-04 | Time: 13.5s
+2026-10-24 16:40:35,835 - INFO - Epoch [71/100] Loss: 5.4326 | LR: 1.94e-04 | Time: 13.6s
+2026-10-24 16:40:50,333 - INFO - Epoch [72/100] Loss: 5.4318 | LR: 1.81e-04 | Time: 13.7s
+2026-10-24 16:41:05,018 - INFO - Epoch [73/100] Loss: 5.4339 | LR: 1.69e-04 | Time: 13.7s
+2026-10-24 16:41:18,630 - INFO - Epoch [74/100] Loss: 5.4298 | LR: 1.58e-04 | Time: 13.6s
+2026-10-24 16:41:33,105 - INFO - Epoch [75/100] Loss: 5.4307 | LR: 1.46e-04 | Time: 13.6s
+2026-10-24 16:41:46,602 - INFO - Epoch [76/100] Loss: 5.4270 | LR: 1.36e-04 | Time: 13.5s
+2026-10-24 16:42:01,335 - INFO - Epoch [77/100] Loss: 5.4260 | LR: 1.25e-04 | Time: 13.7s
+2026-10-24 16:42:15,858 - INFO - Epoch [78/100] Loss: 5.4241 | LR: 1.15e-04 | Time: 13.7s
+2026-10-24 16:42:30,474 - INFO - Epoch [79/100] Loss: 5.4237 | LR: 1.05e-04 | Time: 13.7s
+2026-10-24 16:42:45,195 - INFO - Epoch [80/100] Loss: 5.4213 | LR: 9.55e-05 | Time: 13.7s
+2026-10-24 16:43:00,220 - INFO - Epoch [81/100] Loss: 5.4227 | LR: 8.65e-05 | Time: 13.5s
+2026-10-24 16:43:13,996 - INFO - Epoch [82/100] Loss: 5.4207 | LR: 7.78e-05 | Time: 13.8s
+2026-10-24 16:43:28,431 - INFO - Epoch [83/100] Loss: 5.4189 | LR: 6.96e-05 | Time: 13.7s
+2026-10-24 16:43:43,139 - INFO - Epoch [84/100] Loss: 5.4198 | LR: 6.18e-05 | Time: 13.7s
+2026-10-24 16:43:56,931 - INFO - Epoch [85/100] Loss: 5.4175 | LR: 5.45e-05 | Time: 13.8s
+2026-10-24 16:44:11,843 - INFO - Epoch [86/100] Loss: 5.4169 | LR: 4.76e-05 | Time: 13.8s
+2026-10-24 16:44:26,474 - INFO - Epoch [87/100] Loss: 5.4170 | LR: 4.11e-05 | Time: 13.6s
+2026-10-24 16:44:40,161 - INFO - Epoch [88/100] Loss: 5.4150 | LR: 3.51e-05 | Time: 13.7s
+2026-10-24 16:44:54,473 - INFO - Epoch [89/100] Loss: 5.4149 | LR: 2.96e-05 | Time: 13.5s
+2026-10-24 16:45:08,905 - INFO - Epoch [90/100] Loss: 5.4110 | LR: 2.45e-05 | Time: 13.6s
+2026-10-24 16:45:23,992 - INFO - Epoch [91/100] Loss: 5.4142 | LR: 1.99e-05 | Time: 13.7s
+2026-10-24 16:45:37,495 - INFO - Epoch [92/100] Loss: 5.4139 | LR: 1.57e-05 | Time: 13.5s
+2026-10-24 16:45:51,336 - INFO - Epoch [93/100] Loss: 5.4109 | LR: 1.20e-05 | Time: 13.8s
+2026-10-24 16:46:05,964 - INFO - Epoch [94/100] Loss: 5.4092 | LR: 8.86e-06 | Time: 13.6s
+2026-10-24 16:46:20,604 - INFO - Epoch [95/100] Loss: 5.4091 | LR: 6.16e-06 | Time: 13.6s
+2026-10-24 16:46:35,410 - INFO - Epoch [96/100] Loss: 5.4096 | LR: 3.94e-06 | Time: 13.8s
+2026-10-24 16:46:49,208 - INFO - Epoch [97/100] Loss: 5.4108 | LR: 2.22e-06 | Time: 13.8s
+2026-10-24 16:47:02,644 - INFO - Epoch [98/100] Loss: 5.4107 | LR: 9.87e-07 | Time: 13.4s
+2026-10-24 16:47:16,384 - INFO - Epoch [99/100] Loss: 5.4105 | LR: 2.47e-07 | Time: 13.7s
+2026-10-24 16:47:30,382 - INFO - Epoch [100/100] Loss: 5.4078 | LR: 0.00e+00 | Time: 14.0s
+2026-10-24 16:47:32,722 - INFO - ------------------------------------------------------------
+2026-10-24 16:47:32,722 - INFO - Pretrain done. Best loss: 5.4078
+2026-10-24 16:47:32,722 - INFO - Saved to output/checkpoints/baseline_pretrain_cnn/pretrain.pth
+2026-10-24 16:47:32,733 - INFO - ============================================================
+2026-10-24 16:47:32,733 - INFO - CONFIGURATION
+2026-10-24 16:47:32,733 - INFO - ============================================================
+2026-10-24 16:47:32,733 - INFO - [experiment]
+2026-10-24 16:47:32,733 - INFO -   exp_name: baseline_pretrain_cnn
+2026-10-24 16:47:32,733 - INFO -   seed: 922
+2026-10-24 16:47:32,733 - INFO - [model]
+2026-10-24 16:47:32,733 - INFO -   encoder_type: cnn
+2026-10-24 16:47:32,733 - INFO -   base_channel: 64
+2026-10-24 16:47:32,733 - INFO -   expansion: 4
+2026-10-24 16:47:32,733 - INFO -   deep_supervision: True
+2026-10-24 16:47:32,733 - INFO - [data]
+2026-10-24 16:47:32,733 - INFO -   image_size: 224
+2026-10-24 16:47:32,733 - INFO -   train_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+2026-10-24 16:47:32,733 - INFO -   val_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+2026-10-24 16:47:32,733 - INFO - [train]
+2026-10-24 16:47:32,734 - INFO -   epochs: 300
+2026-10-24 16:47:32,734 - INFO -   batch_size: 32
+2026-10-24 16:47:32,734 - INFO -   lr: 0.001
+2026-10-24 16:47:32,734 - INFO -   early_stopping: True
+2026-10-24 16:47:32,734 - INFO -   es_patience: 10
+2026-10-24 16:47:32,734 - INFO - ============================================================
+2026-10-24 16:47:33,174 - INFO - Loaded pretrained weights from output/checkpoints/baseline_pretrain_cnn/pretrain.pth
+2026-10-24 16:47:33,510 - INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+2026-10-24 16:47:33,514 - INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
+2026-10-24 16:47:33,514 - INFO - Train: 5716 samples | Val: 1429 samples
+2026-10-24 16:47:33,514 - INFO - Batch size: 32 | Steps/epoch: 178
+2026-10-24 16:47:33,514 - INFO - ------------------------------------------------------------
