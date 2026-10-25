@@ -1,8 +1,62 @@
-# QaTa-COV19 Dataset
-dataset: qata
+# IRIS Configuration - QaTa-COV19 Dataset
+
+project:
+  name: iris
+  dataset: qata
+  seed: 922
 
 data:
   root: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg"
   train_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train"
   val_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val"
   test_dir: "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test"
+  image_size: 224
+  num_workers: 4
+
+model:
+  clip_model: "openai/clip-vit-base-patch32"
+  max_token_len: 18
+  frozen_clip: true
+  base_channel: 64
+  num_heads: 8
+  dropout: 0.5
+  expansion: 4
+  encoder_type: "cnn"  # "cnn" or "mix"
+  deep_supervision: true
+  num_classes: 1
+  text_mask_rate: 0.3
+  img_mask_rate: 0.3
+
+pretrain:
+  enabled: true
+  epochs: 100
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  temperature: 0.07
+  eps: 0.8
+
+train:
+  epochs: 300
+  batch_size: 32
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  bce_weight: 0.5
+  grad_clip: 1.0
+  cosine_lr: true
+  loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+  asymmetric_weights:
+    - [0.5, 0.5]
+    - [0.4, 0.6]
+    - [0.3, 0.7]
+    - [0.2, 0.8]
+    - [0.1, 0.9]
+  early_stopping: true
+  es_patience: 10
+
+eval:
+  batch_size: 16
+  threshold: 0.5
+
+logging:
+  save_every: 10
