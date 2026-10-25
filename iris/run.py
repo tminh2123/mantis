@@ -43,9 +43,9 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
 
-def setup_logger(log_dir: str, mode: str) -> logging.Logger:
+def setup_logger(log_file: str) -> logging.Logger:
     """Setup logging to file and console."""
-    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
     
     logger = logging.getLogger('iris')
     logger.setLevel(logging.INFO)
@@ -58,7 +58,6 @@ def setup_logger(log_dir: str, mode: str) -> logging.Logger:
     logger.addHandler(console)
     
     # File handler - overwrite mode ('w')
-    log_file = os.path.join(log_dir, f'iris_{mode}.log')
     file_handler = logging.FileHandler(log_file, mode='w')
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
@@ -67,7 +66,7 @@ def setup_logger(log_dir: str, mode: str) -> logging.Logger:
     # Write header with timestamp
     logger.info("")
     logger.info("=" * 60)
-    logger.info(f"IRIS - {mode.upper()}")
+    logger.info(f"IRIS")
     logger.info(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
     logger.info("")
@@ -186,21 +185,9 @@ def pretrain(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logge
             best_loss = loss_meter.avg
             save_checkpoint(
                 {'epoch': epoch+1, 'model': model.state_dict(), 'best_loss': best_loss},
-                str(ckpt_dir / 'pretrain_best.pth')
-            )
-        
-        # Save checkpoint periodically
-        if (epoch + 1) % cfg['logging']['save_every'] == 0:
-            save_checkpoint(
-                {'epoch': epoch+1, 'model': model.state_dict()},
-                str(ckpt_dir / f'pretrain_epoch{epoch+1}.pth')
+                cfg['pretrain']['checkpoint']
             )
     
-    # Save final checkpoint
-    save_checkpoint(
-        {'epoch': pcfg['epochs'], 'model': model.state_dict(), 'best_loss': best_loss},
-        cfg['pretrain']['checkpoint']
-    )
     logger.info("-" * 60)
     logger.info(f"Pretrain done. Best loss: {best_loss:.4f}")
     logger.info(f"Saved to {cfg['pretrain']['checkpoint']}")
@@ -249,7 +236,7 @@ def train(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logger):
     
     val_loader = get_dataloader(
         cfg['data']['val_dir'],
-        batch_size=cfg['eval']['batch_size'],
+        batch_size=tcfg['batch_size'],
         image_size=cfg['data']['image_size'],
         augment=False,
         shuffle=False,
@@ -360,13 +347,6 @@ def train(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logger):
         else:
             no_improve += 1
         
-        # Save checkpoint periodically
-        if (epoch + 1) % cfg['logging']['save_every'] == 0:
-            save_checkpoint(
-                {'epoch': epoch+1, 'model': model.state_dict()},
-                str(ckpt_dir / f'epoch{epoch+1}.pth')
-            )
-        
         # Early stopping
         if tcfg['early_stopping'] and no_improve >= tcfg['es_patience']:
             logger.info(f"Early stopping at epoch {epoch+1} (no improvement for {no_improve} epochs)")
@@ -428,7 +408,7 @@ def full_evaluate(cfg: dict, model: IRIS, device: torch.device, logger: logging.
     # Test dataloader
     test_loader = get_dataloader(
         cfg['data']['test_dir'],
-        batch_size=cfg['eval']['batch_size'],
+        batch_size=cfg['train']['batch_size'],
         image_size=cfg['data']['image_size'],
         augment=False,
         shuffle=False,
@@ -481,7 +461,7 @@ def main():
     cfg['exp_name'] = exp_name
     
     output_dir = args.output_dir
-    cfg['logging']['log_dir'] = f"{output_dir}/logs/{exp_name}"
+    cfg['logging']['log_file'] = f"{output_dir}/logs/{exp_name}.log"
     cfg['logging']['checkpoint_dir'] = f"{output_dir}/checkpoints/{exp_name}"
     cfg['pretrain']['checkpoint'] = f"{output_dir}/checkpoints/{exp_name}/pretrain.pth"
     cfg['eval']['checkpoint'] = f"{output_dir}/checkpoints/{exp_name}/best.pth"
@@ -493,10 +473,9 @@ def main():
     set_seed(cfg['project']['seed'])
     device = get_device()
     
-    os.makedirs(cfg['logging']['log_dir'], exist_ok=True)
     os.makedirs(cfg['logging']['checkpoint_dir'], exist_ok=True)
     
-    logger = setup_logger(cfg['logging']['log_dir'], args.mode)
+    logger = setup_logger(cfg['logging']['log_file'])
     
     # Log experiment info
     logger.info(f"Experiment: {cfg['exp_name']}")

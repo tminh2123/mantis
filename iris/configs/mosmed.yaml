@@ -39,7 +39,7 @@ pretrain:
 train:
   epochs: 300
   batch_size: 32
-  lr: 1.0e-3
+  lr: 3.0e-4
   weight_decay: 1.0e-4
   bce_weight: 0.5
   grad_clip: 1.0
@@ -52,10 +52,9 @@ train:
     - [0.2, 0.8]
     - [0.1, 0.9]
   early_stopping: true
-  es_patience: 10
+  es_patience: 20
 
 eval:
-  batch_size: 16
   threshold: 0.5
 
 logging:

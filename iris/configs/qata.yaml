@@ -52,10 +52,9 @@ train:
     - [0.2, 0.8]
     - [0.1, 0.9]
   early_stopping: true
-  es_patience: 10
+  es_patience: 20
 
 eval:
-  batch_size: 16
   threshold: 0.5
 
 logging:
