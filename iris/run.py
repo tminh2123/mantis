@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from models import IRIS, DeepSupervisionLoss, CaCLLoss, DiceBCELoss
+from models.iris_medklip import IRISMedKLIP, build_iris_medklip
 from datasets import get_dataloader
 from utils import (
     compute_metrics, set_seed, load_config, get_device, 
@@ -80,30 +81,55 @@ def setup_logger(log_file: str, append: bool = False) -> logging.Logger:
     return logger
 
 
-def build_model(cfg: dict, device: torch.device) -> IRIS:
-    """Build IRIS model from config."""
+def build_model(cfg: dict, device: torch.device) -> nn.Module:
+    """Build IRIS or IRIS-MedKLIP model from config."""
     mcfg = cfg['model']
-    model = IRIS(
-        num_classes=mcfg['num_classes'],
-        img_size=cfg['data']['image_size'],
-        clip_model=mcfg['clip_model'],
-        max_token_len=mcfg['max_token_len'],
-        base_channel=mcfg['base_channel'],
-        num_heads=mcfg['num_heads'],
-        dropout=mcfg['dropout'],
-        expansion=mcfg['expansion'],
-        encoder_type=mcfg['encoder_type'],
-        deep_supervision=mcfg['deep_supervision'],
-        text_mask_rate=mcfg['text_mask_rate'],
-        img_mask_rate=mcfg['img_mask_rate'],
-    )
+    backbone = mcfg.get('backbone', 'clip')
+    
+    if backbone == 'medklip':
+        # Build IRIS with MedKLIP backbone
+        model = IRISMedKLIP(
+            num_classes=mcfg['num_classes'],
+            img_size=cfg['data']['image_size'],
+            medklip_visual_path=mcfg.get('medklip_visual_path'),
+            medklip_text_model=mcfg.get('medklip_text_model', 
+                "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"),
+            max_token_len=mcfg['max_token_len'],
+            base_channel=mcfg['base_channel'],
+            num_heads=mcfg['num_heads'],
+            dropout=mcfg['dropout'],
+            expansion=mcfg['expansion'],
+            deep_supervision=mcfg['deep_supervision'],
+            freeze_visual=mcfg.get('freeze_medklip_visual', False),
+            freeze_text=mcfg.get('freeze_medklip_text', True),
+            use_entity_translation=mcfg.get('use_entity_translation', True),
+            text_mask_rate=mcfg['text_mask_rate'],
+            img_mask_rate=mcfg['img_mask_rate'],
+        )
+    else:
+        # Default: Build IRIS with CLIP backbone
+        model = IRIS(
+            num_classes=mcfg['num_classes'],
+            img_size=cfg['data']['image_size'],
+            clip_model=mcfg['clip_model'],
+            max_token_len=mcfg['max_token_len'],
+            base_channel=mcfg['base_channel'],
+            num_heads=mcfg['num_heads'],
+            dropout=mcfg['dropout'],
+            expansion=mcfg['expansion'],
+            encoder_type=mcfg['encoder_type'],
+            deep_supervision=mcfg['deep_supervision'],
+            text_mask_rate=mcfg['text_mask_rate'],
+            img_mask_rate=mcfg['img_mask_rate'],
+        )
+    
     return model.to(device)
 
 
 # -----------------------------------------------------------------------------
 # Stage I: CaCL Pretraining
 # -----------------------------------------------------------------------------
-def pretrain(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logger):
+def pretrain(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Logger):
     """Stage I: Category-aware Contrastive Learning."""
     pcfg = cfg['pretrain']
     
@@ -204,7 +230,7 @@ def pretrain(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logge
 # -----------------------------------------------------------------------------
 # Stage II: Segmentation Training
 # -----------------------------------------------------------------------------
-def train(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logger):
+def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Logger):
     """Stage II: Segmentation Training with Deep Supervision."""
     tcfg = cfg['train']
     mcfg = cfg['model']
@@ -262,13 +288,20 @@ def train(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logger):
         logger.info("Using DiceBCE Loss")
     
     # Optimizer with different LR for visual encoder
-    visual_encoder_prefixes = ('down0', 'down1', 'down2', 'down3', 'down4', 'pool')
+    backbone = mcfg.get('backbone', 'clip')
+    if backbone == 'medklip':
+        # MedKLIP: visual_encoder is the ResNet50
+        visual_encoder_prefixes = ('visual_encoder',)
+    else:
+        # CLIP: original encoder structure
+        visual_encoder_prefixes = ('down0', 'down1', 'down2', 'down3', 'down4', 'pool')
+    
     visual_params = []
     other_params = []
     for n, p in model.named_parameters():
         if not p.requires_grad:
             continue
-        if n.startswith('lang_enc'):
+        if 'lang_enc' in n or 'text_encoder' in n:
             continue  # frozen
         if any(n.startswith(prefix) for prefix in visual_encoder_prefixes):
             visual_params.append(p)
@@ -368,7 +401,7 @@ def train(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logger):
 # Evaluation
 # -----------------------------------------------------------------------------
 @torch.no_grad()
-def evaluate(model: IRIS, loader: DataLoader, device: torch.device, threshold: float = 0.5) -> dict:
+def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, threshold: float = 0.5) -> dict:
     """Evaluate model on a dataloader."""
     model.eval()
     dice_meter = AverageMeter()
@@ -393,7 +426,7 @@ def evaluate(model: IRIS, loader: DataLoader, device: torch.device, threshold: f
     }
 
 
-def full_evaluate(cfg: dict, model: IRIS, device: torch.device, logger: logging.Logger):
+def full_evaluate(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Logger):
     """Full evaluation on test set."""
     logger.info("=" * 60)
     logger.info("EVALUATION ON TEST SET")
@@ -443,10 +476,15 @@ def parse_args():
     p.add_argument('--mode', default='full', choices=['pretrain', 'train', 'eval', 'full'])
     
     # Overrides
+    p.add_argument('--backbone', choices=['clip', 'medklip'], help='Backbone encoder')
     p.add_argument('--encoder_type', choices=['cnn', 'mix'])
     p.add_argument('--no_pretrain', action='store_true')
     p.add_argument('--checkpoint', help='Override checkpoint for eval')
     p.add_argument('--output_dir', default='output')
+    
+    # MedKLIP specific
+    p.add_argument('--medklip_visual_path', help='Path to MedKLIP pretrained visual weights')
+    p.add_argument('--medklip_text_model', help='HuggingFace model name for MedKLIP text encoder')
     
     return p.parse_args()
 
@@ -456,10 +494,18 @@ def main():
     cfg = load_config(args.config)
     
     # Apply CLI overrides
+    if args.backbone:
+        cfg['model']['backbone'] = args.backbone
     if args.encoder_type:
         cfg['model']['encoder_type'] = args.encoder_type
     if args.no_pretrain:
         cfg['pretrain']['enabled'] = False
+    
+    # MedKLIP specific overrides
+    if args.medklip_visual_path:
+        cfg['model']['medklip_visual_path'] = args.medklip_visual_path
+    if args.medklip_text_model:
+        cfg['model']['medklip_text_model'] = args.medklip_text_model
     
     # Set experiment name and paths
     dataset = cfg['project']['dataset']
