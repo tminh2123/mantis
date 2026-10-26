@@ -504,6 +504,10 @@ def parse_args():
     p.add_argument('--text_encoder', choices=['clip', 'medklip'], help='Text encoder type (ablation mode)')
     p.add_argument('--fusion_type', choices=['bcam', 'bifmd'], help='Fusion module type (ablation mode)')
     
+    # Training overrides
+    p.add_argument('--epochs', type=int, help='Override number of training epochs')
+    p.add_argument('--batch_size', type=int, help='Override batch size')
+    
     return p.parse_args()
 
 
@@ -532,6 +536,12 @@ def main():
         cfg['model']['text_encoder'] = args.text_encoder
     if args.fusion_type:
         cfg['model']['fusion_type'] = args.fusion_type
+    
+    # Training overrides
+    if args.epochs:
+        cfg['train']['epochs'] = args.epochs
+    if args.batch_size:
+        cfg['train']['batch_size'] = args.batch_size
     
     # Set experiment name and paths
     dataset = cfg['project']['dataset']
