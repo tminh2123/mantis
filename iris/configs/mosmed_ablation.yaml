@@ -1,0 +1,72 @@
+# IRIS Ablation Configuration - MosMed Dataset
+
+project:
+  name: iris-ablation
+  dataset: mosmed
+  seed: 922
+
+data:
+  root: "../../../dataset/MosMed"
+  train_dir: "../../../dataset/MosMed/train"
+  val_dir: "../../../dataset/MosMed/val"
+  test_dir: "../../../dataset/MosMed/test"
+  image_size: 224
+  num_workers: 4
+
+model:
+  backbone: "ablation"
+  visual_encoder: "medklip"
+  text_encoder: "clip"
+  fusion_type: "bcam"
+  
+  clip_model: "openai/clip-vit-base-patch32"
+  medklip_visual_path: "medklip_checkpoints/MedKLIP/checkpoint_final.pth"
+  medklip_text_model: "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"
+  freeze_medklip_visual: false
+  freeze_medklip_text: true
+  use_entity_translation: true
+  
+  max_token_len: 77
+  base_channel: 64
+  num_heads: 8
+  dropout: 0.5
+  expansion: 4
+  deep_supervision: true
+  num_classes: 1
+  text_mask_rate: 0.3
+  img_mask_rate: 0.3
+  frozen_clip: true
+  encoder_type: "cnn"
+
+pretrain:
+  enabled: false
+  epochs: 100
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  temperature: 0.07
+  eps: 0.8
+
+train:
+  epochs: 300
+  batch_size: 32
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  bce_weight: 0.5
+  grad_clip: 1.0
+  cosine_lr: true
+  loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+  asymmetric_weights:
+    - [0.5, 0.5]
+    - [0.4, 0.6]
+    - [0.3, 0.7]
+    - [0.2, 0.8]
+    - [0.1, 0.9]
+  early_stopping: true
+  es_patience: 20
+
+eval:
+  threshold: 0.5
+
+logging:
+  save_every: 10
