@@ -11,6 +11,7 @@ different channel dimensions.
 Ablation options:
   - visual_encoder: "cnn" (IRIS original) | "medklip" (MedKLIP ResNet50)
   - text_encoder: "clip" (IRIS original) | "medklip" (PubMedBERT + entity translation)
+  - fusion_type: "bcam" (original) | "bifmd" (BiFMD fusion)
 """
 
 import math
@@ -20,6 +21,7 @@ import torch.nn.functional as F
 from typing import List, Tuple, Optional, Dict
 
 from .medklip_encoder import MedKLIPVisualEncoder, MedKLIPTextEncoder, translate_entity
+from .bifmd import BiFMD
 from .iris import (
     IRIS,
     MLPGate, 
@@ -411,12 +413,14 @@ class IRISAblation(nn.Module):
     Supports mixing different visual and text encoders:
       - visual_encoder: "cnn" (IRIS original) | "medklip" (MedKLIP ResNet50)
       - text_encoder: "clip" (IRIS original) | "medklip" (PubMedBERT)
+      - fusion_type: "bcam" (IRIS original) | "bifmd" (BiFMD fusion)
     
     Ablation configurations:
       1. visual=cnn, text=clip       -> IRIS baseline
       2. visual=cnn, text=medklip    -> IRIS + MedKLIP text
       3. visual=medklip, text=clip   -> MedKLIP visual + CLIP text
       4. visual=medklip, text=medklip -> Full MedKLIP (current IRISMedKLIP)
+      5. Any combination + fusion=bifmd -> Use BiFMD fusion instead of BCAM
     """
     
     def __init__(
@@ -426,6 +430,8 @@ class IRISAblation(nn.Module):
         # Encoder selection
         visual_encoder_type: str = "cnn",  # "cnn" | "medklip"
         text_encoder_type: str = "clip",   # "clip" | "medklip"
+        # Fusion selection
+        fusion_type: str = "bcam",         # "bcam" | "bifmd"
         # CLIP settings (for text_encoder_type="clip")
         clip_model: str = "openai/clip-vit-base-patch32",
         # MedKLIP settings
@@ -448,6 +454,7 @@ class IRISAblation(nn.Module):
         
         self.visual_encoder_type = visual_encoder_type
         self.text_encoder_type = text_encoder_type
+        self.fusion_type = fusion_type
         self.deep_supervision = deep_supervision
         self.text_mask_rate = text_mask_rate
         self.img_mask_rate = img_mask_rate
@@ -500,10 +507,16 @@ class IRISAblation(nn.Module):
         
         img_scales = [img_size, img_size//2, img_size//4, img_size//8, img_size//16]
         
-        # Cross-modal fusion (BCAM at 3 scales)
-        self.fuse2 = BCAModuleMedKLIP(img_scales[2], base_channel * 2, self._text_dim, num_heads, dropout, expansion)
-        self.fuse3 = BCAModuleMedKLIP(img_scales[3], base_channel * 4, self._text_dim, num_heads, dropout, expansion)
-        self.fuse4 = BCAModuleMedKLIP(img_scales[4], base_channel * 8, self._text_dim, num_heads, dropout, expansion)
+        # Cross-modal fusion (BCAM or BiFMD at 3 scales)
+        if fusion_type == "bifmd":
+            self.fuse2 = BiFMD(channels=base_channel * 2, text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+            self.fuse3 = BiFMD(channels=base_channel * 4, text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+            self.fuse4 = BiFMD(channels=base_channel * 8, text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+        else:
+            # Default BCAM
+            self.fuse2 = BCAModuleMedKLIP(img_scales[2], base_channel * 2, self._text_dim, num_heads, dropout, expansion)
+            self.fuse3 = BCAModuleMedKLIP(img_scales[3], base_channel * 4, self._text_dim, num_heads, dropout, expansion)
+            self.fuse4 = BCAModuleMedKLIP(img_scales[4], base_channel * 8, self._text_dim, num_heads, dropout, expansion)
         
         # Decoder
         self.up3 = UpBlockMedKLIP(base_channel * 4, base_channel * 8, base_channel * 4)
@@ -686,12 +699,14 @@ def build_iris_ablation(config) -> IRISAblation:
       model:
         visual_encoder: "cnn" | "medklip"
         text_encoder: "clip" | "medklip"
+        fusion_type: "bcam" | "bifmd"
         
     Example configs for ablation study:
-      1. Baseline:         visual_encoder: cnn, text_encoder: clip
+      1. Baseline:         visual_encoder: cnn, text_encoder: clip, fusion_type: bcam
       2. Text only:        visual_encoder: cnn, text_encoder: medklip
       3. Visual only:      visual_encoder: medklip, text_encoder: clip
       4. Both:             visual_encoder: medklip, text_encoder: medklip
+      5. BiFMD fusion:     visual_encoder: cnn, text_encoder: clip, fusion_type: bifmd
     """
     mcfg = config.get('model', config)
     
@@ -700,6 +715,7 @@ def build_iris_ablation(config) -> IRISAblation:
         img_size=config.get('data', {}).get('image_size', 224),
         visual_encoder_type=mcfg.get('visual_encoder', 'cnn'),
         text_encoder_type=mcfg.get('text_encoder', 'clip'),
+        fusion_type=mcfg.get('fusion_type', 'bcam'),
         clip_model=mcfg.get('clip_model', 'openai/clip-vit-base-patch32'),
         medklip_visual_path=mcfg.get('medklip_visual_path', None),
         medklip_text_model=mcfg.get('medklip_text_model',

@@ -7,6 +7,7 @@ from .medklip_encoder import (
     translate_entity,
     MEDKLIP_ENTITY_DESCRIPTIONS
 )
+from .bifmd import BiFMD
 
 __all__ = [
     'IRIS',
@@ -20,4 +21,5 @@ __all__ = [
     'MedKLIPEncoders',
     'translate_entity',
     'MEDKLIP_ENTITY_DESCRIPTIONS',
+    'BiFMD',
 ]

@@ -502,6 +502,7 @@ def parse_args():
     # Ablation specific
     p.add_argument('--visual_encoder', choices=['cnn', 'medklip'], help='Visual encoder type (ablation mode)')
     p.add_argument('--text_encoder', choices=['clip', 'medklip'], help='Text encoder type (ablation mode)')
+    p.add_argument('--fusion_type', choices=['bcam', 'bifmd'], help='Fusion module type (ablation mode)')
     
     return p.parse_args()
 
@@ -529,6 +530,8 @@ def main():
         cfg['model']['visual_encoder'] = args.visual_encoder
     if args.text_encoder:
         cfg['model']['text_encoder'] = args.text_encoder
+    if args.fusion_type:
+        cfg['model']['fusion_type'] = args.fusion_type
     
     # Set experiment name and paths
     dataset = cfg['project']['dataset']

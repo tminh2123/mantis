@@ -1,26 +1,35 @@
 # IRIS Ablation Configuration - QaTa-COV19 Dataset
 # 
 # Ablation study configurations:
-#   1. visual=cnn, text=clip       -> IRIS baseline (original)
-#   2. visual=cnn, text=medklip    -> IRIS + MedKLIP text encoder
-#   3. visual=medklip, text=clip   -> MedKLIP visual + CLIP text
-#   4. visual=medklip, text=medklip -> Full MedKLIP
+#   Encoders:
+#     1. visual=cnn, text=clip       -> IRIS baseline (original)
+#     2. visual=cnn, text=medklip    -> IRIS + MedKLIP text encoder
+#     3. visual=medklip, text=clip   -> MedKLIP visual + CLIP text
+#     4. visual=medklip, text=medklip -> Full MedKLIP
+#   
+#   Fusion:
+#     - fusion_type=bcam  -> Original BCAM fusion
+#     - fusion_type=bifmd -> BiFMD fusion (FiLM-modulated)
 #
 # Usage examples:
-#   # Baseline (CNN + CLIP)
+#   # Baseline (CNN + CLIP + BCAM)
 #   python run.py --config configs/qata_ablation.yaml --tag ablation_baseline --mode train
 #
-#   # MedKLIP text only (CNN + MedKLIP text)
+#   # MedKLIP text only
 #   python run.py --config configs/qata_ablation.yaml --tag ablation_text_only \
 #     --visual_encoder cnn --text_encoder medklip --mode train
 #
-#   # MedKLIP visual only (MedKLIP visual + CLIP text)
+#   # MedKLIP visual only
 #   python run.py --config configs/qata_ablation.yaml --tag ablation_visual_only \
 #     --visual_encoder medklip --text_encoder clip --mode train
 #
-#   # Full MedKLIP (MedKLIP visual + MedKLIP text)
+#   # Full MedKLIP
 #   python run.py --config configs/qata_ablation.yaml --tag ablation_both \
 #     --visual_encoder medklip --text_encoder medklip --mode train
+#
+#   # BiFMD fusion
+#   python run.py --config configs/qata_ablation.yaml --tag ablation_bifmd \
+#     --fusion_type bifmd --mode train
 
 project:
   name: iris-ablation
@@ -42,6 +51,9 @@ model:
   # Encoder selection (only for backbone=ablation)
   visual_encoder: "cnn"     # "cnn" (IRIS original) | "medklip" (ResNet50)
   text_encoder: "clip"      # "clip" (IRIS original) | "medklip" (PubMedBERT)
+  
+  # Fusion selection (only for backbone=ablation)
+  fusion_type: "bcam"       # "bcam" (IRIS original) | "bifmd" (BiFMD fusion)
   
   # CLIP settings (for text_encoder=clip)
   clip_model: "openai/clip-vit-base-patch32"
