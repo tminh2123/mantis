@@ -6,10 +6,10 @@ project:
   seed: 922
 
 data:
-  root: "../../../dataset/MosMed"
-  train_dir: "../../../dataset/MosMed/train"
-  val_dir: "../../../dataset/MosMed/val"
-  test_dir: "../../../dataset/MosMed/test"
+  root: "../../../dataset/MosMedDataPlus"
+  train_dir: "../../../dataset/MosMedDataPlus/Train_Folder"
+  val_dir: "../../../dataset/MosMedDataPlus/Val_Folder"
+  test_dir: "../../../dataset/MosMedDataPlus/Test_Folder"
   image_size: 224
   num_workers: 4
 
