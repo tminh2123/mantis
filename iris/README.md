@@ -6,52 +6,55 @@ Text-guided medical image segmentation with MLP-only baseline (no KAN).
 
 | Dataset | Our Best | C2Seg Paper | MedLangViT | Model |
 |---------|----------|-------------|------------|-------|
-| QaTa-COV19 | **89.84%** Dice | 85.25% | 84.27% | `qata_nopretrain_cnn` |
-| MosMedData+ | **76.51%** Dice | 77.81% | 75.95% | `mosmed_pretrain_mix` |
+| QaTa-COV19 | **84.25%** Dice | 85.25% | 84.27% | `qata_nopretrain_cnn` |
+| MosMedData+ | **75.45%** Dice | 77.81% | 75.95% | `mosmed_pretrain_mix` |
+
+Note: All results use **Macro Dice** (per-sample average) for fair comparison with published papers.
 
 ## Experiment Results
 
 ### QaTa-COV19 Dataset (Chest X-ray)
 
-| Tag | Encoder | Pretrain | Val Dice | Test Dice | Test IoU |
-|-----|---------|----------|----------|-----------|----------|
-| **`nopretrain_cnn`** | CNN | No | 88.57% | **89.84%** | **81.74%** |
-| `nopretrain_mix` | Mix | No | 88.53% | 89.68% | 81.48% |
-| `pretrain_cnn` | CNN | Yes | 88.24% | 89.49% | 81.18% |
-| `pretrain_mix` | Mix | Yes | 88.36% | 89.47% | 81.17% |
-| MedLangViT | - | - | - | 84.27% | 75.93% |
-| ARSeg | - | - | - | 84.09% | 72.64% |
-| **C2Seg (Paper)** | - | - | - | **85.25%** | **76.97%** |
+| Tag | Encoder | Pretrain | Test Dice | Test IoU |
+|-----|---------|----------|-----------|----------|
+| **`nopretrain_cnn`** | CNN | No | **84.25%** | **75.61%** |
+| `nopretrain_mix` | Mix | No | 84.16% | 75.53% |
+| `pretrain_mix` | Mix | Yes | 84.00% | 75.20% |
+| `pretrain_cnn` | CNN | Yes | 83.72% | 74.85% |
+| MedLangViT | - | - | 84.27% | 75.93% |
+| ARSeg | - | - | 84.09% | 72.64% |
+| **C2Seg (Paper)** | - | - | **85.25%** | **76.97%** |
 
 ### MosMedData+ Dataset (CT Scan)
 
-| Tag | Encoder | Pretrain | Val Dice | Test Dice | Test IoU |
-|-----|---------|----------|----------|-----------|----------|
-| **`pretrain_mix`** | Mix | Yes | 77.99% | **76.51%** | **62.51%** |
-| `nopretrain_cnn` | CNN | No | 76.87% | 74.31% | 59.76% |
-| `nopretrain_mix` | Mix | No | 76.82% | 74.22% | 59.73% |
-| `pretrain_cnn` | CNN | Yes | 77.06% | 74.19% | 59.74% |
-| MedLangViT | - | - | - | 75.95% | 63.17% |
-| ARSeg | - | - | - | 73.24% | 59.82% |
-| **C2Seg (Paper)** | - | - | - | **77.81%** | **65.17%** |
+| Tag | Encoder | Pretrain | Test Dice | Test IoU |
+|-----|---------|----------|-----------|----------|
+| **`pretrain_mix`** | Mix | Yes | **75.45%** | **62.33%** |
+| `nopretrain_mix` | Mix | No | 73.08% | 59.29% |
+| `nopretrain_cnn` | CNN | No | 73.03% | 59.30% |
+| `pretrain_cnn` | CNN | Yes | 72.92% | 59.45% |
+| MedLangViT | - | - | 75.95% | 63.17% |
+| ARSeg | - | - | 73.24% | 59.82% |
+| **C2Seg (Paper)** | - | - | **77.81%** | **65.17%** |
 
 ### Key Findings
 
 **QaTa-COV19:**
-- **Pretrain hurts slightly**: Without pretrain is better (89.84% vs 89.49%)
-- **CNN and Mix similar**: Both achieve ~89.5-89.8%
-- **Best config**: CNN + No Pretrain (Dice: 89.84%, IoU: 81.74%)
-- **Beats all baselines**: +4.6% over C2Seg paper, +5.6% over MedLangViT
+- **Pretrain hurts slightly**: Without pretrain is better (84.25% vs 83.72%)
+- **CNN and Mix similar**: Both achieve ~84%
+- **Best config**: CNN + No Pretrain (Dice: 84.25%, IoU: 75.61%)
+- **Competitive with SOTA**: Close to C2Seg paper (85.25%) and MedLangViT (84.27%)
 
 **MosMedData+:**
-- **Pretrain helps for Mix**: 76.51% vs 74.22%
-- **Mix encoder better**: 76.51% vs 74.19% with pretrain
-- **Best config**: Mix + Pretrain (Dice: 76.51%, IoU: 62.51%)
-- **Competitive with SOTA**: Close to C2Seg paper (77.81%)
+- **Pretrain helps for Mix**: 75.45% vs 73.08%
+- **Mix encoder better**: 75.45% vs 72.92% with pretrain
+- **Best config**: Mix + Pretrain (Dice: 75.45%, IoU: 62.33%)
+- **Competitive with baselines**: Close to MedLangViT (75.95%)
 
 **General:**
-- Simple MLP with expansion=4 outperforms complex architectures
+- Simple MLP with expansion=4 achieves competitive results
 - Dataset characteristics matter: different optimal configs for different datasets
+- CaCL pretrain helps MosMed (CT) but slightly hurts QaTa (X-ray)
 
 ## Usage
 
@@ -65,7 +68,7 @@ python run.py --config configs/qata.yaml --tag nopretrain_cnn --no_pretrain
 # Use Mix encoder
 python run.py --config configs/qata.yaml --tag pretrain_mix --encoder_type mix
 
-# Eval only
+# Eval only (appends to existing log)
 python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 ```
 
@@ -145,6 +148,16 @@ Input (C) -> Linear (C -> 4C) -> GELU -> Dropout -> Linear (4C -> C) -> Output
 2. **Stage II (Train)**: Segmentation with Deep Supervision
    - Multi-scale auxiliary outputs
    - Asymmetric loss weighting for class imbalance
+
+## Metrics
+
+All results use **Macro Dice** (per-sample average):
+```python
+dice_per_sample = [dice(sample_i) for i in range(N)]
+macro_dice = mean(dice_per_sample)
+```
+
+This is the standard approach used in medical imaging papers, ensuring fair comparison regardless of image sizes or batch configurations.
 
 ## References
 
