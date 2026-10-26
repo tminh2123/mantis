@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from models import IRIS, DeepSupervisionLoss, CaCLLoss, DiceBCELoss
-from models.iris_medklip import IRISMedKLIP, build_iris_medklip
+from models.iris_medklip import IRISMedKLIP, build_iris_medklip, IRISAblation, build_iris_ablation
 from datasets import get_dataloader
 from utils import (
     compute_metrics, set_seed, load_config, get_device, 
@@ -86,8 +86,11 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
     mcfg = cfg['model']
     backbone = mcfg.get('backbone', 'clip')
     
-    if backbone == 'medklip':
-        # Build IRIS with MedKLIP backbone
+    if backbone == 'ablation':
+        # Build IRIS ablation model with flexible encoder selection
+        model = build_iris_ablation(cfg)
+    elif backbone == 'medklip':
+        # Build IRIS with MedKLIP backbone (both visual + text)
         model = IRISMedKLIP(
             num_classes=mcfg['num_classes'],
             img_size=cfg['data']['image_size'],
@@ -292,16 +295,26 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
     if backbone == 'medklip':
         # MedKLIP: visual_encoder is the ResNet50
         visual_encoder_prefixes = ('visual_encoder',)
+    elif backbone == 'ablation':
+        # Ablation: depends on visual_encoder_type
+        visual_type = mcfg.get('visual_encoder', 'cnn')
+        if visual_type == 'medklip':
+            visual_encoder_prefixes = ('visual_encoder',)
+        else:
+            visual_encoder_prefixes = ('down0', 'down1', 'down2', 'down3', 'pool')
     else:
         # CLIP: original encoder structure
         visual_encoder_prefixes = ('down0', 'down1', 'down2', 'down3', 'down4', 'pool')
+    
+    # Text encoder prefixes to exclude (frozen)
+    text_encoder_prefixes = ('lang_enc', 'text_encoder')
     
     visual_params = []
     other_params = []
     for n, p in model.named_parameters():
         if not p.requires_grad:
             continue
-        if 'lang_enc' in n or 'text_encoder' in n:
+        if any(prefix in n for prefix in text_encoder_prefixes):
             continue  # frozen
         if any(n.startswith(prefix) for prefix in visual_encoder_prefixes):
             visual_params.append(p)
@@ -476,7 +489,7 @@ def parse_args():
     p.add_argument('--mode', default='full', choices=['pretrain', 'train', 'eval', 'full'])
     
     # Overrides
-    p.add_argument('--backbone', choices=['clip', 'medklip'], help='Backbone encoder')
+    p.add_argument('--backbone', choices=['clip', 'medklip', 'ablation'], help='Backbone type')
     p.add_argument('--encoder_type', choices=['cnn', 'mix'])
     p.add_argument('--no_pretrain', action='store_true')
     p.add_argument('--checkpoint', help='Override checkpoint for eval')
@@ -485,6 +498,10 @@ def parse_args():
     # MedKLIP specific
     p.add_argument('--medklip_visual_path', help='Path to MedKLIP pretrained visual weights')
     p.add_argument('--medklip_text_model', help='HuggingFace model name for MedKLIP text encoder')
+    
+    # Ablation specific
+    p.add_argument('--visual_encoder', choices=['cnn', 'medklip'], help='Visual encoder type (ablation mode)')
+    p.add_argument('--text_encoder', choices=['clip', 'medklip'], help='Text encoder type (ablation mode)')
     
     return p.parse_args()
 
@@ -506,6 +523,12 @@ def main():
         cfg['model']['medklip_visual_path'] = args.medklip_visual_path
     if args.medklip_text_model:
         cfg['model']['medklip_text_model'] = args.medklip_text_model
+    
+    # Ablation specific overrides
+    if args.visual_encoder:
+        cfg['model']['visual_encoder'] = args.visual_encoder
+    if args.text_encoder:
+        cfg['model']['text_encoder'] = args.text_encoder
     
     # Set experiment name and paths
     dataset = cfg['project']['dataset']
