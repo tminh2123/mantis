@@ -43,8 +43,13 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
 
-def setup_logger(log_file: str) -> logging.Logger:
-    """Setup logging to file and console."""
+def setup_logger(log_file: str, append: bool = False) -> logging.Logger:
+    """Setup logging to file and console.
+    
+    Args:
+        log_file: Path to log file
+        append: If True, append to existing log file. If False, overwrite.
+    """
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     
     logger = logging.getLogger('iris')
@@ -57,8 +62,9 @@ def setup_logger(log_file: str) -> logging.Logger:
     console.setFormatter(logging.Formatter('%(asctime)s - %(message)s', '%H:%M:%S'))
     logger.addHandler(console)
     
-    # File handler - overwrite mode ('w')
-    file_handler = logging.FileHandler(log_file, mode='w')
+    # File handler - append ('a') or overwrite ('w')
+    file_mode = 'a' if append else 'w'
+    file_handler = logging.FileHandler(log_file, mode=file_mode)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logger.addHandler(file_handler)
@@ -475,7 +481,9 @@ def main():
     
     os.makedirs(cfg['logging']['checkpoint_dir'], exist_ok=True)
     
-    logger = setup_logger(cfg['logging']['log_file'])
+    # Use append mode for eval-only to preserve training logs
+    append_log = (args.mode == 'eval')
+    logger = setup_logger(cfg['logging']['log_file'], append=append_log)
     
     # Log experiment info
     logger.info(f"Experiment: {cfg['exp_name']}")
