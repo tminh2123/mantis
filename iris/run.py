@@ -441,7 +441,6 @@ def parse_args():
     p.add_argument('--no_pretrain', action='store_true')
     p.add_argument('--checkpoint', help='Override checkpoint for eval')
     p.add_argument('--output_dir', default='output')
-    p.add_argument('--batch_size', type=int, help='Override batch size (useful for eval with limited RAM)')
     
     return p.parse_args()
 
@@ -455,8 +454,6 @@ def main():
         cfg['model']['encoder_type'] = args.encoder_type
     if args.no_pretrain:
         cfg['pretrain']['enabled'] = False
-    if args.batch_size:
-        cfg['train']['batch_size'] = args.batch_size
     
     # Set experiment name and paths
     dataset = cfg['project']['dataset']
