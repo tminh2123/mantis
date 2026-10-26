@@ -41,7 +41,7 @@ model:
   encoder_type: "cnn"
 
 pretrain:
-  enabled: true
+  enabled: false  # Not needed - MedKLIP is already pretrained
   epochs: 100
   batch_size: 64
   lr: 1.0e-3
