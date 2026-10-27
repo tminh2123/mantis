@@ -732,3 +732,304 @@ def build_iris_ablation(config) -> IRISAblation:
         text_mask_rate=mcfg.get('text_mask_rate', 0.3),
         img_mask_rate=mcfg.get('img_mask_rate', 0.3),
     )
+
+
+# =============================================================================
+# IRIS Ablation Native - No channel adapters, uses native ResNet50 channels
+# =============================================================================
+
+class IRISAblationNative(nn.Module):
+    """
+    IRIS Ablation with native ResNet50 channels (no channel adapters).
+    
+    ResNet50 channels: stem=64, layer1=256, layer2=512, layer3=1024
+    
+    This version uses ResNet's native channel dimensions directly,
+    avoiding the information bottleneck from channel adapters.
+    
+    Only supports MedKLIP visual encoder (ResNet50).
+    """
+    
+    # ResNet50 native channel dimensions
+    RESNET_CHANNELS = {
+        'stem': 64,
+        'layer1': 256,
+        'layer2': 512,
+        'layer3': 1024,
+    }
+    
+    def __init__(
+        self,
+        num_classes: int = 1,
+        img_size: int = 224,
+        # Text encoder selection
+        text_encoder_type: str = "clip",   # "clip" | "medklip"
+        # Fusion selection
+        fusion_type: str = "bcam",         # "bcam" | "bifmd"
+        # CLIP settings
+        clip_model: str = "openai/clip-vit-base-patch32",
+        # MedKLIP settings
+        medklip_visual_path: Optional[str] = None,
+        medklip_text_model: str = "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext",
+        # Common settings
+        max_token_len: int = 77,
+        num_heads: int = 8,
+        dropout: float = 0.5,
+        expansion: int = 4,
+        deep_supervision: bool = True,
+        freeze_visual: bool = False,
+        freeze_text: bool = True,
+        use_entity_translation: bool = True,
+        text_mask_rate: float = 0.3,
+        img_mask_rate: float = 0.3,
+    ):
+        super().__init__()
+        
+        self.text_encoder_type = text_encoder_type
+        self.fusion_type = fusion_type
+        self.deep_supervision = deep_supervision
+        self.text_mask_rate = text_mask_rate
+        self.img_mask_rate = img_mask_rate
+        self.use_entity_translation = use_entity_translation and text_encoder_type == "medklip"
+        
+        # Native ResNet channels
+        ch = self.RESNET_CHANNELS
+        
+        # MedKLIP Visual Encoder (ResNet50) - always used
+        self.visual_encoder = MedKLIPVisualEncoder(
+            pretrained_path=medklip_visual_path,
+            d_model=256,
+            freeze=freeze_visual
+        )
+        
+        # Build text encoder
+        if text_encoder_type == "medklip":
+            self.text_encoder = MedKLIPTextEncoder(
+                model_name=medklip_text_model,
+                max_length=max_token_len,
+                freeze=freeze_text
+            )
+            self.text_proj = nn.Linear(self.text_encoder.hidden_size, 512)
+            self._text_dim = 512
+        else:
+            # Use CLIP text encoder
+            from transformers import CLIPModel, CLIPTokenizer
+            clip = CLIPModel.from_pretrained(clip_model)
+            self.lang_enc = clip.text_model
+            self.tokenizer = CLIPTokenizer.from_pretrained(clip_model)
+            self._text_dim = self.lang_enc.config.hidden_size  # 512
+            if freeze_text:
+                for p in self.lang_enc.parameters():
+                    p.requires_grad = False
+        
+        self.max_token_len = max_token_len
+        
+        img_scales = [img_size, img_size//2, img_size//4, img_size//8, img_size//16]
+        
+        # Cross-modal fusion with native ResNet channels
+        # layer1=256, layer2=512, layer3=1024
+        if fusion_type == "bifmd":
+            self.fuse2 = BiFMD(channels=ch['layer1'], text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+            self.fuse3 = BiFMD(channels=ch['layer2'], text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+            self.fuse4 = BiFMD(channels=ch['layer3'], text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+        else:
+            # Default BCAM
+            self.fuse2 = BCAModuleMedKLIP(img_scales[2], ch['layer1'], self._text_dim, num_heads, dropout, expansion)
+            self.fuse3 = BCAModuleMedKLIP(img_scales[3], ch['layer2'], self._text_dim, num_heads, dropout, expansion)
+            self.fuse4 = BCAModuleMedKLIP(img_scales[4], ch['layer3'], self._text_dim, num_heads, dropout, expansion)
+        
+        # Decoder with native ResNet channels
+        # up3: skip=layer2(512), up=layer3(1024) -> out=512
+        # up2: skip=layer1(256), up=512 -> out=256
+        # up1: skip=stem(64), up=256 -> out=64
+        self.up3 = UpBlockMedKLIP(ch['layer2'], ch['layer3'], ch['layer2'])  # 512, 1024 -> 512
+        self.up2 = UpBlockMedKLIP(ch['layer1'], ch['layer2'], ch['layer1'])  # 256, 512 -> 256
+        self.up1 = UpBlockMedKLIP(ch['stem'], ch['layer1'], ch['stem'])      # 64, 256 -> 64
+        
+        # Final upsample
+        self.final_up = nn.Sequential(
+            nn.ConvTranspose2d(ch['stem'], ch['stem'], kernel_size=2, stride=2),
+            ConvBNReLU(ch['stem'], ch['stem']),
+        )
+        
+        # Output heads
+        self.out0 = nn.Conv2d(ch['stem'], num_classes, 1)
+        
+        if self.deep_supervision:
+            self.out1 = nn.Conv2d(ch['stem'], num_classes, 1)      # after up1: 64
+            self.out2 = nn.Conv2d(ch['layer1'], num_classes, 1)    # after fuse2: 256
+            self.out3 = nn.Conv2d(ch['layer2'], num_classes, 1)    # after fuse3: 512
+        
+        # Projections for contrastive learning
+        self.img_proj = nn.Linear(ch['layer3'], 256)
+        self.text_proj_cl = nn.Linear(self._text_dim, 256)
+    
+    def _encode_visual(self, x: torch.Tensor) -> Tuple[torch.Tensor, ...]:
+        """Encode with MedKLIP ResNet50 - no adapters, native channels."""
+        features = self.visual_encoder(x)
+        v0 = features['stem']    # [B, 64, H/2, W/2]
+        v1 = features['layer1']  # [B, 256, H/4, W/4]
+        v2 = features['layer2']  # [B, 512, H/8, W/8]
+        v3 = features['layer3']  # [B, 1024, H/16, W/16]
+        return v0, v1, v2, v3
+    
+    def _encode_text_clip(self, texts: List[str], device: torch.device) -> torch.Tensor:
+        """Encode with CLIP text encoder."""
+        tokens = self.tokenizer(
+            texts,
+            padding='max_length',
+            truncation=True,
+            max_length=self.max_token_len,
+            return_tensors='pt'
+        ).to(device)
+        
+        with torch.no_grad():
+            out = self.lang_enc(**tokens)
+        
+        return out.last_hidden_state  # [B, N, 512]
+    
+    def _encode_text_medklip(self, texts: List[str], device: torch.device) -> torch.Tensor:
+        """Encode with MedKLIP text encoder (PubMedBERT)."""
+        if self.use_entity_translation:
+            texts = [translate_entity(t) if len(t.split()) <= 3 else t for t in texts]
+        
+        token_emb, _ = self.text_encoder(texts, device)
+        token_emb = self.text_proj(token_emb)  # [B, N, 512]
+        return token_emb
+    
+    def _apply_text_mask(self, token_emb: torch.Tensor) -> torch.Tensor:
+        """Apply random masking to text tokens during training."""
+        if not self.training or self.text_mask_rate <= 0:
+            return token_emb
+        
+        B, N, D = token_emb.shape
+        mask = torch.rand(B, N, device=token_emb.device) > self.text_mask_rate
+        mask[:, 0] = True
+        mask = mask.unsqueeze(-1).expand_as(token_emb)
+        return token_emb * mask.float()
+
+    def _apply_img_mask(self, img_feat: torch.Tensor) -> torch.Tensor:
+        """Apply random patch masking to image features during training."""
+        if not self.training or self.img_mask_rate <= 0:
+            return img_feat
+        
+        B, C, H, W = img_feat.shape
+        patch_size = max(1, H // 7)
+        pH, pW = H // patch_size, W // patch_size
+        
+        patch_mask = torch.rand(B, 1, pH, pW, device=img_feat.device) > self.img_mask_rate
+        mask = F.interpolate(patch_mask.float(), size=(H, W), mode='nearest')
+        return img_feat * mask
+
+    def forward(
+        self, 
+        images: torch.Tensor, 
+        texts: Optional[List[str]] = None
+    ) -> Dict[str, torch.Tensor]:
+        """Forward pass."""
+        device = images.device
+        
+        # Encode text
+        l = None
+        if texts is not None:
+            if self.text_encoder_type == "medklip":
+                l = self._encode_text_medklip(texts, device)
+            else:
+                l = self._encode_text_clip(texts, device)
+            l = self._apply_text_mask(l)
+        
+        # Encode visual (native ResNet channels)
+        v0, v1, v2, v3 = self._encode_visual(images)
+        
+        v3 = self._apply_img_mask(v3)
+        
+        # Cross-modal fusion + decoder
+        if l is not None:
+            f3 = self.fuse4(v3, l)       # [B, 1024, 14, 14]
+            up3 = self.up3(v2, f3)       # [B, 512, 28, 28]
+            f2 = self.fuse3(up3, l)      # [B, 512, 28, 28]
+            up2 = self.up2(v1, f2)       # [B, 256, 56, 56]
+            f1 = self.fuse2(up2, l)      # [B, 256, 56, 56]
+            up1 = self.up1(v0, f1)       # [B, 64, 112, 112]
+        else:
+            up3 = self.up3(v2, v3)
+            up2 = self.up2(v1, up3)
+            up1 = self.up1(v0, up2)
+            f1, f2, f3 = up2, up3, v3
+        
+        up0 = self.final_up(up1)         # [B, 64, 224, 224]
+        
+        pred = self.out0(up0)
+        outputs = {'pred': pred}
+
+        if self.deep_supervision and self.training:
+            outputs['aux_preds'] = [
+                self.out1(up1),   # 64ch
+                self.out2(f1),    # 256ch
+                self.out3(f2),    # 512ch
+            ]
+        
+        return outputs
+
+    def get_contrastive_embeddings(
+        self, 
+        images: torch.Tensor, 
+        texts: List[str]
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """For CaCL pretraining."""
+        device = images.device
+        
+        # Encode image
+        _, _, _, v3 = self._encode_visual(images)
+        v_global = F.adaptive_avg_pool2d(v3, 1).flatten(1)
+        
+        # Encode text
+        if self.text_encoder_type == "medklip":
+            token_emb = self._encode_text_medklip(texts, device)
+            sent_emb = token_emb[:, 0, :]  # CLS token
+        else:
+            token_emb = self._encode_text_clip(texts, device)
+            sent_emb = token_emb.mean(dim=1)
+        
+        v = F.normalize(self.img_proj(v_global), dim=-1)
+        l = F.normalize(self.text_proj_cl(sent_emb), dim=-1)
+        l_raw = F.normalize(sent_emb.detach().float(), dim=-1)
+        
+        return v, l, l_raw
+
+
+def build_iris_ablation_native(config) -> IRISAblationNative:
+    """
+    Build IRIS ablation native model from config.
+    
+    Uses native ResNet50 channels without adapters.
+    Only supports MedKLIP visual encoder.
+    
+    Config options:
+      model:
+        backbone: "ablation_native"
+        text_encoder: "clip" | "medklip"
+        fusion_type: "bcam" | "bifmd"
+    """
+    mcfg = config.get('model', config)
+    
+    return IRISAblationNative(
+        num_classes=mcfg.get('num_classes', 1),
+        img_size=config.get('data', {}).get('image_size', 224),
+        text_encoder_type=mcfg.get('text_encoder', 'clip'),
+        fusion_type=mcfg.get('fusion_type', 'bcam'),
+        clip_model=mcfg.get('clip_model', 'openai/clip-vit-base-patch32'),
+        medklip_visual_path=mcfg.get('medklip_visual_path', None),
+        medklip_text_model=mcfg.get('medklip_text_model',
+            "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"),
+        max_token_len=mcfg.get('max_token_len', 77),
+        num_heads=mcfg.get('num_heads', 8),
+        dropout=mcfg.get('dropout', 0.5),
+        expansion=mcfg.get('expansion', 4),
+        deep_supervision=mcfg.get('deep_supervision', True),
+        freeze_visual=mcfg.get('freeze_medklip_visual', False),
+        freeze_text=mcfg.get('freeze_medklip_text', True),
+        use_entity_translation=mcfg.get('use_entity_translation', True),
+        text_mask_rate=mcfg.get('text_mask_rate', 0.3),
+        img_mask_rate=mcfg.get('img_mask_rate', 0.3),
+    )

@@ -15,7 +15,11 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from models import IRIS, DeepSupervisionLoss, CaCLLoss, DiceBCELoss
-from models.iris_medklip import IRISMedKLIP, build_iris_medklip, IRISAblation, build_iris_ablation
+from models.iris_medklip import (
+    IRISMedKLIP, build_iris_medklip, 
+    IRISAblation, build_iris_ablation,
+    IRISAblationNative, build_iris_ablation_native
+)
 from datasets import get_dataloader
 from utils import (
     compute_metrics, set_seed, load_config, get_device, 
@@ -86,7 +90,10 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
     mcfg = cfg['model']
     backbone = mcfg.get('backbone', 'clip')
     
-    if backbone == 'ablation':
+    if backbone == 'ablation_native':
+        # Build IRIS ablation model with native ResNet50 channels (no adapters)
+        model = build_iris_ablation_native(cfg)
+    elif backbone == 'ablation':
         # Build IRIS ablation model with flexible encoder selection
         model = build_iris_ablation(cfg)
     elif backbone == 'medklip':
@@ -295,7 +302,7 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
     if backbone == 'medklip':
         # MedKLIP: visual_encoder is the ResNet50
         visual_encoder_prefixes = ('visual_encoder',)
-    elif backbone == 'ablation':
+    elif backbone in ('ablation', 'ablation_native'):
         # Ablation: depends on visual_encoder_type
         visual_type = mcfg.get('visual_encoder', 'cnn')
         if visual_type == 'medklip':
@@ -489,7 +496,7 @@ def parse_args():
     p.add_argument('--mode', default='full', choices=['pretrain', 'train', 'eval', 'full'])
     
     # Overrides
-    p.add_argument('--backbone', choices=['clip', 'medklip', 'ablation'], help='Backbone type')
+    p.add_argument('--backbone', choices=['clip', 'medklip', 'ablation', 'ablation_native'], help='Backbone type')
     p.add_argument('--encoder_type', choices=['cnn', 'mix'])
     p.add_argument('--no_pretrain', action='store_true')
     p.add_argument('--checkpoint', help='Override checkpoint for eval')
