@@ -64,18 +64,18 @@ We conducted an ablation study to evaluate different text encoders and fusion mo
 
 | Component | Options | Description |
 |-----------|---------|-------------|
-| Visual Encoder | MedKLIP | Pre-trained medical vision encoder (fixed) |
-| Text Encoder | CLIP, MedKLIP | CLIP (~106M params) vs MedKLIP/PubMedBERT (~153M params) |
+| Visual Encoder | MedKLIP | Pre-trained medical vision encoder (trainable) |
+| Text Encoder | CLIP, MedKLIP | General vs Medical-domain text encoder (frozen) |
 | Fusion Module | BCAM, BiFMD | Bidirectional Cross-Attention vs Bidirectional Feature Mixing Decoder |
 
 ### QaTa-COV19 Results
 
-| Text Encoder | Fusion | Dice (%) | IoU (%) | Params |
-|--------------|--------|----------|---------|--------|
-| CLIP | BCAM | **81.59** | **72.06** | ~106M |
-| MedKLIP | BCAM | 80.78 | 71.11 | ~153M |
-| CLIP | BiFMD | 80.28 | 70.41 | ~106M |
-| MedKLIP | BiFMD | 79.07 | 69.39 | ~153M |
+| Text Encoder | Fusion | Dice (%) | IoU (%) |
+|--------------|--------|----------|---------|
+| CLIP | BCAM | **81.59** | **72.06** |
+| MedKLIP | BCAM | 80.78 | 71.11 |
+| CLIP | BiFMD | 80.28 | 70.41 |
+| MedKLIP | BiFMD | 79.07 | 69.39 |
 
 ### Ablation Analysis
 
@@ -91,14 +91,8 @@ We conducted an ablation study to evaluate different text encoders and fusion mo
 - With BiFMD: CLIP +1.21% Dice (80.28% vs 79.07%)
 - Despite MedKLIP being medical-domain pretrained, CLIP generalizes better
 
-**Efficiency:**
-- CLIP text encoder: ~106M parameters
-- MedKLIP text encoder: ~153M parameters (+47M)
-- CLIP achieves better results with fewer parameters
-
 **Best Configuration:**
 - **MedKLIP Visual + CLIP Text + BCAM Fusion** = 81.59% Dice
-- Lighter and more effective than full MedKLIP configuration
 
 ### Running Ablation
 
