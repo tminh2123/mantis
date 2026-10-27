@@ -20,7 +20,7 @@ model:
   
   # Visual encoder: "cnn" (ImageNet ResNet50) or "medklip" (MedKLIP ResNet50)
   visual_encoder: "medklip"
-  medklip_visual_path: "../../../weights/medklip/medklip_resnet50.pth"
+  medklip_visual_path: "medklip_checkpoints/MedKLIP/checkpoint_final.pth"
   freeze_visual: false
   
   # Text encoder: "clip" (CLIP ViT) or "medklip" (PubMedBERT)
