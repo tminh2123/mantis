@@ -1033,3 +1033,286 @@ def build_iris_ablation_native(config) -> IRISAblationNative:
         text_mask_rate=mcfg.get('text_mask_rate', 0.3),
         img_mask_rate=mcfg.get('img_mask_rate', 0.3),
     )
+
+
+# =============================================================================
+# IRISAblationWithAdapter - Frozen MedKLIP encoder with trainable adapters
+# =============================================================================
+
+class IRISAblationWithAdapter(nn.Module):
+    """
+    IRIS with frozen MedKLIP visual encoder and trainable adapters.
+    
+    The visual encoder is completely frozen. Lightweight adapters are added
+    after each encoder stage to adapt features for the segmentation task.
+    
+    This approach:
+    - Preserves pretrained MedKLIP representations
+    - Adds task-specific adaptation with minimal parameters
+    - Reduces overfitting compared to full fine-tuning
+    
+    Args:
+        num_classes: Number of output classes
+        img_size: Input image size
+        text_encoder_type: "clip" or "medklip"
+        fusion_type: "bcam" or "bifmd"
+        adapter_type: "bottleneck", "spatial", or "multiscale"
+        adapter_reduction: Channel reduction ratio for adapters
+        adapter_scale: Initial scale factor for adapter outputs
+        ... (other args same as IRISAblation)
+    """
+    
+    def __init__(
+        self,
+        num_classes: int = 1,
+        img_size: int = 224,
+        text_encoder_type: str = "clip",
+        fusion_type: str = "bcam",
+        adapter_type: str = "bottleneck",
+        adapter_reduction: int = 4,
+        adapter_scale: float = 0.1,
+        clip_model: str = "openai/clip-vit-base-patch32",
+        medklip_visual_path: Optional[str] = None,
+        medklip_text_model: str = "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext",
+        max_token_len: int = 77,
+        base_channel: int = 64,
+        num_heads: int = 8,
+        dropout: float = 0.5,
+        expansion: int = 4,
+        deep_supervision: bool = True,
+        freeze_text: bool = True,
+        use_entity_translation: bool = True,
+        text_mask_rate: float = 0.3,
+        img_mask_rate: float = 0.3,
+    ):
+        super().__init__()
+        
+        self.num_classes = num_classes
+        self.img_size = img_size
+        self.deep_supervision = deep_supervision
+        self.text_mask_rate = text_mask_rate
+        self.img_mask_rate = img_mask_rate
+        self.use_entity_translation = use_entity_translation and text_encoder_type == 'medklip'
+        
+        # Import adapter factory
+        from .adapters import get_adapter
+        
+        # =====================================================================
+        # Visual Encoder: MedKLIP ResNet50 (ALWAYS FROZEN)
+        # =====================================================================
+        self.visual_encoder = MedKLIPVisualEncoder(
+            pretrained_path=medklip_visual_path,
+            freeze=True,  # Always frozen when using adapters
+        )
+        
+        # ResNet50 channel dimensions
+        ch = {'stem': 64, 'layer1': 256, 'layer2': 512, 'layer3': 1024}
+        
+        # =====================================================================
+        # Visual Adapters (trainable)
+        # =====================================================================
+        self.adapt_stem = get_adapter(adapter_type, ch['stem'], adapter_reduction, adapter_scale)
+        self.adapt_l1 = get_adapter(adapter_type, ch['layer1'], adapter_reduction, adapter_scale)
+        self.adapt_l2 = get_adapter(adapter_type, ch['layer2'], adapter_reduction, adapter_scale)
+        self.adapt_l3 = get_adapter(adapter_type, ch['layer3'], adapter_reduction, adapter_scale)
+        
+        # Channel adapters to match decoder scale
+        self.ch_adapt_stem = nn.Conv2d(ch['stem'], base_channel, kernel_size=1)
+        self.ch_adapt_l1 = nn.Conv2d(ch['layer1'], base_channel * 2, kernel_size=1)
+        self.ch_adapt_l2 = nn.Conv2d(ch['layer2'], base_channel * 4, kernel_size=1)
+        self.ch_adapt_l3 = nn.Conv2d(ch['layer3'], base_channel * 8, kernel_size=1)
+        
+        # =====================================================================
+        # Text Encoder
+        # =====================================================================
+        if text_encoder_type == 'medklip':
+            from transformers import AutoTokenizer, AutoModel
+            self.text_encoder = MedKLIPTextEncoder(
+                model_name=medklip_text_model,
+                max_length=max_token_len,
+                freeze=freeze_text,
+            )
+            self.text_proj = nn.Linear(self.text_encoder.hidden_size, 512)
+            self._text_dim = 512
+        else:
+            from transformers import CLIPTokenizer, CLIPTextModel
+            self.tokenizer = CLIPTokenizer.from_pretrained(clip_model)
+            self.text_encoder = CLIPTextModel.from_pretrained(clip_model)
+            if freeze_text:
+                for p in self.text_encoder.parameters():
+                    p.requires_grad = False
+            self.text_proj = None
+            self._text_dim = 512
+        
+        self._text_encoder_type = text_encoder_type
+        
+        # =====================================================================
+        # Fusion Modules
+        # =====================================================================
+        img_scales = [img_size, img_size//2, img_size//4, img_size//8, img_size//16]
+        
+        if fusion_type == "bifmd":
+            self.fuse2 = BiFMD(channels=base_channel * 2, text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+            self.fuse3 = BiFMD(channels=base_channel * 4, text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+            self.fuse4 = BiFMD(channels=base_channel * 8, text_dim=self._text_dim, num_heads=num_heads, expansion_ratio=expansion)
+        else:
+            self.fuse2 = BCAModuleMedKLIP(img_scales[2], base_channel * 2, self._text_dim, num_heads, dropout, expansion)
+            self.fuse3 = BCAModuleMedKLIP(img_scales[3], base_channel * 4, self._text_dim, num_heads, dropout, expansion)
+            self.fuse4 = BCAModuleMedKLIP(img_scales[4], base_channel * 8, self._text_dim, num_heads, dropout, expansion)
+        
+        self._fusion_type = fusion_type
+        
+        # =====================================================================
+        # Decoder
+        # =====================================================================
+        self.up4 = UpBlockMedKLIP(base_channel * 4, base_channel * 8, base_channel * 4)
+        self.up3 = UpBlockMedKLIP(base_channel * 2, base_channel * 4, base_channel * 2)
+        self.up2 = UpBlockMedKLIP(base_channel, base_channel * 2, base_channel)
+        
+        # Final prediction
+        self.final = nn.Conv2d(base_channel, num_classes, kernel_size=1)
+        
+        # Deep supervision heads
+        if deep_supervision:
+            self.aux_head4 = nn.Conv2d(base_channel * 8, num_classes, kernel_size=1)
+            self.aux_head3 = nn.Conv2d(base_channel * 4, num_classes, kernel_size=1)
+            self.aux_head2 = nn.Conv2d(base_channel * 2, num_classes, kernel_size=1)
+            self.aux_head1 = nn.Conv2d(base_channel, num_classes, kernel_size=1)
+        
+        # =====================================================================
+        # Contrastive Learning projections
+        # =====================================================================
+        self.text_proj_gate = nn.Linear(self._text_dim, base_channel * 8)
+        self.img_proj = nn.Linear(base_channel * 8, 256)
+        self.text_proj_cl = nn.Linear(self._text_dim, 256)
+    
+    def _encode_visual(self, x: torch.Tensor) -> Tuple[torch.Tensor, ...]:
+        """Encode image through frozen MedKLIP + adapters."""
+        features = self.visual_encoder(x)
+        
+        # Apply adapters then channel projection
+        f0 = self.ch_adapt_stem(self.adapt_stem(features['stem']))
+        f1 = self.ch_adapt_l1(self.adapt_l1(features['layer1']))
+        f2 = self.ch_adapt_l2(self.adapt_l2(features['layer2']))
+        f3 = self.ch_adapt_l3(self.adapt_l3(features['layer3']))
+        
+        return f0, f1, f2, f3
+    
+    def _encode_text(self, texts: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Encode text using selected encoder."""
+        device = next(self.parameters()).device
+        
+        if self._text_encoder_type == 'medklip':
+            if self.use_entity_translation:
+                texts = [translate_entity(t) for t in texts]
+            text_output = self.text_encoder(texts)
+            token_emb = self.text_proj(text_output['last_hidden_state'])
+            sentence_emb = self.text_proj(text_output['pooler_output'])
+        else:
+            tokens = self.tokenizer(
+                texts,
+                padding='max_length',
+                truncation=True,
+                max_length=77,
+                return_tensors='pt'
+            ).to(device)
+            
+            outputs = self.text_encoder(**tokens)
+            token_emb = outputs.last_hidden_state
+            sentence_emb = token_emb[torch.arange(len(texts)), tokens.attention_mask.sum(1) - 1]
+        
+        return token_emb, sentence_emb
+    
+    def forward(self, images: torch.Tensor, texts: List[str]) -> Dict[str, torch.Tensor]:
+        """Forward pass."""
+        # Encode
+        f0, f1, f2, f3 = self._encode_visual(images)
+        token_emb, sentence_emb = self._encode_text(texts)
+        
+        # Apply text masking during training
+        if self.training and self.text_mask_rate > 0:
+            mask = torch.rand(token_emb.size(0), token_emb.size(1), 1, device=token_emb.device)
+            token_emb = token_emb * (mask > self.text_mask_rate).float()
+        
+        # Fusion
+        fused2 = self.fuse2(f1, token_emb)
+        fused3 = self.fuse3(f2, token_emb)
+        fused4 = self.fuse4(f3, token_emb)
+        
+        # Decoder
+        d3 = self.up4(fused3, fused4)
+        d2 = self.up3(fused2, d3)
+        d1 = self.up2(f0, d2)
+        
+        # Upsample to original size
+        pred = F.interpolate(self.final(d1), size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
+        
+        outputs = {'pred': pred}
+        
+        if self.deep_supervision:
+            aux4 = F.interpolate(self.aux_head4(fused4), size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
+            aux3 = F.interpolate(self.aux_head3(d3), size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
+            aux2 = F.interpolate(self.aux_head2(d2), size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
+            aux1 = F.interpolate(self.aux_head1(d1), size=(self.img_size, self.img_size), mode='bilinear', align_corners=True)
+            outputs['aux_preds'] = [aux1, aux2, aux3, aux4]
+        
+        return outputs
+    
+    def get_contrastive_embeddings(
+        self,
+        images: torch.Tensor,
+        texts: List[str],
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Get embeddings for contrastive learning."""
+        _, _, _, f3 = self._encode_visual(images)
+        token_emb, sentence_emb = self._encode_text(texts)
+        
+        # Global average pool visual features
+        v = F.adaptive_avg_pool2d(f3, 1).flatten(1)
+        v = F.normalize(self.img_proj(v), dim=-1)
+        
+        # Text embeddings
+        l = F.normalize(self.text_proj_cl(sentence_emb), dim=-1)
+        l_raw = F.normalize(sentence_emb, dim=-1)
+        
+        return v, l, l_raw
+
+
+def build_iris_ablation_with_adapter(config) -> IRISAblationWithAdapter:
+    """
+    Build IRIS ablation model with adapters.
+    
+    Config options:
+      model:
+        backbone: "ablation_adapter"
+        adapter_type: "bottleneck" | "spatial" | "multiscale"
+        adapter_reduction: 4 (default)
+        adapter_scale: 0.1 (default)
+        text_encoder: "clip" | "medklip"
+        fusion_type: "bcam" | "bifmd"
+    """
+    mcfg = config.get('model', config)
+    
+    return IRISAblationWithAdapter(
+        num_classes=mcfg.get('num_classes', 1),
+        img_size=config.get('data', {}).get('image_size', 224),
+        text_encoder_type=mcfg.get('text_encoder', 'clip'),
+        fusion_type=mcfg.get('fusion_type', 'bcam'),
+        adapter_type=mcfg.get('adapter_type', 'bottleneck'),
+        adapter_reduction=mcfg.get('adapter_reduction', 4),
+        adapter_scale=mcfg.get('adapter_scale', 0.1),
+        clip_model=mcfg.get('clip_model', 'openai/clip-vit-base-patch32'),
+        medklip_visual_path=mcfg.get('medklip_visual_path', None),
+        medklip_text_model=mcfg.get('medklip_text_model',
+            "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"),
+        max_token_len=mcfg.get('max_token_len', 77),
+        base_channel=mcfg.get('base_channel', 64),
+        num_heads=mcfg.get('num_heads', 8),
+        dropout=mcfg.get('dropout', 0.5),
+        expansion=mcfg.get('expansion', 4),
+        deep_supervision=mcfg.get('deep_supervision', True),
+        freeze_text=mcfg.get('freeze_medklip_text', True),
+        use_entity_translation=mcfg.get('use_entity_translation', True),
+        text_mask_rate=mcfg.get('text_mask_rate', 0.3),
+        img_mask_rate=mcfg.get('img_mask_rate', 0.3),
+    )

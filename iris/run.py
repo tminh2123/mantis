@@ -18,7 +18,8 @@ from models import IRIS, DeepSupervisionLoss, CaCLLoss, DiceBCELoss
 from models.iris_medklip import (
     IRISMedKLIP, build_iris_medklip, 
     IRISAblation, build_iris_ablation,
-    IRISAblationNative, build_iris_ablation_native
+    IRISAblationNative, build_iris_ablation_native,
+    IRISAblationWithAdapter, build_iris_ablation_with_adapter
 )
 from datasets import get_dataloader
 from utils import (
@@ -90,7 +91,10 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
     mcfg = cfg['model']
     backbone = mcfg.get('backbone', 'clip')
     
-    if backbone == 'ablation_native':
+    if backbone == 'ablation_adapter':
+        # Build IRIS ablation with adapters (frozen MedKLIP + trainable adapters)
+        model = build_iris_ablation_with_adapter(cfg)
+    elif backbone == 'ablation_native':
         # Build IRIS ablation model with native ResNet50 channels (no adapters)
         model = build_iris_ablation_native(cfg)
     elif backbone == 'ablation':
@@ -302,10 +306,10 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
     if backbone == 'medklip':
         # MedKLIP: visual_encoder is the ResNet50
         visual_encoder_prefixes = ('visual_encoder',)
-    elif backbone in ('ablation', 'ablation_native'):
+    elif backbone in ('ablation', 'ablation_native', 'ablation_adapter'):
         # Ablation: depends on visual_encoder_type
         visual_type = mcfg.get('visual_encoder', 'cnn')
-        if visual_type == 'medklip':
+        if visual_type == 'medklip' or backbone in ('ablation_native', 'ablation_adapter'):
             visual_encoder_prefixes = ('visual_encoder',)
         else:
             visual_encoder_prefixes = ('down0', 'down1', 'down2', 'down3', 'pool')
@@ -496,7 +500,7 @@ def parse_args():
     p.add_argument('--mode', default='full', choices=['pretrain', 'train', 'eval', 'full'])
     
     # Overrides
-    p.add_argument('--backbone', choices=['clip', 'medklip', 'ablation', 'ablation_native'], help='Backbone type')
+    p.add_argument('--backbone', choices=['clip', 'medklip', 'ablation', 'ablation_native', 'ablation_adapter'], help='Backbone type')
     p.add_argument('--encoder_type', choices=['cnn', 'mix'])
     p.add_argument('--no_pretrain', action='store_true')
     p.add_argument('--checkpoint', help='Override checkpoint for eval')
@@ -512,6 +516,12 @@ def parse_args():
     p.add_argument('--fusion_type', choices=['bcam', 'bifmd'], help='Fusion module type (ablation mode)')
     p.add_argument('--freeze_visual', action='store_true', help='Freeze visual encoder (MedKLIP)')
     p.add_argument('--freeze_text', action='store_true', help='Freeze text encoder')
+    
+    # Adapter specific
+    p.add_argument('--adapter_type', choices=['bottleneck', 'spatial', 'multiscale'], 
+                   default='bottleneck', help='Adapter type (for ablation_adapter backbone)')
+    p.add_argument('--adapter_reduction', type=int, default=4, help='Adapter channel reduction ratio')
+    p.add_argument('--adapter_scale', type=float, default=0.1, help='Initial adapter scale')
     
     # Training overrides
     p.add_argument('--epochs', type=int, help='Override number of training epochs')
@@ -549,6 +559,14 @@ def main():
         cfg['model']['freeze_medklip_visual'] = True
     if args.freeze_text:
         cfg['model']['freeze_medklip_text'] = True
+    
+    # Adapter overrides
+    if args.adapter_type:
+        cfg['model']['adapter_type'] = args.adapter_type
+    if args.adapter_reduction:
+        cfg['model']['adapter_reduction'] = args.adapter_reduction
+    if args.adapter_scale:
+        cfg['model']['adapter_scale'] = args.adapter_scale
     
     # Training overrides
     if args.epochs:
