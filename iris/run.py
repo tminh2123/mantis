@@ -510,6 +510,8 @@ def parse_args():
     p.add_argument('--visual_encoder', choices=['cnn', 'medklip'], help='Visual encoder type (ablation mode)')
     p.add_argument('--text_encoder', choices=['clip', 'medklip'], help='Text encoder type (ablation mode)')
     p.add_argument('--fusion_type', choices=['bcam', 'bifmd'], help='Fusion module type (ablation mode)')
+    p.add_argument('--freeze_visual', action='store_true', help='Freeze visual encoder (MedKLIP)')
+    p.add_argument('--freeze_text', action='store_true', help='Freeze text encoder')
     
     # Training overrides
     p.add_argument('--epochs', type=int, help='Override number of training epochs')
@@ -543,6 +545,10 @@ def main():
         cfg['model']['text_encoder'] = args.text_encoder
     if args.fusion_type:
         cfg['model']['fusion_type'] = args.fusion_type
+    if args.freeze_visual:
+        cfg['model']['freeze_medklip_visual'] = True
+    if args.freeze_text:
+        cfg['model']['freeze_medklip_text'] = True
     
     # Training overrides
     if args.epochs:
