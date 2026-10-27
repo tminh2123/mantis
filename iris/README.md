@@ -56,6 +56,64 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 - Dataset characteristics matter: different optimal configs for different datasets
 - CaCL pretrain helps MosMed (CT) but slightly hurts QaTa (X-ray)
 
+## Ablation Study: Text Encoder and Fusion Module
+
+We conducted an ablation study to evaluate different text encoders and fusion modules while keeping MedKLIP visual encoder fixed.
+
+### Configurations
+
+| Component | Options | Description |
+|-----------|---------|-------------|
+| Visual Encoder | MedKLIP | Pre-trained medical vision encoder (fixed) |
+| Text Encoder | CLIP, MedKLIP | CLIP (~106M params) vs MedKLIP/PubMedBERT (~153M params) |
+| Fusion Module | BCAM, BiFMD | Bidirectional Cross-Attention vs Bidirectional Feature Mixing Decoder |
+
+### QaTa-COV19 Results
+
+| Text Encoder | Fusion | Dice (%) | IoU (%) | Params |
+|--------------|--------|----------|---------|--------|
+| CLIP | BCAM | **81.59** | **72.06** | ~106M |
+| MedKLIP | BCAM | 80.78 | 71.11 | ~153M |
+| CLIP | BiFMD | 80.28 | 70.41 | ~106M |
+| MedKLIP | BiFMD | 79.07 | 69.39 | ~153M |
+
+### Ablation Analysis
+
+**BCAM vs BiFMD:**
+- BCAM outperforms BiFMD consistently across both text encoders
+- With CLIP text: BCAM +1.31% Dice (81.59% vs 80.28%)
+- With MedKLIP text: BCAM +1.71% Dice (80.78% vs 79.07%)
+- BCAM's bidirectional cross-attention provides better feature fusion
+
+**CLIP vs MedKLIP Text Encoder:**
+- CLIP text encoder outperforms MedKLIP text encoder
+- With BCAM: CLIP +0.81% Dice (81.59% vs 80.78%)
+- With BiFMD: CLIP +1.21% Dice (80.28% vs 79.07%)
+- Despite MedKLIP being medical-domain pretrained, CLIP generalizes better
+
+**Efficiency:**
+- CLIP text encoder: ~106M parameters
+- MedKLIP text encoder: ~153M parameters (+47M)
+- CLIP achieves better results with fewer parameters
+
+**Best Configuration:**
+- **MedKLIP Visual + CLIP Text + BCAM Fusion** = 81.59% Dice
+- Lighter and more effective than full MedKLIP configuration
+
+### Running Ablation
+
+```bash
+# Run all 4 ablation experiments
+./scripts/run_ablation.sh
+
+# Quick test (2 epochs)
+./scripts/run_ablation_test.sh
+```
+
+### Ablation Config
+
+See `configs/qata_ablation.yaml` and `configs/mosmed_ablation.yaml` for ablation configurations.
+
 ## Usage
 
 ```bash
