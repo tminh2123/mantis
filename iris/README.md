@@ -13,91 +13,68 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 
 ## Experiment Results
 
+### Configuration Legend
+
+| Column | Values | Description |
+|--------|--------|-------------|
+| Pretrain | Yes/No | CaCL contrastive learning stage |
+| Visual | CNN, Mix, MedKLIP | Visual encoder type |
+| Text | CLIP, MedKLIP | Text encoder (frozen) |
+| Fusion | BCAM, BiFMD | Fusion module type |
+
 ### QaTa-COV19 Dataset (Chest X-ray)
 
-| Tag | Encoder | Pretrain | Test Dice | Test IoU |
-|-----|---------|----------|-----------|----------|
-| **`nopretrain_cnn`** | CNN | No | **84.25%** | **75.61%** |
-| `nopretrain_mix` | Mix | No | 84.16% | 75.53% |
-| `pretrain_mix` | Mix | Yes | 84.00% | 75.20% |
-| `pretrain_cnn` | CNN | Yes | 83.72% | 74.85% |
-| MedLangViT | - | - | 84.27% | 75.93% |
-| ARSeg | - | - | 84.09% | 72.64% |
-| **C2Seg (Paper)** | - | - | **85.25%** | **76.97%** |
+| Tag | Pretrain | Visual | Text | Fusion | Dice (%) | IoU (%) |
+|-----|----------|--------|------|--------|----------|---------|
+| **`nopretrain_cnn`** | No | CNN | CLIP | BCAM | **84.25** | **75.61** |
+| `nopretrain_mix` | No | Mix | CLIP | BCAM | 84.16 | 75.53 |
+| `pretrain_mix` | Yes | Mix | CLIP | BCAM | 84.00 | 75.20 |
+| `pretrain_cnn` | Yes | CNN | CLIP | BCAM | 83.72 | 74.85 |
+| `baseline_medklip_clip_bcam` | No | MedKLIP | CLIP | BCAM | 81.59 | 72.06 |
+| `baseline_medklip_medklip_bcam` | No | MedKLIP | MedKLIP | BCAM | 80.78 | 71.11 |
+| `baseline_medklip_clip_bifmd` | No | MedKLIP | CLIP | BiFMD | 80.28 | 70.41 |
+| `baseline_medklip_medklip_bifmd` | No | MedKLIP | MedKLIP | BiFMD | 79.07 | 69.39 |
+| MedLangViT | - | - | - | - | 84.27 | 75.93 |
+| ARSeg | - | - | - | - | 84.09 | 72.64 |
+| **C2Seg (Paper)** | - | - | - | - | **85.25** | **76.97** |
 
 ### MosMedData+ Dataset (CT Scan)
 
-| Tag | Encoder | Pretrain | Test Dice | Test IoU |
-|-----|---------|----------|-----------|----------|
-| **`pretrain_mix`** | Mix | Yes | **75.45%** | **62.33%** |
-| `nopretrain_mix` | Mix | No | 73.08% | 59.29% |
-| `nopretrain_cnn` | CNN | No | 73.03% | 59.30% |
-| `pretrain_cnn` | CNN | Yes | 72.92% | 59.45% |
-| MedLangViT | - | - | 75.95% | 63.17% |
-| ARSeg | - | - | 73.24% | 59.82% |
-| **C2Seg (Paper)** | - | - | **77.81%** | **65.17%** |
+| Tag | Pretrain | Visual | Text | Fusion | Dice (%) | IoU (%) |
+|-----|----------|--------|------|--------|----------|---------|
+| **`pretrain_mix`** | Yes | Mix | CLIP | BCAM | **75.45** | **62.33** |
+| `nopretrain_mix` | No | Mix | CLIP | BCAM | 73.08 | 59.29 |
+| `nopretrain_cnn` | No | CNN | CLIP | BCAM | 73.03 | 59.30 |
+| `pretrain_cnn` | Yes | CNN | CLIP | BCAM | 72.92 | 59.45 |
+| MedLangViT | - | - | - | - | 75.95 | 63.17 |
+| ARSeg | - | - | - | - | 73.24 | 59.82 |
+| **C2Seg (Paper)** | - | - | - | - | **77.81** | **65.17** |
 
 ### Key Findings
 
-**QaTa-COV19:**
-- **Pretrain hurts slightly**: Without pretrain is better (84.25% vs 83.72%)
-- **CNN and Mix similar**: Both achieve ~84%
-- **Best config**: CNN + No Pretrain (Dice: 84.25%, IoU: 75.61%)
-- **Competitive with SOTA**: Close to C2Seg paper (85.25%) and MedLangViT (84.27%)
+**Visual Encoder:**
+- CNN/Mix (custom) outperform MedKLIP visual encoder on QaTa
+- Best: CNN without pretrain (84.25%) vs MedKLIP+CLIP+BCAM (81.59%)
 
-**MosMedData+:**
-- **Pretrain helps for Mix**: 75.45% vs 73.08%
-- **Mix encoder better**: 75.45% vs 72.92% with pretrain
-- **Best config**: Mix + Pretrain (Dice: 75.45%, IoU: 62.33%)
-- **Competitive with baselines**: Close to MedLangViT (75.95%)
-
-**General:**
-- Simple MLP with expansion=4 achieves competitive results
-- Dataset characteristics matter: different optimal configs for different datasets
-- CaCL pretrain helps MosMed (CT) but slightly hurts QaTa (X-ray)
-
-## Ablation Study: Text Encoder and Fusion Module
-
-We conducted an ablation study to evaluate different text encoders and fusion modules while keeping MedKLIP visual encoder fixed.
-
-### Configurations
-
-| Component | Options | Description |
-|-----------|---------|-------------|
-| Visual Encoder | MedKLIP | Pre-trained medical vision encoder (trainable) |
-| Text Encoder | CLIP, MedKLIP | General vs Medical-domain text encoder (frozen) |
-| Fusion Module | BCAM, BiFMD | Bidirectional Cross-Attention vs Bidirectional Feature Mixing Decoder |
-
-### QaTa-COV19 Results
-
-| Text Encoder | Fusion | Dice (%) | IoU (%) |
-|--------------|--------|----------|---------|
-| CLIP | BCAM | **81.59** | **72.06** |
-| MedKLIP | BCAM | 80.78 | 71.11 |
-| CLIP | BiFMD | 80.28 | 70.41 |
-| MedKLIP | BiFMD | 79.07 | 69.39 |
-
-### Ablation Analysis
-
-**BCAM vs BiFMD:**
-- BCAM outperforms BiFMD consistently across both text encoders
-- With CLIP text: BCAM +1.31% Dice (81.59% vs 80.28%)
-- With MedKLIP text: BCAM +1.71% Dice (80.78% vs 79.07%)
-- BCAM's bidirectional cross-attention provides better feature fusion
-
-**CLIP vs MedKLIP Text Encoder:**
+**Text Encoder:**
 - CLIP text encoder outperforms MedKLIP text encoder
-- With BCAM: CLIP +0.81% Dice (81.59% vs 80.78%)
-- With BiFMD: CLIP +1.21% Dice (80.28% vs 79.07%)
-- Despite MedKLIP being medical-domain pretrained, CLIP generalizes better
+- With MedKLIP visual + BCAM: CLIP +0.81% Dice (81.59% vs 80.78%)
 
-**Best Configuration:**
-- **MedKLIP Visual + CLIP Text + BCAM Fusion** = 81.59% Dice
+**Fusion Module:**
+- BCAM outperforms BiFMD consistently (~1.3-1.7% Dice improvement)
+
+**Pretrain (CaCL):**
+- Hurts QaTa slightly (84.25% vs 83.72% for CNN)
+- Helps MosMed significantly (75.45% vs 73.08% for Mix)
+
+**Best Configurations:**
+- QaTa: CNN + No Pretrain + CLIP + BCAM = **84.25%** Dice
+- MosMed: Mix + Pretrain + CLIP + BCAM = **75.45%** Dice
 
 ### Running Ablation
 
 ```bash
-# Run all 4 ablation experiments
+# Run all ablation experiments (MedKLIP visual)
 ./scripts/run_ablation.sh
 
 # Quick test (2 epochs)
