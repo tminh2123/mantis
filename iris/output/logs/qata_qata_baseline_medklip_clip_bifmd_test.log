@@ -1,0 +1,101 @@
+2026-10-26 21:21:12,488 - INFO - 
+2026-10-26 21:21:12,488 - INFO - ============================================================
+2026-10-26 21:21:12,488 - INFO - IRIS
+2026-10-26 21:21:12,488 - INFO - Started: 2026-10-26 21:21:12
+2026-10-26 21:21:12,488 - INFO - ============================================================
+2026-10-26 21:21:12,488 - INFO - 
+2026-10-26 21:21:12,488 - INFO - Experiment: qata_qata_baseline_medklip_clip_bifmd_test
+2026-10-26 21:21:12,488 - INFO - Device: cuda
+2026-10-26 21:21:12,491 - INFO - GPU: NVIDIA A100-PCIE-40GB
+2026-10-26 21:21:12,491 - INFO - 
+2026-10-26 21:21:17,847 - INFO - Model parameters: 106,199,841
+2026-10-26 21:21:17,848 - INFO - Pretrain is disabled, skipping Stage I
+2026-10-26 21:21:17,848 - INFO - ============================================================
+2026-10-26 21:21:17,848 - INFO - CONFIGURATION
+2026-10-26 21:21:17,848 - INFO - ============================================================
+2026-10-26 21:21:17,848 - INFO - [project]
+2026-10-26 21:21:17,848 - INFO -   name: iris-ablation
+2026-10-26 21:21:17,848 - INFO -   dataset: qata
+2026-10-26 21:21:17,848 - INFO -   seed: 922
+2026-10-26 21:21:17,848 - INFO - [data]
+2026-10-26 21:21:17,848 - INFO -   root: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg
+2026-10-26 21:21:17,848 - INFO -   train_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+2026-10-26 21:21:17,848 - INFO -   val_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+2026-10-26 21:21:17,848 - INFO -   test_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
+2026-10-26 21:21:17,848 - INFO -   image_size: 224
+2026-10-26 21:21:17,848 - INFO -   num_workers: 4
+2026-10-26 21:21:17,848 - INFO - [model]
+2026-10-26 21:21:17,848 - INFO -   backbone: ablation
+2026-10-26 21:21:17,848 - INFO -   visual_encoder: medklip
+2026-10-26 21:21:17,848 - INFO -   text_encoder: clip
+2026-10-26 21:21:17,848 - INFO -   fusion_type: bifmd
+2026-10-26 21:21:17,848 - INFO -   clip_model: openai/clip-vit-base-patch32
+2026-10-26 21:21:17,848 - INFO -   medklip_visual_path: medklip_checkpoints/MedKLIP/checkpoint_final.pth
+2026-10-26 21:21:17,848 - INFO -   medklip_text_model: microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext
+2026-10-26 21:21:17,848 - INFO -   freeze_medklip_visual: False
+2026-10-26 21:21:17,848 - INFO -   freeze_medklip_text: True
+2026-10-26 21:21:17,848 - INFO -   use_entity_translation: True
+2026-10-26 21:21:17,848 - INFO -   max_token_len: 77
+2026-10-26 21:21:17,849 - INFO -   base_channel: 64
+2026-10-26 21:21:17,849 - INFO -   num_heads: 8
+2026-10-26 21:21:17,849 - INFO -   dropout: 0.5
+2026-10-26 21:21:17,849 - INFO -   expansion: 4
+2026-10-26 21:21:17,849 - INFO -   deep_supervision: True
+2026-10-26 21:21:17,849 - INFO -   num_classes: 1
+2026-10-26 21:21:17,849 - INFO -   text_mask_rate: 0.3
+2026-10-26 21:21:17,849 - INFO -   img_mask_rate: 0.3
+2026-10-26 21:21:17,849 - INFO -   frozen_clip: True
+2026-10-26 21:21:17,849 - INFO -   encoder_type: cnn
+2026-10-26 21:21:17,849 - INFO - [pretrain]
+2026-10-26 21:21:17,849 - INFO -   enabled: False
+2026-10-26 21:21:17,849 - INFO -   epochs: 100
+2026-10-26 21:21:17,849 - INFO -   batch_size: 64
+2026-10-26 21:21:17,849 - INFO -   lr: 0.001
+2026-10-26 21:21:17,849 - INFO -   weight_decay: 0.0001
+2026-10-26 21:21:17,849 - INFO -   temperature: 0.07
+2026-10-26 21:21:17,849 - INFO -   eps: 0.8
+2026-10-26 21:21:17,849 - INFO -   checkpoint: output/checkpoints/qata_qata_baseline_medklip_clip_bifmd_test/pretrain.pth
+2026-10-26 21:21:17,849 - INFO - [train]
+2026-10-26 21:21:17,849 - INFO -   epochs: 2
+2026-10-26 21:21:17,849 - INFO -   batch_size: 32
+2026-10-26 21:21:17,849 - INFO -   lr: 0.001
+2026-10-26 21:21:17,849 - INFO -   weight_decay: 0.0001
+2026-10-26 21:21:17,849 - INFO -   bce_weight: 0.5
+2026-10-26 21:21:17,849 - INFO -   grad_clip: 1.0
+2026-10-26 21:21:17,849 - INFO -   cosine_lr: True
+2026-10-26 21:21:17,849 - INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+2026-10-26 21:21:17,849 - INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+2026-10-26 21:21:17,849 - INFO -   early_stopping: True
+2026-10-26 21:21:17,849 - INFO -   es_patience: 20
+2026-10-26 21:21:17,849 - INFO - [eval]
+2026-10-26 21:21:17,849 - INFO -   threshold: 0.5
+2026-10-26 21:21:17,849 - INFO -   checkpoint: output/checkpoints/qata_qata_baseline_medklip_clip_bifmd_test/best.pth
+2026-10-26 21:21:17,849 - INFO - [logging]
+2026-10-26 21:21:17,849 - INFO -   save_every: 10
+2026-10-26 21:21:17,850 - INFO -   log_file: output/logs/qata_qata_baseline_medklip_clip_bifmd_test.log
+2026-10-26 21:21:17,850 - INFO -   checkpoint_dir: output/checkpoints/qata_qata_baseline_medklip_clip_bifmd_test
+2026-10-26 21:21:17,850 - INFO - ============================================================
+2026-10-26 21:21:17,850 - INFO - Pretrain disabled, training from scratch
+2026-10-26 21:21:18,114 - INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+2026-10-26 21:21:18,117 - INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
+2026-10-26 21:21:18,117 - INFO - Train: 5716 samples | Val: 1429 samples
+2026-10-26 21:21:18,117 - INFO - Batch size: 32 | Steps/epoch: 178
+2026-10-26 21:21:18,117 - INFO - ------------------------------------------------------------
+2026-10-26 21:22:01,189 - INFO - Epoch [1/2] Loss: 0.5657 | Dice: 56.20% | IoU: 43.04% | Time: 38.6s
+2026-10-26 21:22:42,429 - INFO - Epoch [2/2] Loss: 0.4292 | Dice: 47.15% | IoU: 34.59% | Time: 36.2s
+2026-10-26 21:22:42,429 - INFO - ------------------------------------------------------------
+2026-10-26 21:22:42,429 - INFO - Training done. Best Dice: 56.20%
+2026-10-26 21:22:42,442 - INFO - ============================================================
+2026-10-26 21:22:42,443 - INFO - EVALUATION ON TEST SET
+2026-10-26 21:22:42,443 - INFO - ============================================================
+2026-10-26 21:22:42,919 - INFO - Loaded weights from output/checkpoints/qata_qata_baseline_medklip_clip_bifmd_test/best.pth
+2026-10-26 21:22:42,919 - INFO -   Checkpoint from epoch: 1
+2026-10-26 21:22:42,919 - INFO -   Val Dice at save: 56.20%
+2026-10-26 21:22:42,955 - INFO - Test samples: 2113
+2026-10-26 21:22:49,388 - INFO - ------------------------------------------------------------
+2026-10-26 21:22:49,388 - INFO - Test Results | Dice: 58.61% | IoU: 45.76%
+2026-10-26 21:22:49,389 - INFO - ------------------------------------------------------------
+2026-10-26 21:22:49,401 - INFO - 
+2026-10-26 21:22:49,402 - INFO - ============================================================
+2026-10-26 21:22:49,402 - INFO - Finished: 2026-10-26 21:22:49
+2026-10-26 21:22:49,402 - INFO - ============================================================
