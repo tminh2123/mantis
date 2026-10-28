@@ -8,6 +8,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, CosineAnnealingLR
