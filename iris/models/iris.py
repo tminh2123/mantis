@@ -380,6 +380,7 @@ class LanguageEncoder(nn.Module):
         self.tokenizer = CLIPTokenizer.from_pretrained(clip_model)
         self.encoder = CLIPTextModel.from_pretrained(clip_model)
         self.max_length = max_length
+        self.hidden_size = 512  # CLIP text dim
         # Freeze
         for p in self.encoder.parameters():
             p.requires_grad_(False)
@@ -392,6 +393,31 @@ class LanguageEncoder(nn.Module):
         out = self.encoder(**tokens)
         token_emb = out.last_hidden_state  # [B, N, 512]
         sent_emb = out.pooler_output       # [B, 512]
+        return token_emb, sent_emb
+
+
+class BERTLanguageEncoder(nn.Module):
+    """BERT-based text encoder (ClinicalBERT, PubMedBERT, etc.)."""
+    
+    def __init__(self, model_name: str = "emilyalsentzer/Bio_ClinicalBERT", max_length: int = 18):
+        super().__init__()
+        from transformers import AutoTokenizer, AutoModel
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.encoder = AutoModel.from_pretrained(model_name)
+        self.max_length = max_length
+        self.hidden_size = self.encoder.config.hidden_size  # 768 for BERT
+        # Freeze
+        for p in self.encoder.parameters():
+            p.requires_grad_(False)
+    
+    def forward(self, texts: List[str], device) -> Tuple[torch.Tensor, torch.Tensor]:
+        tokens = self.tokenizer(
+            texts, padding="max_length", truncation=True,
+            max_length=self.max_length, return_tensors="pt"
+        ).to(device)
+        out = self.encoder(**tokens)
+        token_emb = out.last_hidden_state  # [B, N, 768]
+        sent_emb = out.pooler_output       # [B, 768]
         return token_emb, sent_emb
 
 
