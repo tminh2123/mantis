@@ -528,6 +528,7 @@ def parse_args():
     # Training overrides
     p.add_argument('--epochs', type=int, help='Override number of training epochs')
     p.add_argument('--batch_size', type=int, help='Override batch size')
+    p.add_argument('--max_token_len', type=int, help='Override max token length')
     
     return p.parse_args()
 
@@ -575,6 +576,8 @@ def main():
         cfg['train']['epochs'] = args.epochs
     if args.batch_size:
         cfg['train']['batch_size'] = args.batch_size
+    if args.max_token_len:
+        cfg['model']['max_token_len'] = args.max_token_len
     
     # Set experiment name and paths
     dataset = cfg['project']['dataset']
