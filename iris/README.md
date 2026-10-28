@@ -71,6 +71,27 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 - QaTa: CNN + No Pretrain + CLIP + BCAM = **84.25%** Dice
 - MosMed: Mix + Pretrain + CLIP + BCAM = **75.45%** Dice
 
+### Ablation Study Runs (Server Logs)
+
+| Log File | Visual | Text | Notes |
+|----------|--------|------|-------|
+| `qata_ablation_cnn_clinicalbert_18.log` | CNN (4-level) | ClinicalBERT | max_len=18, Dice=83.28% |
+| `qata_ablation_cnn_clinicalbert_bcam.log` | CNN (4-level) | ClinicalBERT | max_len=77, Dice=82.62% |
+| `qata_ablation_cnn_medklip_bcam.log` | CNN (4-level) | PubMedBERT | MedKLIP text encoder, Dice=82.34% |
+| `qata_ablation_medklip_clinicalbert.log` | MedKLIP ResNet50 | ClinicalBERT | Both medical encoders |
+| `qata_ablation_medklip_frozen.log` | MedKLIP ResNet50 (frozen) | CLIP | Freeze visual, Dice=79.98% |
+| `qata_ablation_native_medklip_clip_bcam.log` | MedKLIP ResNet50 (native channels) | CLIP | No channel adapters, Dice=81.07% |
+| `qata_adapter_bottleneck.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Bottleneck adapter, Dice=81.59% |
+| `qata_adapter_spatial.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Spatial adapter |
+| `qata_baseline_temp.log` | CNN (5-level) | CLIP | Baseline test run |
+| `qata_clinicalbert_5level.log` | CNN (5-level) | ClinicalBERT | Full IRIS + BERT text, Dice=83.08% |
+
+**Ablation Summary:**
+- CLIP text encoder > ClinicalBERT > PubMedBERT
+- max_token_len=18 > max_token_len=77 for short medical prompts
+- CNN visual > MedKLIP ResNet50 (domain mismatch: MedKLIP trained on X-ray, QaTa is CT)
+- Channel adapters help MedKLIP encoder performance
+
 ### Running Ablation
 
 ```bash
@@ -108,10 +129,44 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 | `--config` | Yes | - | Config file |
 | `--tag` | Yes | - | Experiment tag |
 | `--mode` | No | full | pretrain, train, eval, full |
-| `--encoder_type` | No | cnn | cnn or mix |
+| `--visual_encoder` | No | cnn | cnn or resnet (MedKLIP) |
+| `--text_encoder` | No | clip | clip, pubmedbert, clinicalbert |
+| `--fusion_type` | No | bcam | bcam or bifmd |
+| `--adapter` | No | None | bottleneck, spatial, multiscale |
+| `--freeze_visual` | No | False | Freeze visual encoder |
+| `--visual_pretrained` | No | None | Path to MedKLIP weights |
+| `--num_heads` | No | 8 | Attention heads |
+| `--attn_dropout` | No | 0.0 | Attention dropout |
+| `--expansion` | No | 4 | MLP expansion ratio |
+| `--max_token_len` | No | 18 | Max text token length |
 | `--no_pretrain` | No | False | Skip pretrain stage |
 | `--checkpoint` | No | - | Override checkpoint for eval |
 | `--output_dir` | No | output | Output directory |
+
+### Example Commands
+
+```bash
+# Baseline: CNN + CLIP (best for QaTa)
+python run.py --config configs/qata.yaml --tag baseline
+
+# CNN + ClinicalBERT
+python run.py --config configs/qata.yaml --tag cnn_clinical \
+    --text_encoder clinicalbert
+
+# ResNet (MedKLIP) + CLIP
+python run.py --config configs/qata.yaml --tag resnet_clip \
+    --visual_encoder resnet \
+    --visual_pretrained /path/to/medklip.pth
+
+# Frozen ResNet + Bottleneck Adapter
+python run.py --config configs/qata.yaml --tag resnet_adapter \
+    --visual_encoder resnet --adapter bottleneck --freeze_visual \
+    --visual_pretrained /path/to/medklip.pth
+
+# Tune fusion params
+python run.py --config configs/qata.yaml --tag tuned \
+    --num_heads 4 --attn_dropout 0.1 --expansion 2
+```
 
 ## Output Structure
 
