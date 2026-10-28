@@ -63,11 +63,11 @@ python run.py --config $CONFIG --tag fusion_dropout \
     --no_pretrain
 
 # -----------------------------------------------------------------------------
-# Experiment 4: Tune expansion (2 vs 4)
+# Experiment 4: Tune expansion (8 vs default 4)
 # -----------------------------------------------------------------------------
 echo ""
-echo "[4/5] Tune: expansion=2"
-python run.py --config $CONFIG --tag fusion_expand2 \
+echo "[4/5] Tune: expansion=8"
+python run.py --config $CONFIG --tag fusion_expand8 \
     --mode $MODE \
     --visual_encoder resnet \
     --visual_pretrained $MEDKLIP_WEIGHTS \
@@ -75,14 +75,14 @@ python run.py --config $CONFIG --tag fusion_expand2 \
     --fusion_type bifmd \
     --adapter multiscale \
     --visual_lr_scale 0.01 \
-    --expansion 2 \
+    --expansion 8 \
     --no_pretrain
 
 # -----------------------------------------------------------------------------
-# Experiment 5: Combined (heads=2, dropout=0.1, expansion=2)
+# Experiment 5: Combined (heads=8, dropout=0.1, expansion=8)
 # -----------------------------------------------------------------------------
 echo ""
-echo "[5/5] Combined: heads=2, dropout=0.1, expansion=2"
+echo "[5/5] Combined: heads=8, dropout=0.1, expansion=8"
 python run.py --config $CONFIG --tag fusion_combined \
     --mode $MODE \
     --visual_encoder resnet \
@@ -91,9 +91,9 @@ python run.py --config $CONFIG --tag fusion_combined \
     --fusion_type bifmd \
     --adapter multiscale \
     --visual_lr_scale 0.01 \
-    --num_heads 2 \
+    --num_heads 8 \
     --attn_dropout 0.1 \
-    --expansion 2 \
+    --expansion 8 \
     --no_pretrain
 
 echo ""
