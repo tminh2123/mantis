@@ -401,6 +401,7 @@ def parse_args():
     
     # Training options
     p.add_argument('--epochs', type=int, help='Training epochs')
+    p.add_argument('--patience', type=int, help='Early stopping patience (default: 20)')
     p.add_argument('--batch_size', type=int, help='Batch size')
     p.add_argument('--max_token_len', type=int, help='Max token length')
     p.add_argument('--no_pretrain', action='store_true', help='Skip pretraining')
@@ -444,6 +445,8 @@ def main():
     
     if args.epochs:
         cfg['train']['epochs'] = args.epochs
+    if args.patience:
+        cfg['train']['es_patience'] = args.patience
     if args.batch_size:
         cfg['train']['batch_size'] = args.batch_size
     if args.max_token_len:

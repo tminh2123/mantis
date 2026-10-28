@@ -1,10 +1,10 @@
 #!/bin/bash
-# Fusion Tuning Experiments - Full Grid Search
-# num_heads x expansion: {4, 6, 8} x {4, 6, 8} = 9 runs
+# Fusion Tuning Experiments - Grid Search
+# num_heads x expansion: {4, 8} x {4, 6} = 4 runs
 
 set -e
 
-# Path to MedKLIP pretrained weights (update this path on server)
+# Path to MedKLIP pretrained weights
 MEDKLIP_WEIGHTS="medklip_checkpoints/MedKLIP/checkpoint_final.pth"
 
 # Base config
@@ -13,22 +13,25 @@ MODE="train"
 
 # Fixed settings
 DROPOUT="0.1"
+PATIENCE=30
 
 echo "=============================================="
-echo "Fusion Tuning - Full Grid Search"
-echo "num_heads x expansion: {4, 6, 8} x {4, 6, 8}"
-echo "Total: 9 experiments"
+echo "Fusion Tuning - Grid Search"
+echo "num_heads x expansion: {4, 8} x {4, 6}"
+echo "Total: 4 experiments"
+echo "Patience: ${PATIENCE}"
 echo "=============================================="
 
 # Grid search
-HEADS=(4 6 8)
-EXPANSIONS=(4 6 8)
+HEADS=(4 8)
+EXPANSIONS=(4 6)
 
 count=1
+total=4
 for h in "${HEADS[@]}"; do
     for e in "${EXPANSIONS[@]}"; do
         echo ""
-        echo "[${count}/9] heads=${h}, expansion=${e}"
+        echo "[${count}/${total}] heads=${h}, expansion=${e}"
         python run.py --config $CONFIG --tag fusion_h${h}_e${e} \
             --mode $MODE \
             --visual_encoder resnet \
@@ -40,6 +43,7 @@ for h in "${HEADS[@]}"; do
             --num_heads $h \
             --expansion $e \
             --attn_dropout $DROPOUT \
+            --patience $PATIENCE \
             --no_pretrain
         ((count++))
     done
@@ -47,6 +51,6 @@ done
 
 echo ""
 echo "=============================================="
-echo "All 9 experiments completed!"
+echo "All ${total} experiments completed!"
 echo "Check logs in output/logs/"
 echo "=============================================="
