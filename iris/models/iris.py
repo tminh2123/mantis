@@ -124,7 +124,8 @@ class GateModule(nn.Module):
 class BCAModule(nn.Module):
     """Bidirectional Cross Attention Module."""
     def __init__(self, img_size: int, channels: int, text_dim: int = 512,
-                 num_heads: int = 8, dropout: float = 0.0, expansion: int = 4):
+                 num_heads: int = 8, dropout: float = 0.0, expansion: int = 4,
+                 attn_dropout: float = 0.0):
         super().__init__()
         self.channels = channels
         self.num_heads = num_heads
@@ -135,6 +136,7 @@ class BCAModule(nn.Module):
         self.l_key = nn.Sequential(nn.Conv1d(text_dim, channels, 1), nn.InstanceNorm1d(channels))
         self.l_val = nn.Sequential(nn.Conv1d(text_dim, channels, 1), nn.InstanceNorm1d(channels))
         
+        self.attn_drop = nn.Dropout(attn_dropout)
         self.gate = GateModule(channels, expansion, dropout)
         self.proj = nn.Sequential(
             nn.Conv1d(channels, channels, 1), nn.InstanceNorm1d(channels),
@@ -161,8 +163,8 @@ class BCAModule(nn.Module):
         l_v = reshape_l(l_v).permute(0, 1, 3, 2)
         
         sim = (v_k @ l_k) * (C ** -0.5)
-        attn_v2l = F.softmax(sim, dim=-1)
-        attn_l2v = F.softmax(sim.transpose(-1, -2), dim=-1)
+        attn_v2l = self.attn_drop(F.softmax(sim, dim=-1))
+        attn_l2v = self.attn_drop(F.softmax(sim.transpose(-1, -2), dim=-1))
         
         f_v = (attn_v2l @ l_v).permute(0, 2, 1, 3).reshape(B, HW, C)
         f_l = torch.einsum("bhij,bhjk->bhjk", attn_l2v, v_v).permute(0, 2, 1, 3).reshape(B, HW, C)
@@ -173,7 +175,8 @@ class BCAModule(nn.Module):
 
 class BiFMD(nn.Module):
     """Bidirectional FiLM-Modulated Decoder."""
-    def __init__(self, channels: int, text_dim: int, num_heads: int = 4, expansion_ratio: int = 4):
+    def __init__(self, channels: int, text_dim: int, num_heads: int = 4, 
+                 expansion_ratio: int = 4, attn_dropout: float = 0.0):
         super().__init__()
         self.channels, self.text_dim = channels, text_dim
         self.num_heads = num_heads
@@ -189,6 +192,7 @@ class BiFMD(nn.Module):
         self.txt_k = nn.Linear(text_dim, channels)
         self.txt_v = nn.Linear(text_dim, channels)
         
+        self.attn_drop = nn.Dropout(attn_dropout)
         self.v_proj = nn.Conv2d(channels, channels, 1)
         self.l_proj = nn.Conv2d(channels, channels, 1)
         self.gate = nn.Conv2d(2 * channels, channels, 3, padding=1)
@@ -225,8 +229,8 @@ class BiFMD(nn.Module):
         v_txt = self.txt_v(text_mod).reshape(B, N, h, d).transpose(1, 2)
         
         scores = (q @ k_txt.transpose(-2, -1)) / math.sqrt(d)
-        alpha_t = F.softmax(scores, dim=-1)
-        alpha_s = F.softmax(scores, dim=-2).sum(dim=-1) / N
+        alpha_t = self.attn_drop(F.softmax(scores, dim=-1))
+        alpha_s = self.attn_drop(F.softmax(scores, dim=-2)).sum(dim=-1) / N
         
         f_v = (alpha_t @ v_txt).transpose(1, 2).reshape(B, P, C).transpose(1, 2).reshape(B, C, H, W)
         f_l = (v_img * alpha_s.unsqueeze(-1) * P).transpose(1, 2).reshape(B, P, C).transpose(1, 2).reshape(B, C, H, W)
@@ -501,6 +505,7 @@ class IRIS(nn.Module):
         max_token_len: int = 18,
         num_heads: int = 8,
         dropout: float = 0.5,
+        attn_dropout: float = 0.0,
         expansion: int = 4,
         deep_supervision: bool = True,
         # Training
@@ -571,19 +576,28 @@ class IRIS(nn.Module):
         # =====================================================================
         scales = [img_size // (2 ** i) for i in range(5)]  # [224, 112, 56, 28, 14]
         
-        FusionClass = BiFMD if fusion_type == "bifmd" else BCAModule
-        
-        if self.num_levels == 5:
-            # CNN: fusion at levels 1-4 (skip level 0 = full res)
-            self.fuse1 = FusionClass(scales[1], base_channel, self._text_dim, num_heads, dropout if fusion_type == "bcam" else expansion)
-            self.fuse2 = FusionClass(scales[2], base_channel * 2, self._text_dim, num_heads, dropout if fusion_type == "bcam" else expansion)
-            self.fuse3 = FusionClass(scales[3], base_channel * 4, self._text_dim, num_heads, dropout if fusion_type == "bcam" else expansion)
-            self.fuse4 = FusionClass(scales[4], base_channel * 8, self._text_dim, num_heads, dropout if fusion_type == "bcam" else expansion)
+        if fusion_type == "bifmd":
+            # BiFMD: (channels, text_dim, num_heads, expansion_ratio, attn_dropout)
+            if self.num_levels == 5:
+                self.fuse1 = BiFMD(base_channel, self._text_dim, num_heads, expansion, attn_dropout)
+                self.fuse2 = BiFMD(base_channel * 2, self._text_dim, num_heads, expansion, attn_dropout)
+                self.fuse3 = BiFMD(base_channel * 4, self._text_dim, num_heads, expansion, attn_dropout)
+                self.fuse4 = BiFMD(base_channel * 8, self._text_dim, num_heads, expansion, attn_dropout)
+            else:
+                self.fuse1 = BiFMD(base_channel * 2, self._text_dim, num_heads, expansion, attn_dropout)
+                self.fuse2 = BiFMD(base_channel * 4, self._text_dim, num_heads, expansion, attn_dropout)
+                self.fuse3 = BiFMD(base_channel * 8, self._text_dim, num_heads, expansion, attn_dropout)
         else:
-            # ResNet: fusion at levels 1-3 (4 total levels)
-            self.fuse1 = FusionClass(scales[2], base_channel * 2, self._text_dim, num_heads, dropout if fusion_type == "bcam" else expansion)
-            self.fuse2 = FusionClass(scales[3], base_channel * 4, self._text_dim, num_heads, dropout if fusion_type == "bcam" else expansion)
-            self.fuse3 = FusionClass(scales[4], base_channel * 8, self._text_dim, num_heads, dropout if fusion_type == "bcam" else expansion)
+            # BCAM: (img_size, channels, text_dim, num_heads, dropout, expansion, attn_dropout)
+            if self.num_levels == 5:
+                self.fuse1 = BCAModule(scales[1], base_channel, self._text_dim, num_heads, dropout, expansion, attn_dropout)
+                self.fuse2 = BCAModule(scales[2], base_channel * 2, self._text_dim, num_heads, dropout, expansion, attn_dropout)
+                self.fuse3 = BCAModule(scales[3], base_channel * 4, self._text_dim, num_heads, dropout, expansion, attn_dropout)
+                self.fuse4 = BCAModule(scales[4], base_channel * 8, self._text_dim, num_heads, dropout, expansion, attn_dropout)
+            else:
+                self.fuse1 = BCAModule(scales[2], base_channel * 2, self._text_dim, num_heads, dropout, expansion, attn_dropout)
+                self.fuse2 = BCAModule(scales[3], base_channel * 4, self._text_dim, num_heads, dropout, expansion, attn_dropout)
+                self.fuse3 = BCAModule(scales[4], base_channel * 8, self._text_dim, num_heads, dropout, expansion, attn_dropout)
 
         # =====================================================================
         # Decoder
@@ -757,6 +771,7 @@ def build_iris(config) -> IRIS:
         max_token_len=mcfg.get('max_token_len', 18),
         num_heads=mcfg.get('num_heads', 8),
         dropout=mcfg.get('dropout', 0.5),
+        attn_dropout=mcfg.get('attn_dropout', 0.0),
         expansion=mcfg.get('expansion', 4),
         deep_supervision=mcfg.get('deep_supervision', True),
         freeze_visual=mcfg.get('freeze_visual', False),

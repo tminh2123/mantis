@@ -373,6 +373,11 @@ def parse_args():
     p.add_argument('--visual_pretrained', help='Pretrained visual weights path')
     p.add_argument('--freeze_visual', action='store_true', help='Freeze visual encoder')
     
+    # Fusion tuning
+    p.add_argument('--num_heads', type=int, help='Number of attention heads (default: 8)')
+    p.add_argument('--attn_dropout', type=float, help='Attention dropout (default: 0.0)')
+    p.add_argument('--expansion', type=int, help='MLP expansion ratio (default: 4)')
+    
     # Training options
     p.add_argument('--epochs', type=int, help='Training epochs')
     p.add_argument('--batch_size', type=int, help='Batch size')
@@ -401,6 +406,15 @@ def main():
         cfg['model']['visual_pretrained'] = args.visual_pretrained
     if args.freeze_visual:
         cfg['model']['freeze_visual'] = True
+    
+    # Fusion tuning overrides
+    if args.num_heads:
+        cfg['model']['num_heads'] = args.num_heads
+    if args.attn_dropout is not None:
+        cfg['model']['attn_dropout'] = args.attn_dropout
+    if args.expansion:
+        cfg['model']['expansion'] = args.expansion
+    
     if args.epochs:
         cfg['train']['epochs'] = args.epochs
     if args.batch_size:
