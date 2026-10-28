@@ -542,11 +542,18 @@ class IRISAblation(nn.Module):
         self.text_proj_cl = nn.Linear(self._text_dim, 256)
     
     def _encode_visual_cnn(self, x: torch.Tensor) -> Tuple[torch.Tensor, ...]:
-        """Encode with IRIS CNN encoder."""
-        v0 = self.down0(x)           # [B, base, H/2, W/2]
-        v1 = self.down1(self.pool(v0))  # [B, 2*base, H/4, W/4]
-        v2 = self.down2(self.pool(v1))  # [B, 4*base, H/8, W/8]
-        v3 = self.down3(self.pool(v2))  # [B, 8*base, H/16, W/16]
+        """Encode with IRIS CNN encoder.
+        
+        Output scales match MedKLIP ResNet50:
+        - v0: H/2 x W/2 (112x112 for 224 input)
+        - v1: H/4 x W/4 (56x56)
+        - v2: H/8 x W/8 (28x28)
+        - v3: H/16 x W/16 (14x14)
+        """
+        v0 = self.down0(self.pool(x))   # [B, base, H/2, W/2] = 112
+        v1 = self.down1(self.pool(v0))  # [B, 2*base, H/4, W/4] = 56
+        v2 = self.down2(self.pool(v1))  # [B, 4*base, H/8, W/8] = 28
+        v3 = self.down3(self.pool(v2))  # [B, 8*base, H/16, W/16] = 14
         return v0, v1, v2, v3
     
     def _encode_visual_medklip(self, x: torch.Tensor) -> Tuple[torch.Tensor, ...]:
