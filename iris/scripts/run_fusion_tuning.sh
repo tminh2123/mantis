@@ -5,7 +5,7 @@
 set -e
 
 # Path to MedKLIP pretrained weights (update this path on server)
-MEDKLIP_WEIGHTS="../MedKLIP/checkpoints/MedKLIP_resnet50.pth"
+MEDKLIP_WEIGHTS="medklip_checkpoints/MedKLIP/checkpoint_final.pth"
 
 # Base config
 CONFIG="configs/qata.yaml"
