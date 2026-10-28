@@ -131,6 +131,10 @@ class BCAModule(nn.Module):
         self.num_heads = num_heads
         self.pos = Sinusoidal2DPositionEmbedding(channels, img_size, img_size)
         
+        # Pre-attention LayerNorm for stability
+        self.v_norm = nn.LayerNorm(channels)
+        self.l_norm = nn.LayerNorm(text_dim)
+        
         self.v_key = nn.Sequential(nn.Conv1d(channels, channels, 1), nn.InstanceNorm1d(channels))
         self.v_val = nn.Sequential(nn.Conv1d(channels, channels, 1), nn.InstanceNorm1d(channels))
         self.l_key = nn.Sequential(nn.Conv1d(text_dim, channels, 1), nn.InstanceNorm1d(channels))
@@ -149,7 +153,10 @@ class BCAModule(nn.Module):
         
         img_flat = img.flatten(2)
         v = self.pos(img).flatten(2)
-        l = text.transpose(1, 2)
+        
+        # Apply LayerNorm before attention
+        v = self.v_norm(v.transpose(1, 2)).transpose(1, 2)  # (B, C, HW)
+        l = self.l_norm(text).transpose(1, 2)  # (B, text_dim, N)
         
         v_k, v_v = self.v_key(v), self.v_val(v)
         l_k, l_v = self.l_key(l), self.l_val(l)
@@ -181,6 +188,13 @@ class BiFMD(nn.Module):
         self.channels, self.text_dim = channels, text_dim
         self.num_heads = num_heads
         hd = channels // num_heads
+        
+        # Pre-attention LayerNorm for stability
+        self.img_norm = nn.LayerNorm(channels)
+        self.txt_norm = nn.LayerNorm(text_dim)
+        
+        # Learnable temperature (init to 1/sqrt(d))
+        self.temperature = nn.Parameter(torch.ones(1) * math.sqrt(hd))
         
         self.t2i = nn.Linear(text_dim, 2 * channels)
         self.i2t = nn.Linear(channels, 2 * text_dim)
@@ -214,21 +228,26 @@ class BiFMD(nn.Module):
         P = H * W
         h, d = self.num_heads, C // self.num_heads
         
-        pooled_t = text.mean(1)
-        pooled_i = img.mean(dim=(2, 3))
+        # Apply LayerNorm before FiLM modulation
+        img_ln = self.img_norm(img.flatten(2).transpose(1, 2))  # (B, P, C)
+        img_ln = img_ln.transpose(1, 2).reshape(B, C, H, W)
+        text_ln = self.txt_norm(text)  # (B, N, text_dim)
+        
+        pooled_t = text_ln.mean(1)
+        pooled_i = img_ln.mean(dim=(2, 3))
         
         dg, beta = self.t2i(pooled_t).chunk(2, dim=-1)
-        img_mod = img * (1 + dg[..., None, None]) + beta[..., None, None]
+        img_mod = img_ln * (1 + dg[..., None, None]) + beta[..., None, None]
         
         dg2, beta2 = self.i2t(pooled_i).chunk(2, dim=-1)
-        text_mod = text * (1 + dg2[:, None]) + beta2[:, None]
+        text_mod = text_ln * (1 + dg2[:, None]) + beta2[:, None]
         
         q = self.img_q(img_mod).flatten(2).transpose(1, 2).reshape(B, P, h, d).transpose(1, 2)
         v_img = self.img_v(img_mod).flatten(2).transpose(1, 2).reshape(B, P, h, d).transpose(1, 2)
         k_txt = self.txt_k(text_mod).reshape(B, N, h, d).transpose(1, 2)
         v_txt = self.txt_v(text_mod).reshape(B, N, h, d).transpose(1, 2)
         
-        scores = (q @ k_txt.transpose(-2, -1)) / math.sqrt(d)
+        scores = (q @ k_txt.transpose(-2, -1)) / self.temperature.clamp(min=0.1)
         alpha_t = self.attn_drop(F.softmax(scores, dim=-1))
         alpha_s = self.attn_drop(F.softmax(scores, dim=-2)).sum(dim=-1) / N
         

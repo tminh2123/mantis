@@ -216,23 +216,40 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
     else:
         criterion = DiceBCELoss(bce_weight=tcfg['bce_weight'])
     
-    # Optimizer - lower LR for visual encoder
+    # Optimizer - differential LR for visual encoder
+    visual_lr_scale = tcfg.get('visual_lr_scale', 0.1)
+    base_lr = tcfg['lr']
+    visual_lr = base_lr * visual_lr_scale
+    
     visual_params = []
+    adapter_params = []
     other_params = []
     for n, p in model.named_parameters():
         if not p.requires_grad:
             continue
         if 't_enc' in n:
             continue  # frozen
-        if 'v_enc' in n or 'ch_adapt' in n or 'v_adapters' in n:
+        if 'v_enc' in n or 'ch_adapt' in n:
             visual_params.append(p)
+        elif 'v_adapters' in n:
+            adapter_params.append(p)  # Adapters get full LR
         else:
             other_params.append(p)
     
-    optimizer = torch.optim.Adam([
-        {'params': visual_params, 'lr': tcfg['lr'] * 0.1},
-        {'params': other_params, 'lr': tcfg['lr']},
-    ], weight_decay=tcfg['weight_decay'])
+    param_groups = [
+        {'params': visual_params, 'lr': visual_lr, 'name': 'visual'},
+        {'params': adapter_params, 'lr': base_lr, 'name': 'adapter'},
+        {'params': other_params, 'lr': base_lr, 'name': 'other'},
+    ]
+    # Remove empty groups
+    param_groups = [g for g in param_groups if len(g['params']) > 0]
+    
+    optimizer = torch.optim.Adam(param_groups, weight_decay=tcfg['weight_decay'])
+    
+    logger.info(f"LR: visual={visual_lr:.1e} ({visual_lr_scale}x), adapter/other={base_lr:.1e}")
+    logger.info(f"Visual params: {sum(p.numel() for p in visual_params):,}")
+    logger.info(f"Adapter params: {sum(p.numel() for p in adapter_params):,}")
+    logger.info(f"Other params: {sum(p.numel() for p in other_params):,}")
     
     if tcfg.get('cosine_lr', True):
         scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=1, eta_min=1e-4)
@@ -378,6 +395,10 @@ def parse_args():
     p.add_argument('--attn_dropout', type=float, help='Attention dropout (default: 0.0)')
     p.add_argument('--expansion', type=int, help='MLP expansion ratio (default: 4)')
     
+    # Learning rate
+    p.add_argument('--lr', type=float, help='Base learning rate')
+    p.add_argument('--visual_lr_scale', type=float, help='Visual encoder LR scale (default: 0.1)')
+    
     # Training options
     p.add_argument('--epochs', type=int, help='Training epochs')
     p.add_argument('--batch_size', type=int, help='Batch size')
@@ -414,6 +435,12 @@ def main():
         cfg['model']['attn_dropout'] = args.attn_dropout
     if args.expansion:
         cfg['model']['expansion'] = args.expansion
+    
+    # Learning rate overrides
+    if args.lr:
+        cfg['train']['lr'] = args.lr
+    if args.visual_lr_scale is not None:
+        cfg['train']['visual_lr_scale'] = args.visual_lr_scale
     
     if args.epochs:
         cfg['train']['epochs'] = args.epochs

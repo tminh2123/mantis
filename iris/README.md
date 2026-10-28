@@ -138,6 +138,8 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 | `--num_heads` | No | 8 | Attention heads |
 | `--attn_dropout` | No | 0.0 | Attention dropout |
 | `--expansion` | No | 4 | MLP expansion ratio |
+| `--lr` | No | config | Base learning rate |
+| `--visual_lr_scale` | No | 0.1 | Visual encoder LR scale (e.g., 0.01 for pretrained) |
 | `--max_token_len` | No | 18 | Max text token length |
 | `--no_pretrain` | No | False | Skip pretrain stage |
 | `--checkpoint` | No | - | Override checkpoint for eval |
@@ -215,6 +217,67 @@ iris/
 
 - **CNN**: Pure convolutional DownBlocks (Conv -> BN -> ReLU -> MaxPool)
 - **Mix**: DownBlocks with MLP residual (CNN output + MLP(CNN output))
+
+### Text Encoder Options
+
+| Encoder | Model | Output Dim | Best For |
+|---------|-------|------------|----------|
+| **CLIP** | openai/clip-vit-base-patch32 | 512 | Cross-modal alignment |
+| **ClinicalBERT** | emilyalsentzer/Bio_ClinicalBERT | 768 | Medical domain knowledge |
+| **PubMedBERT** | microsoft/BiomedNLP-PubMedBERT | 768 | Biomedical literature |
+
+Note: MedKLIP uses ClinicalBERT for pretraining. When using MedKLIP visual encoder, ClinicalBERT text encoder provides native alignment.
+
+### Fusion Modules
+
+- **BCAM**: Bidirectional Cross Attention Module
+- **BiFMD**: Bidirectional FiLM-Modulated Decoder (improved version)
+
+### BiFMD Improvements
+
+BiFMD includes several architectural improvements for fusion tuning:
+
+| Improvement | Description |
+|-------------|-------------|
+| **MLP Text Projection** | 2-layer MLP (768->768->512) with LayerNorm and GELU instead of single linear, preserves semantic info from BERT encoders |
+| **Pre-Attention LayerNorm** | LayerNorm on visual and text features before FiLM modulation, stabilizes training |
+| **Learnable Temperature** | Learnable attention temperature instead of fixed 1/sqrt(d), allows model to adjust attention sharpness |
+
+### Visual Adapters
+
+For parameter-efficient fine-tuning of pretrained visual encoders:
+
+| Adapter | Description | Params/Layer | Best For |
+|---------|-------------|--------------|----------|
+| **Bottleneck** | 1x1 conv down -> 1x1 conv up | ~20K | Lightweight |
+| **Spatial** | 1x1 down -> 3x3 conv -> 1x1 up | ~50K | Spatial context |
+| **MultiScale** | Parallel 1x1 + 3x3 branches | ~80K | Segmentation (recommended) |
+
+MultiScale adapter is recommended for segmentation tasks due to its spatial awareness and compatibility with deep supervision loss.
+
+### Differential Learning Rate
+
+When using pretrained visual encoders (e.g., MedKLIP), different components use different learning rates:
+
+| Component | LR Scale | Rationale |
+|-----------|----------|-----------|
+| Visual encoder | 0.01-0.1x | Preserve pretrained features |
+| Visual adapters | 1x | New trainable module |
+| Text projection | 1x | New trainable module |
+| Fusion modules | 1x | New trainable module |
+| Decoder | 1x | New trainable module |
+
+```bash
+# Example: MedKLIP with MultiScale adapter
+python run.py --config configs/qata.yaml --tag fusion_tune \
+    --visual_encoder resnet \
+    --visual_pretrained /path/to/medklip.pth \
+    --text_encoder clinicalbert \
+    --fusion_type bifmd \
+    --adapter multiscale \
+    --freeze_visual \
+    --visual_lr_scale 0.01
+```
 
 ### MLP Design
 
