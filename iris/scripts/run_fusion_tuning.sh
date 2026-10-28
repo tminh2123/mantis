@@ -1,6 +1,6 @@
 #!/bin/bash
 # Fusion Tuning Experiments - Grid Search
-# num_heads x expansion: {4, 8} x {4, 6} = 4 runs
+# num_heads x expansion: {4, 8} x {2, 4, 8} = 6 runs
 
 set -e
 
@@ -17,17 +17,17 @@ PATIENCE=30
 
 echo "=============================================="
 echo "Fusion Tuning - Grid Search"
-echo "num_heads x expansion: {4, 8} x {4, 6}"
-echo "Total: 4 experiments"
+echo "num_heads x expansion: {4, 8} x {2, 4, 8}"
+echo "Total: 6 experiments"
 echo "Patience: ${PATIENCE}"
 echo "=============================================="
 
 # Grid search
 HEADS=(4 8)
-EXPANSIONS=(4 6)
+EXPANSIONS=(2 4 8)
 
 count=1
-total=4
+total=6
 for h in "${HEADS[@]}"; do
     for e in "${EXPANSIONS[@]}"; do
         echo ""

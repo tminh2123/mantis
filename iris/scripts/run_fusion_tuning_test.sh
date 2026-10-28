@@ -1,32 +1,25 @@
 #!/bin/bash
 # Fusion Tuning Test - 1 epoch only
-# Quick test to verify setup works
 
 set -e
 
-# Path to MedKLIP pretrained weights
 MEDKLIP_WEIGHTS="medklip_checkpoints/MedKLIP/checkpoint_final.pth"
-
-# Base config
 CONFIG="configs/qata.yaml"
 MODE="train"
-
-# Fixed settings
 DROPOUT="0.1"
 EPOCHS=1
 
 echo "=============================================="
 echo "Fusion Tuning - TEST (1 epoch)"
-echo "num_heads x expansion: {4, 8} x {4, 6}"
-echo "Total: 4 experiments x 1 epoch"
+echo "num_heads x expansion: {4, 8} x {2, 4, 8}"
+echo "Total: 6 experiments x 1 epoch"
 echo "=============================================="
 
-# Grid search
 HEADS=(4 8)
-EXPANSIONS=(4 6)
+EXPANSIONS=(2 4 8)
 
 count=1
-total=4
+total=6
 for h in "${HEADS[@]}"; do
     for e in "${EXPANSIONS[@]}"; do
         echo ""
@@ -51,5 +44,4 @@ done
 echo ""
 echo "=============================================="
 echo "Test completed! All ${total} configs work."
-echo "Run ./scripts/run_fusion_tuning.sh for full training"
 echo "=============================================="
