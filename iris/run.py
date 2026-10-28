@@ -123,11 +123,18 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
             img_mask_rate=mcfg['img_mask_rate'],
         )
     else:
-        # Default: Build IRIS with CLIP backbone
+        # Default: Build IRIS with CLIP backbone (or BERT text encoder)
+        text_encoder_type = mcfg.get('text_encoder', 'clip')
+        # Map 'medklip' to 'bert' for IRIS class
+        if text_encoder_type == 'medklip':
+            text_encoder_type = 'bert'
+        
         model = IRIS(
             num_classes=mcfg['num_classes'],
             img_size=cfg['data']['image_size'],
             clip_model=mcfg['clip_model'],
+            text_encoder_type=text_encoder_type,
+            text_model=mcfg.get('medklip_text_model'),
             max_token_len=mcfg['max_token_len'],
             base_channel=mcfg['base_channel'],
             num_heads=mcfg['num_heads'],

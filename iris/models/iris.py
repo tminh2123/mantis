@@ -417,6 +417,8 @@ class IRIS(nn.Module):
         num_classes: int = 1,
         img_size: int = 224,
         clip_model: str = "openai/clip-vit-base-patch32",
+        text_encoder_type: str = "clip",  # "clip" or "bert"
+        text_model: str = None,  # Override text model (e.g., ClinicalBERT)
         max_token_len: int = 18,
         base_channel: int = 64,
         num_heads: int = 8,
@@ -433,6 +435,7 @@ class IRIS(nn.Module):
         self.img_mask_rate = img_mask_rate
         self.base_ch = base_channel
         self.encoder_type = encoder_type
+        self.text_encoder_type = text_encoder_type
         
         img_scales = [img_size, img_size//2, img_size//4, img_size//8, img_size//16]
 
@@ -456,10 +459,20 @@ class IRIS(nn.Module):
         self.up1 = UpBlockAttention(base_channel * 2, base_channel * 2, base_channel)
         self.up0 = UpBlockAttention(base_channel, base_channel, base_channel)
 
-        # Language encoder (frozen CLIP)
-        self.lang_enc = LanguageEncoder(clip_model, max_length=max_token_len)
+        # Language encoder
+        if text_encoder_type == "bert":
+            bert_model = text_model or "emilyalsentzer/Bio_ClinicalBERT"
+            self.lang_enc = BERTLanguageEncoder(bert_model, max_length=max_token_len)
+            text_dim = self.lang_enc.hidden_size  # 768
+            # Project BERT dim to match CLIP dim for fusion
+            self.text_proj_fusion = nn.Linear(768, 512)
+        else:
+            self.lang_enc = LanguageEncoder(clip_model, max_length=max_token_len)
+            text_dim = 512
+            self.text_proj_fusion = None
 
         # Cross-modal fusion (BCAM at 4 scales) with expansion
+        # BCAM expects 512-dim text features
         self.fuse1 = BCAModule(img_scales[1], base_channel, num_heads, dropout, expansion)
         self.fuse2 = BCAModule(img_scales[2], base_channel * 2, num_heads, dropout, expansion)
         self.fuse3 = BCAModule(img_scales[3], base_channel * 4, num_heads, dropout, expansion)
@@ -523,6 +536,9 @@ class IRIS(nn.Module):
         l = None
         if texts is not None:
             token_emb, _ = self.lang_enc(texts, images.device)
+            # Project BERT features to 512 dim if needed
+            if self.text_proj_fusion is not None:
+                token_emb = self.text_proj_fusion(token_emb)
             l = self._apply_text_mask(token_emb)
 
         # Encode image
