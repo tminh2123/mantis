@@ -243,6 +243,23 @@ BiFMD includes several architectural improvements for fusion tuning:
 | **Pre-Attention LayerNorm** | LayerNorm on visual and text features before FiLM modulation, stabilizes training |
 | **Learnable Temperature** | Learnable attention temperature instead of fixed 1/sqrt(d), allows model to adjust attention sharpness |
 
+### Fusion Tuning Parameters
+
+| Parameter | CLI Arg | Default | Description |
+|-----------|---------|---------|-------------|
+| **num_heads** | `--num_heads` | 8 | Number of attention heads in fusion |
+| **attn_dropout** | `--attn_dropout` | 0.0 | Dropout on attention weights |
+| **expansion** | `--expansion` | 4 | MLP expansion ratio in fusion |
+
+```bash
+# Example: Tune fusion with fewer heads and dropout
+python run.py --config configs/qata.yaml --tag fusion_tuned \
+    --fusion_type bifmd \
+    --num_heads 4 \
+    --attn_dropout 0.1 \
+    --expansion 2
+```
+
 ### Visual Adapters
 
 For parameter-efficient fine-tuning of pretrained visual encoders:
