@@ -31,11 +31,11 @@ python run.py --config $CONFIG --tag fusion_baseline \
     --no_pretrain
 
 # -----------------------------------------------------------------------------
-# Experiment 2: Tune num_heads (4 vs 8)
+# Experiment 2: Tune num_heads (2 vs default 4 for BiFMD)
 # -----------------------------------------------------------------------------
 echo ""
-echo "[2/5] Tune: num_heads=4"
-python run.py --config $CONFIG --tag fusion_heads4 \
+echo "[2/5] Tune: num_heads=2"
+python run.py --config $CONFIG --tag fusion_heads2 \
     --mode $MODE \
     --visual_encoder resnet \
     --visual_pretrained $MEDKLIP_WEIGHTS \
@@ -43,7 +43,7 @@ python run.py --config $CONFIG --tag fusion_heads4 \
     --fusion_type bifmd \
     --adapter multiscale \
     --visual_lr_scale 0.01 \
-    --num_heads 4 \
+    --num_heads 2 \
     --no_pretrain
 
 # -----------------------------------------------------------------------------
@@ -79,10 +79,10 @@ python run.py --config $CONFIG --tag fusion_expand2 \
     --no_pretrain
 
 # -----------------------------------------------------------------------------
-# Experiment 5: Combined best (heads=4, dropout=0.1, expansion=2)
+# Experiment 5: Combined (heads=2, dropout=0.1, expansion=2)
 # -----------------------------------------------------------------------------
 echo ""
-echo "[5/5] Combined: heads=4, dropout=0.1, expansion=2"
+echo "[5/5] Combined: heads=2, dropout=0.1, expansion=2"
 python run.py --config $CONFIG --tag fusion_combined \
     --mode $MODE \
     --visual_encoder resnet \
@@ -91,7 +91,7 @@ python run.py --config $CONFIG --tag fusion_combined \
     --fusion_type bifmd \
     --adapter multiscale \
     --visual_lr_scale 0.01 \
-    --num_heads 4 \
+    --num_heads 2 \
     --attn_dropout 0.1 \
     --expansion 2 \
     --no_pretrain
