@@ -194,6 +194,7 @@ class IRISMedKLIP(nn.Module):
         self.text_mask_rate = text_mask_rate
         self.img_mask_rate = img_mask_rate
         self.use_entity_translation = use_entity_translation
+        self._medklip_text_path = medklip_visual_path  # Use same checkpoint for text encoder
         
         # MedKLIP Visual Encoder (ResNet50)
         self.visual_encoder = MedKLIPVisualEncoder(
@@ -204,6 +205,7 @@ class IRISMedKLIP(nn.Module):
         
         # MedKLIP Text Encoder (BioBERT)
         self.text_encoder = MedKLIPTextEncoder(
+                pretrained_path=getattr(self, "_medklip_text_path", None),
             model_name=medklip_text_model,
             max_length=max_token_len,
             freeze=freeze_text
@@ -436,6 +438,7 @@ class IRISAblation(nn.Module):
         clip_model: str = "openai/clip-vit-base-patch32",
         # MedKLIP settings
         medklip_visual_path: Optional[str] = None,
+        medklip_text_path: Optional[str] = None,  # If None, use medklip_visual_path
         medklip_text_model: str = "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext",
         # Common settings
         max_token_len: int = 77,
@@ -456,6 +459,9 @@ class IRISAblation(nn.Module):
         self.text_encoder_type = text_encoder_type
         self.fusion_type = fusion_type
         self.deep_supervision = deep_supervision
+        
+        # Use visual path for text if not specified separately
+        self._medklip_text_path = medklip_text_path or medklip_visual_path
         self.text_mask_rate = text_mask_rate
         self.img_mask_rate = img_mask_rate
         self.use_entity_translation = use_entity_translation and text_encoder_type == "medklip"
@@ -486,6 +492,7 @@ class IRISAblation(nn.Module):
         # Build text encoder
         if text_encoder_type == "medklip":
             self.text_encoder = MedKLIPTextEncoder(
+                pretrained_path=getattr(self, "_medklip_text_path", None),
                 model_name=medklip_text_model,
                 max_length=max_token_len,
                 freeze=freeze_text
@@ -798,6 +805,7 @@ class IRISAblationNative(nn.Module):
         self.text_mask_rate = text_mask_rate
         self.img_mask_rate = img_mask_rate
         self.use_entity_translation = use_entity_translation and text_encoder_type == "medklip"
+        self._medklip_text_path = medklip_visual_path  # Use same checkpoint for text encoder
         
         # Native ResNet channels
         ch = self.RESNET_CHANNELS
@@ -812,6 +820,7 @@ class IRISAblationNative(nn.Module):
         # Build text encoder
         if text_encoder_type == "medklip":
             self.text_encoder = MedKLIPTextEncoder(
+                pretrained_path=getattr(self, "_medklip_text_path", None),
                 model_name=medklip_text_model,
                 max_length=max_token_len,
                 freeze=freeze_text
@@ -1100,6 +1109,7 @@ class IRISAblationWithAdapter(nn.Module):
         self.text_mask_rate = text_mask_rate
         self.img_mask_rate = img_mask_rate
         self.use_entity_translation = use_entity_translation and text_encoder_type == 'medklip'
+        self._medklip_text_path = medklip_visual_path  # Use same checkpoint for text encoder
         
         # Import adapter factory
         from .adapters import get_adapter
@@ -1135,6 +1145,7 @@ class IRISAblationWithAdapter(nn.Module):
         if text_encoder_type == 'medklip':
             from transformers import AutoTokenizer, AutoModel
             self.text_encoder = MedKLIPTextEncoder(
+                pretrained_path=getattr(self, "_medklip_text_path", None),
                 model_name=medklip_text_model,
                 max_length=max_token_len,
                 freeze=freeze_text,

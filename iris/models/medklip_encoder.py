@@ -192,13 +192,16 @@ class MedKLIPTextEncoder(nn.Module):
     
     Uses entity translation: converts disease names to detailed descriptions
     before encoding.
+    
+    Can load pretrained weights from MedKLIP checkpoint (jointly trained with visual).
     """
     
     def __init__(
         self,
         model_name: str = "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext",
         max_length: int = 77,
-        freeze: bool = True
+        freeze: bool = True,
+        pretrained_path: str = None,  # Path to MedKLIP checkpoint
     ):
         super().__init__()
         
@@ -207,9 +210,43 @@ class MedKLIPTextEncoder(nn.Module):
         self.max_length = max_length
         self.hidden_size = self.encoder.config.hidden_size  # 768 for BERT
         
+        # Load MedKLIP pretrained text encoder weights if provided
+        if pretrained_path:
+            self._load_medklip_text_weights(pretrained_path)
+            print(f"Loaded MedKLIP text encoder weights from {pretrained_path}")
+        
         if freeze:
             self._freeze_encoder()
             print(f"MedKLIP text encoder ({model_name}) is frozen")
+    
+    def _load_medklip_text_weights(self, path: str):
+        """Load text encoder weights from MedKLIP checkpoint."""
+        checkpoint = torch.load(path, map_location='cpu')
+        state_dict = checkpoint.get('model', checkpoint)
+        
+        # MedKLIP text encoder keys: text_encoder.* or bert.*
+        new_state_dict = {}
+        
+        for key, value in state_dict.items():
+            # Check for text encoder weights
+            if key.startswith('text_encoder.'):
+                # Remove 'text_encoder.' prefix
+                new_key = key.replace('text_encoder.', '')
+                new_state_dict[new_key] = value
+            elif key.startswith('bert.'):
+                # Alternative naming: bert.*
+                new_key = key.replace('bert.', '')
+                new_state_dict[new_key] = value
+        
+        if new_state_dict:
+            missing, unexpected = self.encoder.load_state_dict(new_state_dict, strict=False)
+            print(f"  Text encoder - Loaded {len(new_state_dict)} keys")
+            if missing:
+                print(f"  Missing keys: {len(missing)}")
+            if unexpected:
+                print(f"  Unexpected keys: {len(unexpected)}")
+        else:
+            print("  Warning: No text encoder weights found in checkpoint")
     
     def _freeze_encoder(self):
         """Freeze all encoder parameters."""
