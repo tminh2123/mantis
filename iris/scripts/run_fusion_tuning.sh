@@ -1,6 +1,7 @@
 #!/bin/bash
 # Fusion Tuning Experiments
 # Run on server with MedKLIP visual + ClinicalBERT text + BiFMD fusion
+# Tune: num_heads (4, 8) x expansion (4, 8)
 
 set -e
 
@@ -11,16 +12,21 @@ MEDKLIP_WEIGHTS="../MedKLIP/checkpoints/MedKLIP_resnet50.pth"
 CONFIG="configs/qata.yaml"
 MODE="train"  # Skip pretrain, just train segmentation
 
+# Common settings
+DROPOUT="0.1"  # Fixed dropout for all experiments
+
 echo "=============================================="
 echo "Fusion Tuning Experiments"
+echo "num_heads x expansion grid search"
+echo "attn_dropout=${DROPOUT} (fixed)"
 echo "=============================================="
 
 # -----------------------------------------------------------------------------
-# Experiment 1: Baseline - MedKLIP + ClinicalBERT + BiFMD + MultiScale Adapter
+# Experiment 1: heads=4, expansion=4 (baseline)
 # -----------------------------------------------------------------------------
 echo ""
-echo "[1/5] Baseline: BiFMD + MultiScale Adapter"
-python run.py --config $CONFIG --tag fusion_baseline \
+echo "[1/4] heads=4, expansion=4 (baseline)"
+python run.py --config $CONFIG --tag fusion_h4_e4 \
     --mode $MODE \
     --visual_encoder resnet \
     --visual_pretrained $MEDKLIP_WEIGHTS \
@@ -28,14 +34,17 @@ python run.py --config $CONFIG --tag fusion_baseline \
     --fusion_type bifmd \
     --adapter multiscale \
     --visual_lr_scale 0.01 \
+    --num_heads 4 \
+    --expansion 4 \
+    --attn_dropout $DROPOUT \
     --no_pretrain
 
 # -----------------------------------------------------------------------------
-# Experiment 2: Tune num_heads (2 vs default 4 for BiFMD)
+# Experiment 2: heads=4, expansion=8
 # -----------------------------------------------------------------------------
 echo ""
-echo "[2/5] Tune: num_heads=2"
-python run.py --config $CONFIG --tag fusion_heads2 \
+echo "[2/4] heads=4, expansion=8"
+python run.py --config $CONFIG --tag fusion_h4_e8 \
     --mode $MODE \
     --visual_encoder resnet \
     --visual_pretrained $MEDKLIP_WEIGHTS \
@@ -43,47 +52,17 @@ python run.py --config $CONFIG --tag fusion_heads2 \
     --fusion_type bifmd \
     --adapter multiscale \
     --visual_lr_scale 0.01 \
-    --num_heads 2 \
-    --no_pretrain
-
-# -----------------------------------------------------------------------------
-# Experiment 3: Tune attn_dropout (0.1)
-# -----------------------------------------------------------------------------
-echo ""
-echo "[3/5] Tune: attn_dropout=0.1"
-python run.py --config $CONFIG --tag fusion_dropout \
-    --mode $MODE \
-    --visual_encoder resnet \
-    --visual_pretrained $MEDKLIP_WEIGHTS \
-    --text_encoder clinicalbert \
-    --fusion_type bifmd \
-    --adapter multiscale \
-    --visual_lr_scale 0.01 \
-    --attn_dropout 0.1 \
-    --no_pretrain
-
-# -----------------------------------------------------------------------------
-# Experiment 4: Tune expansion (8 vs default 4)
-# -----------------------------------------------------------------------------
-echo ""
-echo "[4/5] Tune: expansion=8"
-python run.py --config $CONFIG --tag fusion_expand8 \
-    --mode $MODE \
-    --visual_encoder resnet \
-    --visual_pretrained $MEDKLIP_WEIGHTS \
-    --text_encoder clinicalbert \
-    --fusion_type bifmd \
-    --adapter multiscale \
-    --visual_lr_scale 0.01 \
+    --num_heads 4 \
     --expansion 8 \
+    --attn_dropout $DROPOUT \
     --no_pretrain
 
 # -----------------------------------------------------------------------------
-# Experiment 5: Combined (heads=8, dropout=0.1, expansion=8)
+# Experiment 3: heads=8, expansion=4
 # -----------------------------------------------------------------------------
 echo ""
-echo "[5/5] Combined: heads=8, dropout=0.1, expansion=8"
-python run.py --config $CONFIG --tag fusion_combined \
+echo "[3/4] heads=8, expansion=4"
+python run.py --config $CONFIG --tag fusion_h8_e4 \
     --mode $MODE \
     --visual_encoder resnet \
     --visual_pretrained $MEDKLIP_WEIGHTS \
@@ -92,12 +71,31 @@ python run.py --config $CONFIG --tag fusion_combined \
     --adapter multiscale \
     --visual_lr_scale 0.01 \
     --num_heads 8 \
-    --attn_dropout 0.1 \
+    --expansion 4 \
+    --attn_dropout $DROPOUT \
+    --no_pretrain
+
+# -----------------------------------------------------------------------------
+# Experiment 4: heads=8, expansion=8
+# -----------------------------------------------------------------------------
+echo ""
+echo "[4/4] heads=8, expansion=8"
+python run.py --config $CONFIG --tag fusion_h8_e8 \
+    --mode $MODE \
+    --visual_encoder resnet \
+    --visual_pretrained $MEDKLIP_WEIGHTS \
+    --text_encoder clinicalbert \
+    --fusion_type bifmd \
+    --adapter multiscale \
+    --visual_lr_scale 0.01 \
+    --num_heads 8 \
     --expansion 8 \
+    --attn_dropout $DROPOUT \
     --no_pretrain
 
 echo ""
 echo "=============================================="
 echo "All experiments completed!"
+echo "Grid: num_heads={4,8} x expansion={4,8}"
 echo "Check logs in output/logs/"
 echo "=============================================="
