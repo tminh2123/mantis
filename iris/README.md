@@ -80,7 +80,7 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 | `qata_ablation_cnn_medklip_bcam.log` | CNN (4-level) | PubMedBERT | MedKLIP text encoder, Dice=82.34% |
 | `qata_ablation_medklip_clinicalbert.log` | MedKLIP ResNet50 | ClinicalBERT | Both medical encoders |
 | `qata_ablation_medklip_frozen.log` | MedKLIP ResNet50 (frozen) | CLIP | Freeze visual, Dice=79.98% |
-| `qata_ablation_native_medklip_clip_bcam.log` | MedKLIP ResNet50 (native channels) | CLIP | No channel adapters, Dice=81.07% |
+| `qata_ablation_native_medklip_clip_bcam.log` | MedKLIP ResNet50 (native channels) | CLIP | Native ResNet channels (64/256/512/1024) thay vì project sang CNN scale (64/128/256/512), Dice=81.07% |
 | `qata_adapter_bottleneck.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Bottleneck adapter, Dice=81.59% |
 | `qata_adapter_spatial.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Spatial adapter |
 | `qata_baseline_temp.log` | CNN (5-level) | CLIP | Baseline test run |
