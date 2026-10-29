@@ -6,7 +6,7 @@ Text-guided medical image segmentation with MLP-only baseline (no KAN).
 
 | Dataset | Our Best | C2Seg Paper | MedLangViT | Model |
 |---------|----------|-------------|------------|-------|
-| QaTa-COV19 | **88.17%** Dice | 85.25% | 84.27% | `qata_baseline` (CNN+CLIP) |
+| QaTa-COV19 | **84.25%** Dice | 85.25% | 84.27% | `qata_nopretrain_cnn` (CNN+CLIP) |
 | MosMedData+ | **75.45%** Dice | 77.81% | 75.95% | `mosmed_pretrain_mix` |
 
 Note: All results use **Macro Dice** (per-sample average) for fair comparison with published papers.
@@ -92,7 +92,7 @@ Grid search over num_heads and expansion_ratio with:
 - Best configs: h4_e8 and h8_e2 both achieve 84.29% Test Dice
 - Larger expansion (8) with fewer heads (4) performs well
 - h8_e4 underperforms - potential overfitting with 8 heads + 4 expansion
-- MedKLIP+ClinicalBERT setup achieves ~84.3% vs baseline CLIP 88.17%
+- MedKLIP+ClinicalBERT+BiFMD achieves ~84.3%, matching baseline CNN+CLIP (84.25%)
 
 ### Ablation Study Runs (Server Logs)
 
@@ -108,8 +108,6 @@ Grid search over num_heads and expansion_ratio with:
 | `qata_adapter_spatial.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Spatial adapter, Dice=78.84% |
 | `qata_baseline_temp.log` | CNN (5-level) | CLIP | Baseline test run |
 | `qata_clinicalbert_5level.log` | CNN (5-level) | ClinicalBERT | Full IRIS + BERT text, Dice=81.43% |
-| `qata_baseline_medklip.log` | MedKLIP ResNet50 | CLIP | MedKLIP visual baseline, Dice=86.13% |
-| `qata_baseline.log` | CNN (5-level) | CLIP | **Best baseline, Dice=88.17%** |
 
 **Ablation Summary:**
 - CLIP text encoder > ClinicalBERT > PubMedBERT
