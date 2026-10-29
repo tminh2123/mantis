@@ -34,8 +34,8 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 | `baseline_medklip_medklip_bcam` | No | MedKLIP | MedKLIP | BCAM | 80.78 | 71.11 |
 | `baseline_medklip_clip_bifmd` | No | MedKLIP | CLIP | BiFMD | 80.28 | 70.41 |
 | `baseline_medklip_medklip_bifmd` | No | MedKLIP | MedKLIP | BiFMD | 79.07 | 69.39 |
-| `fusion_h4_e8` | No | MedKLIP | ClinicalBERT | BiFMD | <u>84.29</u> | <u>75.81</u> |
-| `fusion_h8_e2` | No | MedKLIP | ClinicalBERT | BiFMD | <u>84.29</u> | 75.62 |
+| `fusion_h4_e8` | No | MedKLIP | ClinicalBERT | BiFMD | <ins>84.29</ins> | <ins>75.81</ins> |
+| `fusion_h8_e2` | No | MedKLIP | ClinicalBERT | BiFMD | <ins>84.29</ins> | 75.62 |
 | `fusion_h4_e4` | No | MedKLIP | ClinicalBERT | BiFMD | 84.28 | 75.67 |
 | `fusion_h4_e2` | No | MedKLIP | ClinicalBERT | BiFMD | 84.18 | 75.63 |
 | `fusion_h8_e4` | No | MedKLIP | ClinicalBERT | BiFMD | 83.57 | 74.58 |
@@ -43,7 +43,7 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 | ARSeg | - | - | - | - | 84.09 | 72.64 |
 | C2Seg (Paper) | - | - | - | - | **85.25** | **76.97** |
 
-**Legend:** **Bold** = 1st, <u>Underline</u> = 2nd, *Italic* = 3rd
+**Legend:** **Bold** = 1st, <ins>Underline</ins> = 2nd, *Italic* = 3rd
 
 ### MosMedData+ Dataset (CT Scan)
 
