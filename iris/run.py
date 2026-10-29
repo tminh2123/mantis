@@ -16,7 +16,7 @@ from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, CosineAnnealin
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from models import IRIS, build_iris, DeepSupervisionLoss, CaCLLoss, DiceBCELoss
+from models import IRIS, build_iris, DeepSupervisionLoss, DiceBCELoss
 from datasets import get_dataloader
 from utils import (
     compute_metrics_per_sample, set_seed, load_config, get_device, 
@@ -80,95 +80,10 @@ def build_model(cfg: dict, device: torch.device) -> nn.Module:
 
 
 # -----------------------------------------------------------------------------
-# Stage I: CaCL Pretraining
-# -----------------------------------------------------------------------------
-def pretrain(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Logger):
-    """Stage I: Category-aware Contrastive Learning."""
-    pcfg = cfg['pretrain']
-    
-    logger.info("=" * 60)
-    logger.info("CONFIGURATION")
-    logger.info("=" * 60)
-    for section, values in cfg.items():
-        if isinstance(values, dict):
-            logger.info(f"[{section}]")
-            for k, v in values.items():
-                logger.info(f"  {k}: {v}")
-    logger.info("=" * 60)
-    
-    train_loader = get_dataloader(
-        cfg['data']['train_dir'],
-        batch_size=pcfg['batch_size'],
-        image_size=cfg['data']['image_size'],
-        augment=True,
-        shuffle=True,
-        num_workers=cfg['data']['num_workers'],
-    )
-    
-    criterion = CaCLLoss(temperature=pcfg['temperature'], eps=pcfg['eps'])
-    
-    # Only train visual encoder + projections
-    params = [p for n, p in model.named_parameters()
-              if 't_enc' not in n and p.requires_grad]
-    trainable_params = sum(p.numel() for p in params)
-    total_params = sum(p.numel() for p in model.parameters())
-    logger.info(f"Trainable params: {trainable_params:,} / {total_params:,}")
-    
-    optimizer = torch.optim.Adam(params, lr=pcfg['lr'], weight_decay=pcfg['weight_decay'])
-    scheduler = CosineAnnealingLR(optimizer, T_max=pcfg['epochs'])
-    
-    ckpt_dir = Path(cfg['logging']['checkpoint_dir'])
-    ckpt_dir.mkdir(parents=True, exist_ok=True)
-    
-    logger.info(f"Dataset: {len(train_loader.dataset)} samples")
-    logger.info("-" * 60)
-    
-    model.train()
-    best_loss = float('inf')
-    
-    for epoch in range(pcfg['epochs']):
-        model.train()
-        loss_meter = AverageMeter()
-        epoch_start = time.time()
-        
-        pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{pcfg['epochs']}", leave=False)
-        for images, _, texts in pbar:
-            images = images.to(device)
-            
-            v, l, l_raw = model.get_contrastive_embeddings(images, texts)
-            loss = criterion(v, l, l_raw)
-            
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            
-            loss_meter.update(loss.item(), images.size(0))
-            pbar.set_postfix({'loss': f'{loss.item():.4f}'})
-        
-        scheduler.step()
-        epoch_time = time.time() - epoch_start
-        
-        logger.info(
-            f"Epoch [{epoch+1:02d}/{pcfg['epochs']}] "
-            f"Loss: {loss_meter.avg:.4f} | Time: {epoch_time:.1f}s"
-        )
-        
-        if loss_meter.avg < best_loss:
-            best_loss = loss_meter.avg
-            save_checkpoint(
-                {'epoch': epoch+1, 'model': model.state_dict(), 'best_loss': best_loss},
-                cfg['pretrain']['checkpoint']
-            )
-    
-    logger.info(f"Pretrain done. Best loss: {best_loss:.4f}")
-    return model
-
-
-# -----------------------------------------------------------------------------
-# Stage II: Segmentation Training
+# Training
 # -----------------------------------------------------------------------------
 def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Logger):
-    """Stage II: Segmentation Training."""
+    """Segmentation Training."""
     tcfg = cfg['train']
     mcfg = cfg['model']
     
@@ -181,12 +96,6 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
             for k, v in values.items():
                 logger.info(f"  {k}: {v}")
     logger.info("=" * 60)
-    
-    # Load pretrained weights
-    pretrain_ckpt = cfg['pretrain']['checkpoint']
-    if cfg['pretrain']['enabled'] and Path(pretrain_ckpt).exists():
-        load_checkpoint(pretrain_ckpt, model)
-        logger.info(f"Loaded pretrained weights from {pretrain_ckpt}")
     
     train_loader = get_dataloader(
         cfg['data']['train_dir'],
@@ -388,7 +297,7 @@ def parse_args():
     p = argparse.ArgumentParser(description='IRIS Training')
     p.add_argument('--config', required=True, help='Config file')
     p.add_argument('--tag', required=True, help='Experiment tag')
-    p.add_argument('--mode', default='full', choices=['pretrain', 'train', 'eval', 'full'])
+    p.add_argument('--mode', default='train', choices=['train', 'eval'])
     
     # Model options
     p.add_argument('--visual_encoder', choices=['cnn', 'resnet'], help='Visual encoder')
@@ -412,7 +321,6 @@ def parse_args():
     p.add_argument('--patience', type=int, help='Early stopping patience (default: 20)')
     p.add_argument('--batch_size', type=int, help='Batch size')
     p.add_argument('--max_token_len', type=int, help='Max token length')
-    p.add_argument('--no_pretrain', action='store_true', help='Skip pretraining')
     p.add_argument('--checkpoint', help='Checkpoint for eval')
     p.add_argument('--output_dir', default='output', help='Output directory')
     
@@ -459,8 +367,6 @@ def main():
         cfg['train']['batch_size'] = args.batch_size
     if args.max_token_len:
         cfg['model']['max_token_len'] = args.max_token_len
-    if args.no_pretrain:
-        cfg['pretrain']['enabled'] = False
     
     # Set paths
     dataset = cfg['project']['dataset']
@@ -470,7 +376,6 @@ def main():
     output_dir = args.output_dir
     cfg['logging']['log_file'] = f"{output_dir}/logs/{exp_name}.log"
     cfg['logging']['checkpoint_dir'] = f"{output_dir}/checkpoints/{exp_name}"
-    cfg['pretrain']['checkpoint'] = f"{output_dir}/checkpoints/{exp_name}/pretrain.pth"
     cfg['eval']['checkpoint'] = f"{output_dir}/checkpoints/{exp_name}/best.pth"
     
     if args.checkpoint:
@@ -500,17 +405,10 @@ def main():
     logger.info("")
     
     # Run
-    if args.mode == 'pretrain':
-        if cfg['pretrain']['enabled']:
-            pretrain(cfg, model, device, logger)
-    elif args.mode == 'train':
+    if args.mode == 'train':
         train(cfg, model, device, logger)
-    elif args.mode == 'eval':
         full_evaluate(cfg, model, device, logger)
-    elif args.mode == 'full':
-        if cfg['pretrain']['enabled']:
-            pretrain(cfg, model, device, logger)
-        train(cfg, model, device, logger)
+    elif args.mode == 'eval':
         full_evaluate(cfg, model, device, logger)
     
     logger.info("")

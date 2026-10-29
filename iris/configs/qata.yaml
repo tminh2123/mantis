@@ -54,17 +54,6 @@ model:
   encoder_type: "cnn"
   deep_supervision: true
   num_classes: 1
-  text_mask_rate: 0.3
-  img_mask_rate: 0.3
-
-pretrain:
-  enabled: true
-  epochs: 100
-  batch_size: 64
-  lr: 1.0e-3
-  weight_decay: 1.0e-4
-  temperature: 0.07
-  eps: 0.8
 
 train:
   epochs: 300
