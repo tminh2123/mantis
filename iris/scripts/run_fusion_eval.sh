@@ -13,35 +13,41 @@ echo "=============================================="
 echo "Fusion Tuning - Re-Evaluation"
 echo "=============================================="
 
-# Grid search params - must match training
-HEADS=(4 8)
-EXPANSIONS=(2 4 8)
+# All fusion experiments: h4_e2/4/6/8, h8_e2/4/6/8
+EXPERIMENTS=(
+    "4 2"
+    "4 4"
+    "4 6"
+    "4 8"
+    "8 2"
+    "8 4"
+    "8 6"
+    "8 8"
+)
 
 count=1
-total=6
-for h in "${HEADS[@]}"; do
-    for e in "${EXPANSIONS[@]}"; do
-        TAG="fusion_h${h}_e${e}"
-        CKPT="output/checkpoints/qata_${TAG}/best.pth"
-        
-        if [ -f "$CKPT" ]; then
-            echo ""
-            echo "[${count}/${total}] Evaluating: ${TAG}"
-            python run.py --config $CONFIG --tag $TAG \
-                --mode eval \
-                --visual_encoder resnet \
-                --visual_pretrained $MEDKLIP_WEIGHTS \
-                --text_encoder clinicalbert \
-                --fusion_type bifmd \
-                --adapter multiscale \
-                --num_heads $h \
-                --expansion $e \
-                --no_pretrain
-        else
-            echo "[${count}/${total}] SKIP: ${TAG} - checkpoint not found"
-        fi
-        ((count++))
-    done
+total=${#EXPERIMENTS[@]}
+for exp in "${EXPERIMENTS[@]}"; do
+    read -r h e <<< "$exp"
+    TAG="fusion_h${h}_e${e}"
+    CKPT="output/checkpoints/qata_${TAG}/best.pth"
+    
+    if [ -f "$CKPT" ]; then
+        echo ""
+        echo "[${count}/${total}] Evaluating: ${TAG}"
+        python run.py --config $CONFIG --tag $TAG \
+            --mode eval \
+            --visual_encoder resnet \
+            --visual_pretrained $MEDKLIP_WEIGHTS \
+            --text_encoder clinicalbert \
+            --fusion_type bifmd \
+            --adapter multiscale \
+            --num_heads $h \
+            --expansion $e
+    else
+        echo "[${count}/${total}] SKIP: ${TAG} - checkpoint not found"
+    fi
+    ((count++))
 done
 
 echo ""
