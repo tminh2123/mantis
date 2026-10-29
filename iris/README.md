@@ -27,9 +27,14 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 | Tag | Pretrain | Visual | Text | Fusion | Dice (%) | IoU (%) |
 |-----|----------|--------|------|--------|----------|---------|
 | **`nopretrain_cnn`** | No | CNN | CLIP | BCAM | **84.25** | **75.61** |
+| **`fusion_h4_e8`** | No | MedKLIP | ClinicalBERT | BiFMD | **84.29** | **75.81** |
+| **`fusion_h8_e2`** | No | MedKLIP | ClinicalBERT | BiFMD | **84.29** | 75.62 |
+| `fusion_h4_e4` | No | MedKLIP | ClinicalBERT | BiFMD | 84.28 | 75.67 |
+| `fusion_h4_e2` | No | MedKLIP | ClinicalBERT | BiFMD | 84.18 | 75.63 |
 | `nopretrain_mix` | No | Mix | CLIP | BCAM | 84.16 | 75.53 |
 | `pretrain_mix` | Yes | Mix | CLIP | BCAM | 84.00 | 75.20 |
 | `pretrain_cnn` | Yes | CNN | CLIP | BCAM | 83.72 | 74.85 |
+| `fusion_h8_e4` | No | MedKLIP | ClinicalBERT | BiFMD | 83.57 | 74.58 |
 | `baseline_medklip_clip_bcam` | No | MedKLIP | CLIP | BCAM | 81.59 | 72.06 |
 | `baseline_medklip_medklip_bcam` | No | MedKLIP | MedKLIP | BCAM | 80.78 | 71.11 |
 | `baseline_medklip_clip_bifmd` | No | MedKLIP | CLIP | BiFMD | 80.28 | 70.41 |
