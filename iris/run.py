@@ -19,7 +19,7 @@ from tqdm import tqdm
 from models import IRIS, build_iris, DeepSupervisionLoss, CaCLLoss, DiceBCELoss
 from datasets import get_dataloader
 from utils import (
-    compute_metrics, set_seed, load_config, get_device, 
+    compute_metrics_per_sample, set_seed, load_config, get_device, 
     save_checkpoint, load_checkpoint
 )
 
@@ -327,10 +327,11 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
 # -----------------------------------------------------------------------------
 @torch.no_grad()
 def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, threshold: float = 0.5) -> dict:
-    """Evaluate model."""
+    """Evaluate model with proper Macro averaging."""
     model.eval()
-    dice_meter = AverageMeter()
-    iou_meter = AverageMeter()
+    
+    all_dice = []
+    all_iou = []
     
     for images, masks, texts in loader:
         images = images.to(device)
@@ -339,12 +340,19 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, thresho
         outputs = model(images, texts)
         pred = outputs['pred']
         
-        metrics = compute_metrics(pred, masks.unsqueeze(1), threshold)
-        B = images.size(0)
-        dice_meter.update(metrics['dice'] * 100, B)
-        iou_meter.update(metrics['iou'] * 100, B)
+        # Get per-sample metrics
+        metrics = compute_metrics_per_sample(pred, masks.unsqueeze(1), threshold)
+        all_dice.append(metrics['dice'])  # [B]
+        all_iou.append(metrics['iou'])    # [B]
     
-    return {'dice': dice_meter.avg, 'iou': iou_meter.avg}
+    # Concat all samples and compute true Macro mean
+    all_dice = torch.cat(all_dice)  # [N_total]
+    all_iou = torch.cat(all_iou)    # [N_total]
+    
+    return {
+        'dice': all_dice.mean().item() * 100,
+        'iou': all_iou.mean().item() * 100,
+    }
 
 
 def full_evaluate(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Logger):

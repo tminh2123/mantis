@@ -4,7 +4,7 @@ import torch
 import yaml
 from pathlib import Path
 
-from .metrics import compute_metrics, dice_score, iou_score
+from .metrics import compute_metrics, compute_metrics_per_sample, dice_score, iou_score
 
 
 def set_seed(seed: int):
@@ -51,6 +51,6 @@ def load_checkpoint(path: str, model, strict: bool = False):
 
 
 __all__ = [
-    'compute_metrics', 'dice_score', 'iou_score',
+    'compute_metrics', 'compute_metrics_per_sample', 'dice_score', 'iou_score',
     'set_seed', 'load_config', 'get_device', 'save_checkpoint', 'load_checkpoint',
 ]
