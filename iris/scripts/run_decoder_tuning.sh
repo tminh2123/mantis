@@ -15,10 +15,12 @@ CONFIG="configs/qata.yaml"
 NUM_HEADS=8
 EXPANSION=4
 PATIENCE=30
+BATCH_SIZE=64  # Increased for A100 40GB
 
 echo "=============================================="
 echo "Decoder Attention Tuning"
 echo "Base: h8_e4 (84.61% Dice)"
+echo "Batch size: ${BATCH_SIZE}"
 echo "=============================================="
 
 # Grid: levels (1,2,3) x heads (4,8)
@@ -52,6 +54,7 @@ for exp in "${EXPERIMENTS[@]}"; do
         --num_heads $NUM_HEADS \
         --expansion $EXPANSION \
         --patience $PATIENCE \
+        --batch_size $BATCH_SIZE \
         --decoder_attention \
         --decoder_attention_levels $levels \
         --decoder_attention_heads $heads
