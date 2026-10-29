@@ -154,26 +154,55 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 
 ## CLI Arguments
 
+### Core Arguments
+
 | Argument | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `--config` | Yes | - | Config file |
-| `--tag` | Yes | - | Experiment tag |
-| `--mode` | No | full | pretrain, train, eval, full |
-| `--visual_encoder` | No | cnn | cnn or resnet (MedKLIP) |
-| `--text_encoder` | No | clip | clip, pubmedbert, clinicalbert |
-| `--fusion_type` | No | bcam | bcam or bifmd |
-| `--adapter` | No | None | bottleneck, spatial, multiscale |
-| `--freeze_visual` | No | False | Freeze visual encoder |
-| `--visual_pretrained` | No | None | Path to MedKLIP weights |
-| `--num_heads` | No | 8 | Attention heads |
-| `--attn_dropout` | No | 0.0 | Attention dropout |
-| `--expansion` | No | 4 | MLP expansion ratio |
-| `--lr` | No | config | Base learning rate |
-| `--visual_lr_scale` | No | 0.1 | Visual encoder LR scale (e.g., 0.01 for pretrained) |
-| `--max_token_len` | No | 18 | Max text token length |
-| `--no_pretrain` | No | False | Skip pretrain stage |
-| `--checkpoint` | No | - | Override checkpoint for eval |
-| `--output_dir` | No | output | Output directory |
+| `--config` | Yes | - | Config file path |
+| `--tag` | Yes | - | Experiment tag (used for logs/checkpoints naming) |
+| `--mode` | No | train | `train` (train + eval) or `eval` only |
+| `--output_dir` | No | output | Output directory for logs and checkpoints |
+| `--checkpoint` | No | - | Override checkpoint path for eval |
+
+### Encoder Selection
+
+| Argument | Default | Options | Description |
+|----------|---------|---------|-------------|
+| `--visual_encoder` | cnn | `cnn`, `resnet` | Visual encoder type |
+| `--text_encoder` | clip | `clip`, `pubmedbert`, `clinicalbert` | Text encoder (frozen) |
+| `--fusion_type` | bcam | `bcam`, `bifmd` | Fusion module type |
+| `--adapter` | None | `bottleneck`, `spatial`, `multiscale` | Visual adapter for pretrained encoders |
+| `--visual_pretrained` | None | path | Path to pretrained visual weights (e.g., MedKLIP) |
+| `--freeze_visual` | False | flag | Freeze visual encoder weights |
+
+### Fusion Tuning
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--num_heads` | 8 | Number of attention heads in fusion modules |
+| `--attn_dropout` | 0.0 | Attention dropout rate |
+| `--expansion` | 4 | MLP expansion ratio in fusion |
+
+### Decoder Attention (NEW)
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--decoder_attention` | False | Enable self-attention in decoder blocks |
+| `--decoder_attention_heads` | 4 | Number of attention heads in decoder |
+| `--decoder_attention_levels` | 2 | Number of decoder levels with attention (from deepest) |
+
+**Note:** Decoder attention is applied to low-resolution levels for efficiency. With `decoder_attention_levels=2`, attention is added to the two deepest decoder levels (28x28 and 56x56 for CNN encoder).
+
+### Training Options
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--lr` | config | Base learning rate |
+| `--visual_lr_scale` | 0.1 | Learning rate scale for visual encoder |
+| `--epochs` | config | Training epochs |
+| `--patience` | 20 | Early stopping patience |
+| `--batch_size` | config | Batch size |
+| `--max_token_len` | 18 | Max text token length |
 
 ### Example Commands
 
@@ -198,6 +227,26 @@ python run.py --config configs/qata.yaml --tag resnet_adapter \
 # Tune fusion params
 python run.py --config configs/qata.yaml --tag tuned \
     --num_heads 4 --attn_dropout 0.1 --expansion 2
+
+# Enable decoder self-attention (2 levels, 4 heads)
+python run.py --config configs/qata.yaml --tag dec_attn \
+    --decoder_attention
+
+# Decoder attention with custom settings
+python run.py --config configs/qata.yaml --tag dec_attn_l3_h8 \
+    --decoder_attention \
+    --decoder_attention_levels 3 \
+    --decoder_attention_heads 8
+
+# Full fusion tuning + decoder attention
+python run.py --config configs/qata.yaml --tag fusion_dec \
+    --visual_encoder resnet \
+    --visual_pretrained /path/to/medklip.pth \
+    --text_encoder clinicalbert \
+    --fusion_type bifmd \
+    --adapter multiscale \
+    --num_heads 4 --expansion 8 \
+    --decoder_attention --decoder_attention_levels 2
 ```
 
 ## Output Structure
