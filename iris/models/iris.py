@@ -303,6 +303,79 @@ class UpBlock(nn.Module):
         return self.convs(torch.cat([skip_att, up_x], dim=1))
 
 
+class DecoderSelfAttention(nn.Module):
+    """Multi-head self-attention for decoder feature maps."""
+    def __init__(self, channels: int, num_heads: int = 4, dropout: float = 0.0):
+        super().__init__()
+        assert channels % num_heads == 0, f"channels {channels} must be divisible by num_heads {num_heads}"
+        self.num_heads = num_heads
+        self.head_dim = channels // num_heads
+        self.scale = self.head_dim ** -0.5
+        
+        self.norm = nn.LayerNorm(channels)
+        self.qkv = nn.Linear(channels, channels * 3)
+        self.proj = nn.Linear(channels, channels)
+        self.dropout = nn.Dropout(dropout)
+        
+        # Zero-init output projection for residual learning
+        nn.init.zeros_(self.proj.weight)
+        nn.init.zeros_(self.proj.bias)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        B, C, H, W = x.shape
+        N = H * W
+        
+        # Flatten and normalize
+        x_flat = x.flatten(2).transpose(1, 2)  # (B, N, C)
+        x_norm = self.norm(x_flat)
+        
+        # QKV projection
+        qkv = self.qkv(x_norm).reshape(B, N, 3, self.num_heads, self.head_dim)
+        qkv = qkv.permute(2, 0, 3, 1, 4)  # (3, B, heads, N, head_dim)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+        
+        # Attention
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = F.softmax(attn, dim=-1)
+        attn = self.dropout(attn)
+        
+        # Output
+        out = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        out = self.proj(out)
+        out = self.dropout(out)
+        
+        # Residual + reshape
+        out = x_flat + out
+        return out.transpose(1, 2).reshape(B, C, H, W)
+
+
+class UpBlockWithAttention(nn.Module):
+    """Decoder block with PixLevelModule and optional self-attention."""
+    def __init__(self, skip_ch: int, up_ch: int, out_ch: int, num_layers: int = 2,
+                 use_attention: bool = False, num_heads: int = 4, dropout: float = 0.0):
+        super().__init__()
+        self.att = PixLevelModule(skip_ch)
+        self.up = nn.ConvTranspose2d(up_ch, up_ch, 2, stride=2)
+        layers = [ConvBNReLU(skip_ch + up_ch, out_ch)]
+        layers += [ConvBNReLU(out_ch, out_ch) for _ in range(num_layers - 1)]
+        self.convs = nn.Sequential(*layers)
+        
+        # Optional self-attention after convolutions
+        self.self_attn = DecoderSelfAttention(out_ch, num_heads, dropout) if use_attention else None
+
+    def forward(self, skip: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
+        skip_att = self.att(skip)
+        up_x = self.up(x)
+        if up_x.shape[2:] != skip_att.shape[2:]:
+            up_x = F.interpolate(up_x, skip_att.shape[2:], mode='bilinear', align_corners=False)
+        out = self.convs(torch.cat([skip_att, up_x], dim=1))
+        
+        if self.self_attn is not None:
+            out = self.self_attn(out)
+        
+        return out
+
+
 # =============================================================================
 # Adapters
 # =============================================================================
@@ -527,6 +600,10 @@ class IRIS(nn.Module):
         attn_dropout: float = 0.0,
         expansion: int = 4,
         deep_supervision: bool = True,
+        # Decoder attention
+        decoder_attention: bool = False,
+        decoder_attention_heads: int = 4,
+        decoder_attention_levels: int = 2,  # Apply attention to top N decoder levels
         # Training
         freeze_visual: bool = False,
         visual_pretrained: Optional[str] = None,
@@ -619,17 +696,49 @@ class IRIS(nn.Module):
                 self.fuse3 = BCAModule(scales[4], base_channel * 8, self._text_dim, num_heads, dropout, expansion, attn_dropout)
 
         # =====================================================================
-        # Decoder
+        # Decoder (with optional self-attention)
         # =====================================================================
+        # Attention applied to deeper levels (lower resolution) for efficiency
+        # decoder_attention_levels=2 means up3 and up2 get attention (CNN) or up2 and up1 (ResNet)
         if self.num_levels == 5:
-            self.up3 = UpBlock(base_channel * 8, base_channel * 8, base_channel * 4)
-            self.up2 = UpBlock(base_channel * 4, base_channel * 4, base_channel * 2)
-            self.up1 = UpBlock(base_channel * 2, base_channel * 2, base_channel)
-            self.up0 = UpBlock(base_channel, base_channel, base_channel)
+            # CNN: up3(28x28), up2(56x56), up1(112x112), up0(224x224)
+            self.up3 = UpBlockWithAttention(
+                base_channel * 8, base_channel * 8, base_channel * 4,
+                use_attention=decoder_attention and decoder_attention_levels >= 1,
+                num_heads=decoder_attention_heads, dropout=dropout
+            )
+            self.up2 = UpBlockWithAttention(
+                base_channel * 4, base_channel * 4, base_channel * 2,
+                use_attention=decoder_attention and decoder_attention_levels >= 2,
+                num_heads=decoder_attention_heads, dropout=dropout
+            )
+            self.up1 = UpBlockWithAttention(
+                base_channel * 2, base_channel * 2, base_channel,
+                use_attention=decoder_attention and decoder_attention_levels >= 3,
+                num_heads=decoder_attention_heads, dropout=dropout
+            )
+            self.up0 = UpBlockWithAttention(
+                base_channel, base_channel, base_channel,
+                use_attention=decoder_attention and decoder_attention_levels >= 4,
+                num_heads=decoder_attention_heads, dropout=dropout
+            )
         else:
-            self.up2 = UpBlock(base_channel * 4, base_channel * 8, base_channel * 4)
-            self.up1 = UpBlock(base_channel * 2, base_channel * 4, base_channel * 2)
-            self.up0 = UpBlock(base_channel, base_channel * 2, base_channel)
+            # ResNet: up2(28x28), up1(56x56), up0(112x112)
+            self.up2 = UpBlockWithAttention(
+                base_channel * 4, base_channel * 8, base_channel * 4,
+                use_attention=decoder_attention and decoder_attention_levels >= 1,
+                num_heads=decoder_attention_heads, dropout=dropout
+            )
+            self.up1 = UpBlockWithAttention(
+                base_channel * 2, base_channel * 4, base_channel * 2,
+                use_attention=decoder_attention and decoder_attention_levels >= 2,
+                num_heads=decoder_attention_heads, dropout=dropout
+            )
+            self.up0 = UpBlockWithAttention(
+                base_channel, base_channel * 2, base_channel,
+                use_attention=decoder_attention and decoder_attention_levels >= 3,
+                num_heads=decoder_attention_heads, dropout=dropout
+            )
             self.final_up = nn.Sequential(
                 nn.ConvTranspose2d(base_channel, base_channel, 2, stride=2),
                 ConvBNReLU(base_channel, base_channel),
@@ -793,6 +902,11 @@ def build_iris(config) -> IRIS:
         attn_dropout=mcfg.get('attn_dropout', 0.0),
         expansion=mcfg.get('expansion', 4),
         deep_supervision=mcfg.get('deep_supervision', True),
+        # Decoder attention
+        decoder_attention=mcfg.get('decoder_attention', False),
+        decoder_attention_heads=mcfg.get('decoder_attention_heads', 4),
+        decoder_attention_levels=mcfg.get('decoder_attention_levels', 2),
+        # Training
         freeze_visual=mcfg.get('freeze_visual', False),
         visual_pretrained=mcfg.get('visual_pretrained', None),
         text_mask_rate=mcfg.get('text_mask_rate', 0.3),

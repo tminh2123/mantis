@@ -312,6 +312,11 @@ def parse_args():
     p.add_argument('--attn_dropout', type=float, help='Attention dropout (default: 0.0)')
     p.add_argument('--expansion', type=int, help='MLP expansion ratio (default: 4)')
     
+    # Decoder attention
+    p.add_argument('--decoder_attention', action='store_true', help='Enable self-attention in decoder')
+    p.add_argument('--decoder_attention_heads', type=int, help='Decoder attention heads (default: 4)')
+    p.add_argument('--decoder_attention_levels', type=int, help='Number of decoder levels with attention (default: 2)')
+    
     # Learning rate
     p.add_argument('--lr', type=float, help='Base learning rate')
     p.add_argument('--visual_lr_scale', type=float, help='Visual encoder LR scale (default: 0.1)')
@@ -352,6 +357,14 @@ def main():
         cfg['model']['attn_dropout'] = args.attn_dropout
     if args.expansion:
         cfg['model']['expansion'] = args.expansion
+    
+    # Decoder attention overrides
+    if args.decoder_attention:
+        cfg['model']['decoder_attention'] = True
+    if args.decoder_attention_heads:
+        cfg['model']['decoder_attention_heads'] = args.decoder_attention_heads
+    if args.decoder_attention_levels:
+        cfg['model']['decoder_attention_levels'] = args.decoder_attention_levels
     
     # Learning rate overrides
     if args.lr:
