@@ -1,0 +1,87 @@
+2026-10-28 19:45:09,817 - INFO - 
+2026-10-28 19:45:09,817 - INFO - ============================================================
+2026-10-28 19:45:09,817 - INFO - IRIS
+2026-10-28 19:45:09,817 - INFO - Started: 2026-10-28 19:45:09
+2026-10-28 19:45:09,817 - INFO - ============================================================
+2026-10-28 19:45:09,817 - INFO - 
+2026-10-28 19:45:09,817 - INFO - Experiment: qata_fusion_test_h4_e6
+2026-10-28 19:45:09,817 - INFO - Device: cuda
+2026-10-28 19:45:09,820 - INFO - GPU: NVIDIA A100-PCIE-40GB
+2026-10-28 19:45:13,915 - INFO - Model: visual=resnet, text=clinicalbert, fusion=bifmd
+2026-10-28 19:45:13,916 - INFO - Parameters: 141,963,688
+2026-10-28 19:45:13,916 - INFO - 
+2026-10-28 19:45:13,916 - INFO - ============================================================
+2026-10-28 19:45:13,916 - INFO - CONFIGURATION
+2026-10-28 19:45:13,916 - INFO - ============================================================
+2026-10-28 19:45:13,916 - INFO - [project]
+2026-10-28 19:45:13,916 - INFO -   name: iris
+2026-10-28 19:45:13,916 - INFO -   dataset: qata
+2026-10-28 19:45:13,916 - INFO -   seed: 922
+2026-10-28 19:45:13,916 - INFO - [data]
+2026-10-28 19:45:13,916 - INFO -   root: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg
+2026-10-28 19:45:13,916 - INFO -   train_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+2026-10-28 19:45:13,916 - INFO -   val_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+2026-10-28 19:45:13,916 - INFO -   test_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
+2026-10-28 19:45:13,916 - INFO -   image_size: 224
+2026-10-28 19:45:13,916 - INFO -   num_workers: 4
+2026-10-28 19:45:13,916 - INFO - [model]
+2026-10-28 19:45:13,916 - INFO -   clip_model: openai/clip-vit-base-patch32
+2026-10-28 19:45:13,916 - INFO -   max_token_len: 18
+2026-10-28 19:45:13,916 - INFO -   frozen_clip: True
+2026-10-28 19:45:13,917 - INFO -   base_channel: 64
+2026-10-28 19:45:13,917 - INFO -   num_heads: 4
+2026-10-28 19:45:13,917 - INFO -   dropout: 0.5
+2026-10-28 19:45:13,917 - INFO -   expansion: 6
+2026-10-28 19:45:13,917 - INFO -   encoder_type: cnn
+2026-10-28 19:45:13,917 - INFO -   deep_supervision: True
+2026-10-28 19:45:13,917 - INFO -   num_classes: 1
+2026-10-28 19:45:13,917 - INFO -   text_mask_rate: 0.3
+2026-10-28 19:45:13,917 - INFO -   img_mask_rate: 0.3
+2026-10-28 19:45:13,917 - INFO -   visual_encoder: resnet
+2026-10-28 19:45:13,917 - INFO -   text_encoder: clinicalbert
+2026-10-28 19:45:13,917 - INFO -   fusion_type: bifmd
+2026-10-28 19:45:13,917 - INFO -   adapter: multiscale
+2026-10-28 19:45:13,917 - INFO -   visual_pretrained: medklip_checkpoints/MedKLIP/checkpoint_final.pth
+2026-10-28 19:45:13,917 - INFO -   attn_dropout: 0.1
+2026-10-28 19:45:13,917 - INFO - [pretrain]
+2026-10-28 19:45:13,917 - INFO -   enabled: False
+2026-10-28 19:45:13,917 - INFO -   epochs: 100
+2026-10-28 19:45:13,917 - INFO -   batch_size: 64
+2026-10-28 19:45:13,917 - INFO -   lr: 0.001
+2026-10-28 19:45:13,917 - INFO -   weight_decay: 0.0001
+2026-10-28 19:45:13,917 - INFO -   temperature: 0.07
+2026-10-28 19:45:13,917 - INFO -   eps: 0.8
+2026-10-28 19:45:13,917 - INFO -   checkpoint: output/checkpoints/qata_fusion_test_h4_e6/pretrain.pth
+2026-10-28 19:45:13,917 - INFO - [train]
+2026-10-28 19:45:13,917 - INFO -   epochs: 1
+2026-10-28 19:45:13,917 - INFO -   batch_size: 32
+2026-10-28 19:45:13,917 - INFO -   lr: 0.001
+2026-10-28 19:45:13,917 - INFO -   weight_decay: 0.0001
+2026-10-28 19:45:13,917 - INFO -   bce_weight: 0.5
+2026-10-28 19:45:13,917 - INFO -   grad_clip: 1.0
+2026-10-28 19:45:13,917 - INFO -   cosine_lr: True
+2026-10-28 19:45:13,917 - INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+2026-10-28 19:45:13,917 - INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+2026-10-28 19:45:13,917 - INFO -   early_stopping: True
+2026-10-28 19:45:13,918 - INFO -   es_patience: 20
+2026-10-28 19:45:13,918 - INFO -   visual_lr_scale: 0.01
+2026-10-28 19:45:13,918 - INFO - [eval]
+2026-10-28 19:45:13,918 - INFO -   threshold: 0.5
+2026-10-28 19:45:13,918 - INFO -   checkpoint: output/checkpoints/qata_fusion_test_h4_e6/best.pth
+2026-10-28 19:45:13,918 - INFO - [logging]
+2026-10-28 19:45:13,918 - INFO -   save_every: 10
+2026-10-28 19:45:13,918 - INFO -   log_file: output/logs/qata_fusion_test_h4_e6.log
+2026-10-28 19:45:13,918 - INFO -   checkpoint_dir: output/checkpoints/qata_fusion_test_h4_e6
+2026-10-28 19:45:13,918 - INFO - ============================================================
+2026-10-28 19:45:14,036 - INFO - LR: visual=1.0e-05 (0.01x), adapter/other=1.0e-03
+2026-10-28 19:45:14,036 - INFO - Visual params: 9,236,480
+2026-10-28 19:45:14,036 - INFO - Adapter params: 4,183,684
+2026-10-28 19:45:14,036 - INFO - Other params: 20,233,252
+2026-10-28 19:45:14,036 - INFO - Train: 5716 | Val: 1429
+2026-10-28 19:45:14,036 - INFO - ------------------------------------------------------------
+2026-10-28 19:45:55,066 - INFO - Epoch [1/1] Loss: 0.4360 | Dice: 72.06% | IoU: 60.84% | Time: 37.4s
+2026-10-28 19:45:55,815 - INFO - Training done. Best Dice: 72.06%
+2026-10-28 19:45:55,830 - INFO - 
+2026-10-28 19:45:55,830 - INFO - ============================================================
+2026-10-28 19:45:55,831 - INFO - Finished: 2026-10-28 19:45:55
+2026-10-28 19:45:55,831 - INFO - ============================================================

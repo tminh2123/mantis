@@ -1,0 +1,173 @@
+2026-10-28 08:12:58,984 - INFO - 
+2026-10-28 08:12:58,984 - INFO - ============================================================
+2026-10-28 08:12:58,984 - INFO - IRIS
+2026-10-28 08:12:58,984 - INFO - Started: 2026-10-28 08:12:58
+2026-10-28 08:12:58,984 - INFO - ============================================================
+2026-10-28 08:12:58,984 - INFO - 
+2026-10-28 08:12:58,984 - INFO - Experiment: qata_ablation_cnn_clinicalbert_bcam
+2026-10-28 08:12:58,985 - INFO - Device: cuda
+2026-10-28 08:12:58,989 - INFO - GPU: NVIDIA A100-PCIE-40GB
+2026-10-28 08:12:58,989 - INFO - 
+2026-10-28 08:13:27,443 - INFO - Model parameters: 132,028,513
+2026-10-28 08:13:27,443 - INFO - Pretrain is disabled, skipping Stage I
+2026-10-28 08:13:27,443 - INFO - ============================================================
+2026-10-28 08:13:27,443 - INFO - CONFIGURATION
+2026-10-28 08:13:27,443 - INFO - ============================================================
+2026-10-28 08:13:27,443 - INFO - [project]
+2026-10-28 08:13:27,443 - INFO -   name: iris-ablation
+2026-10-28 08:13:27,444 - INFO -   dataset: qata
+2026-10-28 08:13:27,444 - INFO -   seed: 922
+2026-10-28 08:13:27,444 - INFO - [data]
+2026-10-28 08:13:27,444 - INFO -   root: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg
+2026-10-28 08:13:27,444 - INFO -   train_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+2026-10-28 08:13:27,444 - INFO -   val_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+2026-10-28 08:13:27,444 - INFO -   test_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
+2026-10-28 08:13:27,444 - INFO -   image_size: 224
+2026-10-28 08:13:27,444 - INFO -   num_workers: 4
+2026-10-28 08:13:27,444 - INFO - [model]
+2026-10-28 08:13:27,444 - INFO -   backbone: ablation
+2026-10-28 08:13:27,444 - INFO -   visual_encoder: cnn
+2026-10-28 08:13:27,444 - INFO -   text_encoder: medklip
+2026-10-28 08:13:27,444 - INFO -   fusion_type: bcam
+2026-10-28 08:13:27,444 - INFO -   clip_model: openai/clip-vit-base-patch32
+2026-10-28 08:13:27,444 - INFO -   medklip_visual_path: medklip_checkpoints/MedKLIP/checkpoint_final.pth
+2026-10-28 08:13:27,444 - INFO -   medklip_text_model: emilyalsentzer/Bio_ClinicalBERT
+2026-10-28 08:13:27,444 - INFO -   freeze_medklip_visual: False
+2026-10-28 08:13:27,444 - INFO -   freeze_medklip_text: True
+2026-10-28 08:13:27,444 - INFO -   use_entity_translation: True
+2026-10-28 08:13:27,444 - INFO -   max_token_len: 77
+2026-10-28 08:13:27,444 - INFO -   base_channel: 64
+2026-10-28 08:13:27,445 - INFO -   num_heads: 8
+2026-10-28 08:13:27,445 - INFO -   dropout: 0.5
+2026-10-28 08:13:27,445 - INFO -   expansion: 4
+2026-10-28 08:13:27,445 - INFO -   deep_supervision: True
+2026-10-28 08:13:27,445 - INFO -   num_classes: 1
+2026-10-28 08:13:27,445 - INFO -   text_mask_rate: 0.3
+2026-10-28 08:13:27,445 - INFO -   img_mask_rate: 0.3
+2026-10-28 08:13:27,445 - INFO -   frozen_clip: True
+2026-10-28 08:13:27,445 - INFO -   encoder_type: cnn
+2026-10-28 08:13:27,445 - INFO -   adapter_type: bottleneck
+2026-10-28 08:13:27,445 - INFO -   adapter_reduction: 4
+2026-10-28 08:13:27,445 - INFO -   adapter_scale: 0.1
+2026-10-28 08:13:27,445 - INFO - [pretrain]
+2026-10-28 08:13:27,445 - INFO -   enabled: False
+2026-10-28 08:13:27,445 - INFO -   epochs: 100
+2026-10-28 08:13:27,445 - INFO -   batch_size: 64
+2026-10-28 08:13:27,445 - INFO -   lr: 0.001
+2026-10-28 08:13:27,445 - INFO -   weight_decay: 0.0001
+2026-10-28 08:13:27,445 - INFO -   temperature: 0.07
+2026-10-28 08:13:27,445 - INFO -   eps: 0.8
+2026-10-28 08:13:27,445 - INFO -   checkpoint: output/checkpoints/qata_ablation_cnn_clinicalbert_bcam/pretrain.pth
+2026-10-28 08:13:27,445 - INFO - [train]
+2026-10-28 08:13:27,446 - INFO -   epochs: 300
+2026-10-28 08:13:27,446 - INFO -   batch_size: 32
+2026-10-28 08:13:27,446 - INFO -   lr: 0.001
+2026-10-28 08:13:27,446 - INFO -   weight_decay: 0.0001
+2026-10-28 08:13:27,446 - INFO -   bce_weight: 0.5
+2026-10-28 08:13:27,446 - INFO -   grad_clip: 1.0
+2026-10-28 08:13:27,446 - INFO -   cosine_lr: True
+2026-10-28 08:13:27,446 - INFO -   loss_weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+2026-10-28 08:13:27,446 - INFO -   asymmetric_weights: [[0.5, 0.5], [0.4, 0.6], [0.3, 0.7], [0.2, 0.8], [0.1, 0.9]]
+2026-10-28 08:13:27,446 - INFO -   early_stopping: True
+2026-10-28 08:13:27,446 - INFO -   es_patience: 20
+2026-10-28 08:13:27,446 - INFO - [eval]
+2026-10-28 08:13:27,446 - INFO -   threshold: 0.5
+2026-10-28 08:13:27,446 - INFO -   checkpoint: output/checkpoints/qata_ablation_cnn_clinicalbert_bcam/best.pth
+2026-10-28 08:13:27,446 - INFO - [logging]
+2026-10-28 08:13:27,446 - INFO -   save_every: 10
+2026-10-28 08:13:27,446 - INFO -   log_file: output/logs/qata_ablation_cnn_clinicalbert_bcam.log
+2026-10-28 08:13:27,446 - INFO -   checkpoint_dir: output/checkpoints/qata_ablation_cnn_clinicalbert_bcam
+2026-10-28 08:13:27,446 - INFO - ============================================================
+2026-10-28 08:13:27,447 - INFO - Pretrain disabled, training from scratch
+2026-10-28 08:13:27,976 - INFO - Using Deep Supervision Loss with weights: [0.5, 0.2, 0.15, 0.1, 0.05]
+2026-10-28 08:13:27,981 - INFO - Using CosineAnnealingWarmRestarts scheduler (T_0=10, eta_min=1e-4)
+2026-10-28 08:13:27,981 - INFO - Train: 5716 samples | Val: 1429 samples
+2026-10-28 08:13:27,982 - INFO - Batch size: 32 | Steps/epoch: 178
+2026-10-28 08:13:27,982 - INFO - ------------------------------------------------------------
+2026-10-28 08:14:20,616 - INFO - Epoch [1/300] Loss: 0.5306 | Dice: 66.94% | IoU: 54.41% | Time: 46.9s
+2026-10-28 08:15:10,818 - INFO - Epoch [2/300] Loss: 0.3730 | Dice: 70.21% | IoU: 57.91% | Time: 43.6s
+2026-10-28 08:16:02,132 - INFO - Epoch [3/300] Loss: 0.3402 | Dice: 72.45% | IoU: 60.52% | Time: 44.0s
+2026-10-28 08:16:53,399 - INFO - Epoch [4/300] Loss: 0.3229 | Dice: 71.20% | IoU: 59.07% | Time: 43.9s
+2026-10-28 08:17:43,092 - INFO - Epoch [5/300] Loss: 0.3130 | Dice: 72.28% | IoU: 60.49% | Time: 44.2s
+2026-10-28 08:18:33,186 - INFO - Epoch [6/300] Loss: 0.2972 | Dice: 74.72% | IoU: 62.83% | Time: 44.3s
+2026-10-28 08:19:25,840 - INFO - Epoch [7/300] Loss: 0.2869 | Dice: 76.19% | IoU: 64.97% | Time: 44.7s
+2026-10-28 08:20:18,032 - INFO - Epoch [8/300] Loss: 0.2767 | Dice: 76.82% | IoU: 65.54% | Time: 44.6s
+2026-10-28 08:21:10,206 - INFO - Epoch [9/300] Loss: 0.2694 | Dice: 75.85% | IoU: 64.49% | Time: 44.6s
+2026-10-28 08:22:00,264 - INFO - Epoch [10/300] Loss: 0.2609 | Dice: 72.19% | IoU: 60.18% | Time: 44.2s
+2026-10-28 08:22:50,651 - INFO - Epoch [11/300] Loss: 0.2870 | Dice: 75.42% | IoU: 63.70% | Time: 44.6s
+2026-10-28 08:23:40,764 - INFO - Epoch [12/300] Loss: 0.2790 | Dice: 75.03% | IoU: 63.39% | Time: 44.3s
+2026-10-28 08:24:30,697 - INFO - Epoch [13/300] Loss: 0.2759 | Dice: 75.35% | IoU: 63.75% | Time: 44.2s
+2026-10-28 08:25:20,476 - INFO - Epoch [14/300] Loss: 0.2672 | Dice: 77.67% | IoU: 66.47% | Time: 44.1s
+2026-10-28 08:26:11,630 - INFO - Epoch [15/300] Loss: 0.2627 | Dice: 77.75% | IoU: 66.97% | Time: 43.7s
+2026-10-28 08:27:01,327 - INFO - Epoch [16/300] Loss: 0.2582 | Dice: 78.35% | IoU: 67.56% | Time: 43.2s
+2026-10-28 08:27:50,561 - INFO - Epoch [17/300] Loss: 0.2527 | Dice: 79.00% | IoU: 68.43% | Time: 42.9s
+2026-10-28 08:28:39,858 - INFO - Epoch [18/300] Loss: 0.2476 | Dice: 79.17% | IoU: 68.48% | Time: 43.0s
+2026-10-28 08:29:29,345 - INFO - Epoch [19/300] Loss: 0.2428 | Dice: 77.71% | IoU: 66.75% | Time: 43.0s
+2026-10-28 08:30:17,602 - INFO - Epoch [20/300] Loss: 0.2372 | Dice: 79.22% | IoU: 68.47% | Time: 43.0s
+2026-10-28 08:31:06,944 - INFO - Epoch [21/300] Loss: 0.2636 | Dice: 76.73% | IoU: 65.70% | Time: 43.0s
+2026-10-28 08:31:55,200 - INFO - Epoch [22/300] Loss: 0.2571 | Dice: 75.83% | IoU: 64.71% | Time: 43.0s
+2026-10-28 08:32:43,488 - INFO - Epoch [23/300] Loss: 0.2521 | Dice: 78.53% | IoU: 67.65% | Time: 43.1s
+2026-10-28 08:33:31,729 - INFO - Epoch [24/300] Loss: 0.2494 | Dice: 79.02% | IoU: 68.51% | Time: 43.0s
+2026-10-28 08:34:19,825 - INFO - Epoch [25/300] Loss: 0.2451 | Dice: 78.81% | IoU: 67.76% | Time: 43.0s
+2026-10-28 08:35:07,999 - INFO - Epoch [26/300] Loss: 0.2433 | Dice: 79.41% | IoU: 68.85% | Time: 43.0s
+2026-10-28 08:35:57,363 - INFO - Epoch [27/300] Loss: 0.2406 | Dice: 79.51% | IoU: 69.04% | Time: 42.9s
+2026-10-28 08:36:46,439 - INFO - Epoch [28/300] Loss: 0.2339 | Dice: 79.59% | IoU: 69.15% | Time: 42.8s
+2026-10-28 08:37:35,701 - INFO - Epoch [29/300] Loss: 0.2293 | Dice: 80.15% | IoU: 69.83% | Time: 42.8s
+2026-10-28 08:38:24,877 - INFO - Epoch [30/300] Loss: 0.2239 | Dice: 80.45% | IoU: 70.18% | Time: 42.8s
+2026-10-28 08:39:13,924 - INFO - Epoch [31/300] Loss: 0.2482 | Dice: 79.40% | IoU: 68.79% | Time: 42.8s
+2026-10-28 08:40:01,948 - INFO - Epoch [32/300] Loss: 0.2450 | Dice: 79.46% | IoU: 68.77% | Time: 42.8s
+2026-10-28 08:40:49,979 - INFO - Epoch [33/300] Loss: 0.2392 | Dice: 79.84% | IoU: 69.39% | Time: 42.8s
+2026-10-28 08:41:38,013 - INFO - Epoch [34/300] Loss: 0.2363 | Dice: 79.33% | IoU: 68.82% | Time: 42.9s
+2026-10-28 08:42:26,049 - INFO - Epoch [35/300] Loss: 0.2347 | Dice: 79.79% | IoU: 69.32% | Time: 42.9s
+2026-10-28 08:43:14,156 - INFO - Epoch [36/300] Loss: 0.2334 | Dice: 79.99% | IoU: 69.63% | Time: 42.9s
+2026-10-28 08:44:02,249 - INFO - Epoch [37/300] Loss: 0.2281 | Dice: 79.73% | IoU: 69.32% | Time: 42.9s
+2026-10-28 08:44:50,325 - INFO - Epoch [38/300] Loss: 0.2225 | Dice: 80.96% | IoU: 70.92% | Time: 42.9s
+2026-10-28 08:45:39,405 - INFO - Epoch [39/300] Loss: 0.2205 | Dice: 80.66% | IoU: 70.39% | Time: 42.8s
+2026-10-28 08:46:27,390 - INFO - Epoch [40/300] Loss: 0.2181 | Dice: 80.59% | IoU: 70.42% | Time: 42.8s
+2026-10-28 08:47:15,496 - INFO - Epoch [41/300] Loss: 0.2430 | Dice: 80.01% | IoU: 69.71% | Time: 42.9s
+2026-10-28 08:48:03,581 - INFO - Epoch [42/300] Loss: 0.2386 | Dice: 77.82% | IoU: 66.63% | Time: 42.9s
+2026-10-28 08:48:51,712 - INFO - Epoch [43/300] Loss: 0.2363 | Dice: 79.98% | IoU: 69.59% | Time: 42.9s
+2026-10-28 08:49:39,954 - INFO - Epoch [44/300] Loss: 0.2313 | Dice: 79.56% | IoU: 68.94% | Time: 43.1s
+2026-10-28 08:50:28,033 - INFO - Epoch [45/300] Loss: 0.2271 | Dice: 80.97% | IoU: 70.76% | Time: 42.9s
+2026-10-28 08:51:17,234 - INFO - Epoch [46/300] Loss: 0.2261 | Dice: 80.12% | IoU: 69.81% | Time: 42.8s
+2026-10-28 08:52:05,232 - INFO - Epoch [47/300] Loss: 0.2192 | Dice: 80.60% | IoU: 70.33% | Time: 42.8s
+2026-10-28 08:52:53,335 - INFO - Epoch [48/300] Loss: 0.2142 | Dice: 80.86% | IoU: 70.64% | Time: 42.9s
+2026-10-28 08:53:41,291 - INFO - Epoch [49/300] Loss: 0.2156 | Dice: 80.66% | IoU: 70.45% | Time: 42.8s
+2026-10-28 08:54:29,228 - INFO - Epoch [50/300] Loss: 0.2107 | Dice: 81.01% | IoU: 70.99% | Time: 42.8s
+2026-10-28 08:55:18,097 - INFO - Epoch [51/300] Loss: 0.2310 | Dice: 79.26% | IoU: 68.72% | Time: 42.7s
+2026-10-28 08:56:05,900 - INFO - Epoch [52/300] Loss: 0.2314 | Dice: 79.27% | IoU: 68.64% | Time: 42.7s
+2026-10-28 08:56:53,679 - INFO - Epoch [53/300] Loss: 0.2269 | Dice: 78.10% | IoU: 67.53% | Time: 42.7s
+2026-10-28 08:57:41,504 - INFO - Epoch [54/300] Loss: 0.2252 | Dice: 80.37% | IoU: 70.04% | Time: 42.7s
+2026-10-28 08:58:29,441 - INFO - Epoch [55/300] Loss: 0.2244 | Dice: 80.06% | IoU: 69.55% | Time: 42.8s
+2026-10-28 08:59:17,281 - INFO - Epoch [56/300] Loss: 0.2210 | Dice: 78.50% | IoU: 67.91% | Time: 42.7s
+2026-10-28 09:00:05,071 - INFO - Epoch [57/300] Loss: 0.2170 | Dice: 79.98% | IoU: 69.61% | Time: 42.7s
+2026-10-28 09:00:52,906 - INFO - Epoch [58/300] Loss: 0.2106 | Dice: 79.59% | IoU: 69.15% | Time: 42.7s
+2026-10-28 09:01:40,752 - INFO - Epoch [59/300] Loss: 0.2076 | Dice: 80.77% | IoU: 70.55% | Time: 42.8s
+2026-10-28 09:02:28,576 - INFO - Epoch [60/300] Loss: 0.2072 | Dice: 79.86% | IoU: 69.35% | Time: 42.7s
+2026-10-28 09:03:16,521 - INFO - Epoch [61/300] Loss: 0.2311 | Dice: 80.18% | IoU: 69.76% | Time: 42.8s
+2026-10-28 09:04:04,509 - INFO - Epoch [62/300] Loss: 0.2270 | Dice: 75.59% | IoU: 64.15% | Time: 42.8s
+2026-10-28 09:04:52,489 - INFO - Epoch [63/300] Loss: 0.2216 | Dice: 78.02% | IoU: 66.94% | Time: 42.8s
+2026-10-28 09:05:40,661 - INFO - Epoch [64/300] Loss: 0.2177 | Dice: 79.32% | IoU: 68.66% | Time: 43.0s
+2026-10-28 09:06:28,785 - INFO - Epoch [65/300] Loss: 0.2181 | Dice: 80.22% | IoU: 69.95% | Time: 42.9s
+2026-10-28 09:07:16,898 - INFO - Epoch [66/300] Loss: 0.2138 | Dice: 80.61% | IoU: 70.43% | Time: 42.9s
+2026-10-28 09:08:04,968 - INFO - Epoch [67/300] Loss: 0.2080 | Dice: 78.22% | IoU: 67.67% | Time: 42.9s
+2026-10-28 09:08:52,992 - INFO - Epoch [68/300] Loss: 0.2078 | Dice: 78.71% | IoU: 68.28% | Time: 42.8s
+2026-10-28 09:09:40,937 - INFO - Epoch [69/300] Loss: 0.2032 | Dice: 80.78% | IoU: 70.71% | Time: 42.8s
+2026-10-28 09:10:28,952 - INFO - Epoch [70/300] Loss: 0.2010 | Dice: 79.70% | IoU: 69.31% | Time: 42.8s
+2026-10-28 09:10:28,952 - INFO - Early stopping at epoch 70 (no improvement for 20 epochs)
+2026-10-28 09:10:28,952 - INFO - ------------------------------------------------------------
+2026-10-28 09:10:28,952 - INFO - Training done. Best Dice: 81.01%
+2026-10-28 09:10:28,965 - INFO - ============================================================
+2026-10-28 09:10:28,966 - INFO - EVALUATION ON TEST SET
+2026-10-28 09:10:28,966 - INFO - ============================================================
+2026-10-28 09:10:29,505 - INFO - Loaded weights from output/checkpoints/qata_ablation_cnn_clinicalbert_bcam/best.pth
+2026-10-28 09:10:29,506 - INFO -   Checkpoint from epoch: 50
+2026-10-28 09:10:29,506 - INFO -   Val Dice at save: 81.01%
+2026-10-28 09:10:29,544 - INFO - Test samples: 2113
+2026-10-28 09:10:37,172 - INFO - ------------------------------------------------------------
+2026-10-28 09:10:37,172 - INFO - Test Results | Dice: 82.62% | IoU: 73.62%
+2026-10-28 09:10:37,172 - INFO - ------------------------------------------------------------
+2026-10-28 09:10:37,184 - INFO - 
+2026-10-28 09:10:37,184 - INFO - ============================================================
+2026-10-28 09:10:37,184 - INFO - Finished: 2026-10-28 09:10:37
+2026-10-28 09:10:37,185 - INFO - ============================================================
