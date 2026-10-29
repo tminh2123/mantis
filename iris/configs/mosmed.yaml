@@ -1,4 +1,14 @@
 # IRIS Configuration - MosMedData+ Dataset
+#
+# Default: CNN visual + CLIP text + BCAM fusion
+# Use CLI args to override for ablation studies
+#
+# Examples:
+#   # Baseline with pretrain (best for MosMed)
+#   python run.py --config configs/mosmed.yaml --tag pretrain_mix --encoder_type mix
+#
+#   # Skip pretrain
+#   python run.py --config configs/mosmed.yaml --tag nopretrain --no_pretrain
 
 project:
   name: iris
@@ -14,14 +24,24 @@ data:
   num_workers: 4
 
 model:
+  # Visual encoder: "cnn" (default) or "resnet" (MedKLIP)
+  visual_encoder: "cnn"
+  
+  # Text encoder: "clip" (default), "clinicalbert", "pubmedbert"
+  text_encoder: "clip"
   clip_model: "openai/clip-vit-base-patch32"
+  
+  # Fusion: "bcam" (default) or "bifmd"
+  fusion_type: "bcam"
+  
+  # Model architecture
   max_token_len: 18
   frozen_clip: true
   base_channel: 64
   num_heads: 8
   dropout: 0.5
   expansion: 4
-  encoder_type: "cnn"  # "cnn" or "mix"
+  encoder_type: "cnn"
   deep_supervision: true
   num_classes: 1
   text_mask_rate: 0.3
@@ -39,8 +59,9 @@ pretrain:
 train:
   epochs: 300
   batch_size: 32
-  lr: 3.0e-4
+  lr: 3.0e-4  # Lower LR for MosMed
   weight_decay: 1.0e-4
+  visual_lr_scale: 0.1
   bce_weight: 0.5
   grad_clip: 1.0
   cosine_lr: true

@@ -12,8 +12,8 @@
 set -e
 export TOKENIZERS_PARALLELISM=false
 
-QATA_CONFIG="configs/qata_ablation.yaml"
-MOSMED_CONFIG="configs/mosmed_ablation.yaml"
+QATA_CONFIG="configs/qata.yaml"
+MOSMED_CONFIG="configs/mosmed.yaml"
 
 echo "=========================================="
 echo "IRIS Full Ablation Study"
@@ -28,22 +28,22 @@ echo "============ QaTa-COV19 ============"
 echo "[1/8] QaTa: MedKLIP + CLIP + BCAM"
 python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_clip_bcam \
     --visual_encoder medklip --text_encoder clip --fusion_type bcam \
-    --mode full
+    --no_pretrain --mode full
 
 echo "[2/8] QaTa: MedKLIP + MedKLIP + BCAM"
 python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_medklip_bcam \
     --visual_encoder medklip --text_encoder medklip --fusion_type bcam \
-    --mode full
+    --no_pretrain --mode full
 
 echo "[3/8] QaTa: MedKLIP + CLIP + BiFMD"
 python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_clip_bifmd \
     --visual_encoder medklip --text_encoder clip --fusion_type bifmd \
-    --mode full
+    --no_pretrain --mode full
 
 echo "[4/8] QaTa: MedKLIP + MedKLIP + BiFMD"
 python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_medklip_bifmd \
     --visual_encoder medklip --text_encoder medklip --fusion_type bifmd \
-    --mode full
+    --no_pretrain --mode full
 
 # -------------------------------------------
 # MosMed Dataset
@@ -54,22 +54,22 @@ echo "============ MosMed ============"
 echo "[5/8] MosMed: MedKLIP + CLIP + BCAM"
 python run.py --config $MOSMED_CONFIG --tag mosmed_baseline_medklip_clip_bcam \
     --visual_encoder medklip --text_encoder clip --fusion_type bcam \
-    --mode full
+    --no_pretrain --mode full
 
 echo "[6/8] MosMed: MedKLIP + MedKLIP + BCAM"
 python run.py --config $MOSMED_CONFIG --tag mosmed_baseline_medklip_medklip_bcam \
     --visual_encoder medklip --text_encoder medklip --fusion_type bcam \
-    --mode full
+    --no_pretrain --mode full
 
 echo "[7/8] MosMed: MedKLIP + CLIP + BiFMD"
 python run.py --config $MOSMED_CONFIG --tag mosmed_baseline_medklip_clip_bifmd \
     --visual_encoder medklip --text_encoder clip --fusion_type bifmd \
-    --mode full
+    --no_pretrain --mode full
 
 echo "[8/8] MosMed: MedKLIP + MedKLIP + BiFMD"
 python run.py --config $MOSMED_CONFIG --tag mosmed_baseline_medklip_medklip_bifmd \
     --visual_encoder medklip --text_encoder medklip --fusion_type bifmd \
-    --mode full
+    --no_pretrain --mode full
 
 echo ""
 echo "=========================================="
