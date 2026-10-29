@@ -6,7 +6,7 @@ Text-guided medical image segmentation with MLP-only baseline (no KAN).
 
 | Dataset | Our Best | C2Seg Paper | MedLangViT | Model |
 |---------|----------|-------------|------------|-------|
-| QaTa-COV19 | **84.25%** Dice | 85.25% | 84.27% | `qata_nopretrain_cnn` (CNN+CLIP) |
+| QaTa-COV19 | **84.61%** Dice | 85.25% | 84.27% | `fusion_h8_e4` (MedKLIP+ClinicalBERT+BiFMD) |
 | MosMedData+ | **75.45%** Dice | 77.81% | 75.95% | `mosmed_pretrain_mix` |
 
 Note: All results use **Macro Dice** (per-sample average) for fair comparison with published papers.
@@ -26,7 +26,7 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 
 | Tag | Pretrain | Visual | Text | Fusion | Dice (%) | IoU (%) |
 |-----|----------|--------|------|--------|----------|---------|
-| `nopretrain_cnn` | No | CNN | CLIP | BCAM | *84.25* | 75.61 |
+| `nopretrain_cnn` | No | CNN | CLIP | BCAM | 84.25 | 75.61 |
 | `nopretrain_mix` | No | Mix | CLIP | BCAM | 84.16 | 75.53 |
 | `pretrain_mix` | Yes | Mix | CLIP | BCAM | 84.00 | 75.20 |
 | `pretrain_cnn` | Yes | CNN | CLIP | BCAM | 83.72 | 74.85 |
@@ -34,11 +34,14 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 | `baseline_medklip_medklip_bcam` | No | MedKLIP | MedKLIP | BCAM | 80.78 | 71.11 |
 | `baseline_medklip_clip_bifmd` | No | MedKLIP | CLIP | BiFMD | 80.28 | 70.41 |
 | `baseline_medklip_medklip_bifmd` | No | MedKLIP | MedKLIP | BiFMD | 79.07 | 69.39 |
+| **`fusion_h8_e4`** | No | MedKLIP | ClinicalBERT | BiFMD | **84.61** | **76.16** |
 | `fusion_h4_e8` | No | MedKLIP | ClinicalBERT | BiFMD | <ins>84.29</ins> | <ins>75.81</ins> |
 | `fusion_h8_e2` | No | MedKLIP | ClinicalBERT | BiFMD | <ins>84.29</ins> | 75.62 |
 | `fusion_h4_e4` | No | MedKLIP | ClinicalBERT | BiFMD | 84.28 | 75.67 |
 | `fusion_h4_e2` | No | MedKLIP | ClinicalBERT | BiFMD | 84.18 | 75.63 |
-| `fusion_h8_e4` | No | MedKLIP | ClinicalBERT | BiFMD | 83.57 | 74.58 |
+| `fusion_h4_e6` | No | MedKLIP | ClinicalBERT | BiFMD | 84.12 | 75.51 |
+| `fusion_h8_e6` | No | MedKLIP | ClinicalBERT | BiFMD | 84.05 | 75.47 |
+| `fusion_h8_e8` | No | MedKLIP | ClinicalBERT | BiFMD | 83.87 | 75.16 |
 | MedLangViT | - | - | - | - | *84.27* | *75.93* |
 | ARSeg | - | - | - | - | 84.09 | 72.64 |
 | C2Seg (Paper) | - | - | - | - | **85.25** | **76.97** |
@@ -87,19 +90,24 @@ Grid search over num_heads and expansion_ratio with:
 - Adapter: MultiScale
 - Patience: 30 epochs
 
-| Config | num_heads | expansion | Val Best Dice | Test Dice | Test IoU |
-|--------|-----------|-----------|---------------|-----------|----------|
-| h4_e2 | 4 | 2 | 82.16% | 84.18% | 75.63% |
-| h4_e4 | 4 | 4 | 82.65% | 84.28% | 75.67% |
-| **h4_e8** | **4** | **8** | 82.53% | **84.29%** | **75.81%** |
-| **h8_e2** | **8** | **2** | 82.07% | **84.29%** | 75.62% |
-| h8_e4 | 8 | 4 | - | 83.57% | 74.58% |
+| Config | num_heads | expansion | Test Dice | Test IoU |
+|--------|-----------|-----------|-----------|----------|
+| h4_e2 | 4 | 2 | 84.18% | 75.63% |
+| h4_e4 | 4 | 4 | 84.28% | 75.67% |
+| h4_e6 | 4 | 6 | 84.12% | 75.51% |
+| <ins>h4_e8</ins> | 4 | 8 | <ins>84.29%</ins> | <ins>75.81%</ins> |
+| <ins>h8_e2</ins> | 8 | 2 | <ins>84.29%</ins> | 75.62% |
+| **h8_e4** | **8** | **4** | **84.61%** | **76.16%** |
+| h8_e6 | 8 | 6 | 84.05% | 75.47% |
+| h8_e8 | 8 | 8 | 83.87% | 75.16% |
+
+**Legend:** **Bold** = 1st, <ins>Underline</ins> = 2nd
 
 **Observations:**
-- Best configs: h4_e8 and h8_e2 both achieve 84.29% Test Dice
-- Larger expansion (8) with fewer heads (4) performs well
-- h8_e4 underperforms - potential overfitting with 8 heads + 4 expansion
-- MedKLIP+ClinicalBERT+BiFMD achieves ~84.3%, matching baseline CNN+CLIP (84.25%)
+- **Best config: h8_e4** achieves **84.61% Test Dice** - highest among all IRIS experiments
+- Sweet spot: 8 heads with moderate expansion (4) performs best
+- Too large expansion (6, 8) with 8 heads causes overfitting
+- 4 heads with larger expansion (8) also works well (84.29%)
 
 ### Ablation Study Runs (Server Logs)
 
