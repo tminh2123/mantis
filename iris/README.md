@@ -6,7 +6,7 @@ Text-guided medical image segmentation with MLP-only baseline (no KAN).
 
 | Dataset | Our Best | C2Seg Paper | MedLangViT | Model |
 |---------|----------|-------------|------------|-------|
-| QaTa-COV19 | **84.25%** Dice | 85.25% | 84.27% | `qata_nopretrain_cnn` |
+| QaTa-COV19 | **88.17%** Dice | 85.25% | 84.27% | `qata_baseline` (CNN+CLIP) |
 | MosMedData+ | **75.45%** Dice | 77.81% | 75.95% | `mosmed_pretrain_mix` |
 
 Note: All results use **Macro Dice** (per-sample average) for fair comparison with published papers.
@@ -71,20 +71,45 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 - QaTa: CNN + No Pretrain + CLIP + BCAM = **84.25%** Dice
 - MosMed: Mix + Pretrain + CLIP + BCAM = **75.45%** Dice
 
+### Fusion Tuning Results (MedKLIP + ClinicalBERT + BiFMD + MultiScale)
+
+Grid search over num_heads and expansion_ratio with:
+- Visual: MedKLIP ResNet50 (pretrained, lr_scale=0.01)
+- Text: ClinicalBERT
+- Fusion: BiFMD with improvements (MLP projection, LayerNorm, learnable temperature)
+- Adapter: MultiScale
+- Patience: 30 epochs
+
+| Config | num_heads | expansion | Val Best Dice | Test Dice | Test IoU |
+|--------|-----------|-----------|---------------|-----------|----------|
+| h4_e2 | 4 | 2 | 82.16% | 84.18% | 75.63% |
+| h4_e4 | 4 | 4 | 82.65% | 84.28% | 75.67% |
+| **h4_e8** | **4** | **8** | 82.53% | **84.29%** | **75.81%** |
+| **h8_e2** | **8** | **2** | 82.07% | **84.29%** | 75.62% |
+| h8_e4 | 8 | 4 | - | 83.57% | 74.58% |
+
+**Observations:**
+- Best configs: h4_e8 and h8_e2 both achieve 84.29% Test Dice
+- Larger expansion (8) with fewer heads (4) performs well
+- h8_e4 underperforms - potential overfitting with 8 heads + 4 expansion
+- MedKLIP+ClinicalBERT setup achieves ~84.3% vs baseline CLIP 88.17%
+
 ### Ablation Study Runs (Server Logs)
 
 | Log File | Visual | Text | Notes |
 |----------|--------|------|-------|
-| `qata_ablation_cnn_clinicalbert_18.log` | CNN (4-level) | ClinicalBERT | max_len=18, Dice=83.28% |
-| `qata_ablation_cnn_clinicalbert_bcam.log` | CNN (4-level) | ClinicalBERT | max_len=77, Dice=82.62% |
-| `qata_ablation_cnn_medklip_bcam.log` | CNN (4-level) | PubMedBERT | MedKLIP text encoder, Dice=82.34% |
-| `qata_ablation_medklip_clinicalbert.log` | MedKLIP ResNet50 | ClinicalBERT | Both medical encoders |
-| `qata_ablation_medklip_frozen.log` | MedKLIP ResNet50 (frozen) | CLIP | Freeze visual, Dice=79.98% |
-| `qata_ablation_native_medklip_clip_bcam.log` | MedKLIP ResNet50 (native channels) | CLIP | Native ResNet channels (64/256/512/1024) thay vì project sang CNN scale (64/128/256/512), Dice=81.07% |
-| `qata_adapter_bottleneck.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Bottleneck adapter, Dice=81.59% |
-| `qata_adapter_spatial.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Spatial adapter |
+| `qata_ablation_cnn_clinicalbert_18.log` | CNN (4-level) | ClinicalBERT | max_len=18, Dice=81.30% |
+| `qata_ablation_cnn_clinicalbert_bcam.log` | CNN (4-level) | ClinicalBERT | max_len=77, Dice=81.01% |
+| `qata_ablation_cnn_medklip_bcam.log` | CNN (4-level) | PubMedBERT | MedKLIP text encoder, Dice=80.91% |
+| `qata_ablation_medklip_clinicalbert.log` | MedKLIP ResNet50 | ClinicalBERT | Both medical encoders, Dice=79.83% |
+| `qata_ablation_medklip_frozen.log` | MedKLIP ResNet50 (frozen) | CLIP | Freeze visual, Dice=78.87% |
+| `qata_ablation_native_medklip_clip_bcam.log` | MedKLIP ResNet50 (native channels) | CLIP | Native ResNet channels (64/256/512/1024), Dice=79.57% |
+| `qata_adapter_bottleneck.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Bottleneck adapter, Dice=77.98% |
+| `qata_adapter_spatial.log` | MedKLIP ResNet50 (frozen+adapter) | CLIP | Spatial adapter, Dice=78.84% |
 | `qata_baseline_temp.log` | CNN (5-level) | CLIP | Baseline test run |
-| `qata_clinicalbert_5level.log` | CNN (5-level) | ClinicalBERT | Full IRIS + BERT text, Dice=83.08% |
+| `qata_clinicalbert_5level.log` | CNN (5-level) | ClinicalBERT | Full IRIS + BERT text, Dice=81.43% |
+| `qata_baseline_medklip.log` | MedKLIP ResNet50 | CLIP | MedKLIP visual baseline, Dice=86.13% |
+| `qata_baseline.log` | CNN (5-level) | CLIP | **Best baseline, Dice=88.17%** |
 
 **Ablation Summary:**
 - CLIP text encoder > ClinicalBERT > PubMedBERT
