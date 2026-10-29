@@ -20,25 +20,25 @@ echo "=========================================="
 echo ""
 echo "============ QaTa-COV19 Test ============"
 
-echo "[1/8] QaTa: MedKLIP + CLIP + BCAM"
-python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_clip_bcam_test \
-    --visual_encoder medklip --text_encoder clip --fusion_type bcam \
-    --epochs $EPOCHS --mode full
+# echo "[1/8] QaTa: MedKLIP + CLIP + BCAM"
+# python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_clip_bcam_test \
+#     --visual_encoder medklip --text_encoder clip --fusion_type bcam \
+#     --epochs $EPOCHS --mode full
 
-echo "[2/8] QaTa: MedKLIP + MedKLIP + BCAM"
-python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_medklip_bcam_test \
-    --visual_encoder medklip --text_encoder medklip --fusion_type bcam \
-    --epochs $EPOCHS --mode full
+# echo "[2/8] QaTa: MedKLIP + MedKLIP + BCAM"
+# python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_medklip_bcam_test \
+#     --visual_encoder medklip --text_encoder medklip --fusion_type bcam \
+#     --epochs $EPOCHS --mode full
 
-echo "[3/8] QaTa: MedKLIP + CLIP + BiFMD"
-python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_clip_bifmd_test \
-    --visual_encoder medklip --text_encoder clip --fusion_type bifmd \
-    --epochs $EPOCHS --mode full
+# echo "[3/8] QaTa: MedKLIP + CLIP + BiFMD"
+# python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_clip_bifmd_test \
+#     --visual_encoder medklip --text_encoder clip --fusion_type bifmd \
+#     --epochs $EPOCHS --mode full
 
-echo "[4/8] QaTa: MedKLIP + MedKLIP + BiFMD"
-python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_medklip_bifmd_test \
-    --visual_encoder medklip --text_encoder medklip --fusion_type bifmd \
-    --epochs $EPOCHS --mode full
+# echo "[4/8] QaTa: MedKLIP + MedKLIP + BiFMD"
+# python run.py --config $QATA_CONFIG --tag qata_baseline_medklip_medklip_bifmd_test \
+#     --visual_encoder medklip --text_encoder medklip --fusion_type bifmd \
+#     --epochs $EPOCHS --mode full
 
 # -------------------------------------------
 # MosMed Quick Test
