@@ -1,7 +1,8 @@
 #!/bin/bash
 # Decoder Attention Tuning
 # Base: h8_e4 (best fusion config: 84.61%)
-# Tune: decoder_attention_levels (1,2,3) x decoder_attention_heads (4,8)
+# Tune: decoder_attention_levels (1 only - 28x28 resolution for memory efficiency)
+#       decoder_attention_heads (4,8)
 
 set -e
 
@@ -15,22 +16,20 @@ CONFIG="configs/qata.yaml"
 NUM_HEADS=8
 EXPANSION=4
 PATIENCE=30
-BATCH_SIZE=64  # Increased for A100 40GB
+BATCH_SIZE=64  # A100 40GB
 
 echo "=============================================="
 echo "Decoder Attention Tuning"
 echo "Base: h8_e4 (84.61% Dice)"
 echo "Batch size: ${BATCH_SIZE}"
+echo "Note: Only level 1 (28x28) for memory efficiency"
 echo "=============================================="
 
-# Grid: levels (1,2,3) x heads (4,8)
+# Grid: only level 1 (28x28 resolution), heads (4, 8)
+# Level 2+ causes OOM due to large attention matrices (56x56=3136, 112x112=12544 tokens)
 EXPERIMENTS=(
-    # "1 4"
-    # "1 8"
-    "2 4"
-    "2 8"
-    "3 4"
-    "3 8"
+    "1 4"
+    "1 8"
 )
 
 count=1
