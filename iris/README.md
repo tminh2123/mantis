@@ -56,6 +56,7 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 | `nopretrain_mix` | No | Mix | CLIP | BCAM | 73.08 | 59.29 |
 | `nopretrain_cnn` | No | CNN | CLIP | BCAM | 73.03 | 59.30 |
 | `pretrain_cnn` | Yes | CNN | CLIP | BCAM | 72.92 | 59.45 |
+| `fusion_h8_e4` | No | MedKLIP | ClinicalBERT | BiFMD | 72.31 | 58.74 |
 | MedLangViT | - | - | - | - | 75.95 | 63.17 |
 | ARSeg | - | - | - | - | 73.24 | 59.82 |
 | **C2Seg (Paper)** | - | - | - | - | **77.81** | **65.17** |
@@ -77,9 +78,13 @@ Note: All results use **Macro Dice** (per-sample average) for fair comparison wi
 - Hurts QaTa slightly (84.25% vs 83.72% for CNN)
 - Helps MosMed significantly (75.45% vs 73.08% for Mix)
 
+**MedKLIP Domain:**
+- MedKLIP pretrained on X-ray → works well on QaTa (X-ray)
+- MedKLIP on MosMed (CT slices) → domain mismatch, underperforms CNN
+
 **Best Configurations:**
-- QaTa: CNN + No Pretrain + CLIP + BCAM = **84.25%** Dice
-- MosMed: Mix + Pretrain + CLIP + BCAM = **75.45%** Dice
+- QaTa (X-ray): MedKLIP + ClinicalBERT + BiFMD + h8_e4 = **84.61%** Dice
+- MosMed (CT): Mix + Pretrain + CLIP + BCAM = **75.45%** Dice
 
 ### Fusion Tuning Results (MedKLIP + ClinicalBERT + BiFMD + MultiScale)
 
