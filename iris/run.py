@@ -302,7 +302,7 @@ def parse_args():
     # Model options
     p.add_argument('--visual_encoder', choices=['cnn', 'resnet'], help='Visual encoder')
     p.add_argument('--text_encoder', choices=['clip', 'pubmedbert', 'clinicalbert'], help='Text encoder')
-    p.add_argument('--fusion_type', choices=['bcam', 'bifmd'], help='Fusion module')
+    p.add_argument('--fusion', choices=['bcam', 'bifmd'], help='Fusion module')
     p.add_argument('--visual_pretrained', help='Pretrained visual weights path')
     p.add_argument('--freeze_visual', action='store_true', help='Freeze visual encoder')
     
@@ -335,8 +335,8 @@ def main():
         cfg['model']['visual_encoder'] = args.visual_encoder
     if args.text_encoder:
         cfg['model']['text_encoder'] = args.text_encoder
-    if args.fusion_type:
-        cfg['model']['fusion_type'] = args.fusion_type
+    if args.fusion:
+        cfg['model']['fusion'] = args.fusion
     if args.adapter:
         cfg['model']['adapter'] = args.adapter
     if args.visual_pretrained:
@@ -399,7 +399,7 @@ def main():
     num_params = sum(p.numel() for p in model.parameters())
     logger.info(f"Model: visual={cfg['model'].get('visual_encoder', 'cnn')}, "
                 f"text={cfg['model'].get('text_encoder', 'clip')}, "
-                f"fusion={cfg['model'].get('fusion_type', 'bcam')}")
+                f"fusion={cfg['model'].get('fusion', 'bcam')}")
     logger.info(f"Parameters: {num_params:,}")
     logger.info("")
     

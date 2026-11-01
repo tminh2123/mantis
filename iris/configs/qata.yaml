@@ -14,7 +14,7 @@
 #   # MedKLIP visual + ClinicalBERT text + BiFMD fusion
 #   python run.py --config configs/qata.yaml --tag fusion_tune \
 #     --visual_encoder resnet --visual_pretrained medklip_checkpoints/MedKLIP/checkpoint_final.pth \
-#     --text_encoder clinicalbert --fusion_type bifmd
+#     --text_encoder clinicalbert --fusion bifmd
 #
 #   # Tune fusion parameters
 #   python run.py --config configs/qata.yaml --tag fusion_h4_e8 \
@@ -42,7 +42,7 @@ model:
   clip_model: "openai/clip-vit-base-patch32"
   
   # Fusion: "bcam" (default) or "bifmd"
-  fusion_type: "bcam"
+  fusion: "bcam"
   
   # Model architecture
   max_token_len: 18

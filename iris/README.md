@@ -178,7 +178,7 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 |----------|---------|---------|-------------|
 | `--visual_encoder` | cnn | `cnn`, `resnet` | Visual encoder type |
 | `--text_encoder` | clip | `clip`, `pubmedbert`, `clinicalbert` | Text encoder (frozen) |
-| `--fusion_type` | bcam | `bcam`, `bifmd` | Fusion module type |
+| `--fusion` | bcam | `bcam`, `bifmd` | Fusion module type |
 | `--visual_pretrained` | None | path | Path to pretrained visual weights (e.g., MedKLIP) |
 | `--freeze_visual` | False | flag | Freeze visual encoder weights |
 
@@ -230,7 +230,7 @@ python run.py --config configs/qata.yaml --tag best \
     --visual_encoder resnet \
     --visual_pretrained /path/to/medklip.pth \
     --text_encoder clinicalbert \
-    --fusion_type bifmd \
+    --fusion bifmd \
     --num_heads 8 --expansion 4
 ```
 
@@ -318,7 +318,7 @@ BiFMD includes several architectural improvements for fusion tuning:
 ```bash
 # Example: Tune fusion with fewer heads and dropout
 python run.py --config configs/qata.yaml --tag fusion_tuned \
-    --fusion_type bifmd \
+    --fusion bifmd \
     --num_heads 4 \
     --attn_dropout 0.1 \
     --expansion 2
@@ -359,7 +359,7 @@ python run.py --config configs/qata.yaml --tag fusion_tune \
     --visual_encoder resnet \
     --visual_pretrained /path/to/medklip.pth \
     --text_encoder clinicalbert \
-    --fusion_type bifmd \
+    --fusion bifmd \
     --freeze_visual \
     --visual_lr_scale 0.01
 ```

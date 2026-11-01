@@ -25,7 +25,7 @@ model:
   clip_model: "openai/clip-vit-base-patch32"
   
   # Fusion: "bcam" (default) or "bifmd"
-  fusion_type: "bcam"
+  fusion: "bcam"
   
   # Model architecture
   max_token_len: 18

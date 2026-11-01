@@ -24,7 +24,7 @@ python run.py \
     `# === Encoder Selection ===` \
     --visual_encoder resnet \
     --text_encoder clinicalbert \
-    --fusion_type bifmd \
+    --fusion bifmd \
     --visual_pretrained $MEDKLIP_WEIGHTS \
     --freeze_visual \
     \
@@ -58,7 +58,7 @@ python run.py \
 # ENCODER SELECTION:
 #   --visual_encoder   cnn (default) | resnet (auto-uses MultiScale adapter)
 #   --text_encoder     clip (default) | pubmedbert | clinicalbert
-#   --fusion_type      bcam (default) | bifmd
+#   --fusion      bcam (default) | bifmd
 #   --visual_pretrained Path to pretrained visual weights (e.g., MedKLIP)
 #   --freeze_visual    Freeze visual encoder weights
 #
@@ -80,9 +80,9 @@ python run.py \
 # =============================================================================
 #
 # 1. Best overall (84.61% Dice):
-#    --visual_encoder resnet --text_encoder clinicalbert --fusion_type bifmd \
+#    --visual_encoder resnet --text_encoder clinicalbert --fusion bifmd \
 #    --num_heads 8 --expansion 4
 #
 # 2. Simple baseline (84.25% Dice):
-#    --visual_encoder cnn --text_encoder clip --fusion_type bcam
+#    --visual_encoder cnn --text_encoder clip --fusion bcam
 #

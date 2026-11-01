@@ -460,7 +460,7 @@ class IRIS(nn.Module):
     Args:
         visual_encoder: "cnn" (5-level) | "resnet" (MedKLIP ResNet50)
         text_encoder: "clip" | "pubmedbert" | "clinicalbert"
-        fusion_type: "bcam" | "bifmd"
+        fusion: "bcam" | "bifmd"
         adapter: None | "bottleneck" | "spatial" | "multiscale"
         num_classes: Output classes
         img_size: Input image size
@@ -488,7 +488,7 @@ class IRIS(nn.Module):
         # Encoder selection
         visual_encoder: str = "cnn",
         text_encoder: str = "clip",
-        fusion_type: str = "bcam",
+        fusion: str = "bcam",
         # Architecture
         num_classes: int = 1,
         img_size: int = 224,
@@ -511,7 +511,7 @@ class IRIS(nn.Module):
         
         self.visual_encoder_type = visual_encoder
         self.text_encoder_type = text_encoder
-        self.fusion_type = fusion_type
+        self.fusion = fusion
         self.deep_supervision = deep_supervision
         self.text_mask_rate = text_mask_rate
         self.img_mask_rate = img_mask_rate
@@ -564,7 +564,7 @@ class IRIS(nn.Module):
         # =====================================================================
         scales = [img_size // (2 ** i) for i in range(5)]  # [224, 112, 56, 28, 14]
         
-        if fusion_type == "bifmd":
+        if fusion == "bifmd":
             # BiFMD: (channels, text_dim, num_heads, expansion_ratio, attn_dropout)
             if self.num_levels == 5:
                 self.fuse1 = BiFMD(base_channel, self._text_dim, num_heads, expansion, attn_dropout)
@@ -753,7 +753,7 @@ def build_iris(config) -> IRIS:
     return IRIS(
         visual_encoder=mcfg.get('visual_encoder', 'cnn'),
         text_encoder=mcfg.get('text_encoder', 'clip'),
-        fusion_type=mcfg.get('fusion_type', 'bcam'),
+        fusion=mcfg.get('fusion', 'bcam'),
         num_classes=mcfg.get('num_classes', 1),
         img_size=dcfg.get('image_size', 224),
         base_channel=mcfg.get('base_channel', 64),
