@@ -176,30 +176,27 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 
 | Argument | Default | Options | Description |
 |----------|---------|---------|-------------|
-| `--visual_encoder` | cnn | `cnn`, `resnet` | Visual encoder type |
-| `--text_encoder` | clip | `clip`, `pubmedbert`, `clinicalbert` | Text encoder (frozen) |
+| `--visual` | cnn | `cnn`, `resnet` | Visual encoder type |
+| `--text` | clip | `clip`, `pubmedbert`, `clinicalbert` | Text encoder (frozen) |
 | `--fusion` | bcam | `bcam`, `bifmd` | Fusion module type |
-| `--visual_pretrained` | None | path | Path to pretrained visual weights (e.g., MedKLIP) |
-| `--freeze_visual` | False | flag | Freeze visual encoder weights |
+| `--pretrained` | None | path | Path to pretrained visual weights |
+| `--freeze` | False | flag | Freeze visual encoder weights |
 
 ### Fusion Tuning
 
 | Argument | Default | Description |
 |----------|---------|-------------|
-| `--num_heads` | 8 | Number of attention heads in fusion modules |
-| `--attn_dropout` | 0.0 | Attention dropout rate |
-| `--expansion` | 4 | MLP expansion ratio in fusion |
+| `--num_heads` | 8 | Attention heads in fusion |
+| `--expansion` | 4 | MLP expansion ratio |
 
 ### Training Options
 
 | Argument | Default | Description |
 |----------|---------|-------------|
-| `--lr` | config | Base learning rate |
-| `--visual_lr_scale` | 0.1 | Learning rate scale for visual encoder |
+| `--lr` | config | Learning rate |
 | `--epochs` | config | Training epochs |
 | `--patience` | 20 | Early stopping patience |
 | `--batch_size` | config | Batch size |
-| `--max_token_len` | 18 | Max text token length |
 
 ### Example Commands
 
@@ -208,28 +205,24 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 python run.py --config configs/qata.yaml --tag baseline
 
 # CNN + ClinicalBERT
-python run.py --config configs/qata.yaml --tag cnn_clinical \
-    --text_encoder clinicalbert
+python run.py --config configs/qata.yaml --tag cnn_clinical --text clinicalbert
 
 # ResNet (MedKLIP) + CLIP
 python run.py --config configs/qata.yaml --tag resnet_clip \
-    --visual_encoder resnet \
-    --visual_pretrained /path/to/medklip.pth
+    --visual resnet --pretrained /path/to/medklip.pth
 
 # Frozen ResNet + Adapter (auto-enabled for ResNet)
 python run.py --config configs/qata.yaml --tag resnet_adapter \
-    --visual_encoder resnet --freeze_visual \
-    --visual_pretrained /path/to/medklip.pth
+    --visual resnet --freeze --pretrained /path/to/medklip.pth
 
 # Tune fusion params
-python run.py --config configs/qata.yaml --tag tuned \
-    --num_heads 4 --attn_dropout 0.1 --expansion 2
+python run.py --config configs/qata.yaml --tag tuned --num_heads 4 --expansion 2
 
 # Best config (84.61% Dice)
 python run.py --config configs/qata.yaml --tag best \
-    --visual_encoder resnet \
-    --visual_pretrained /path/to/medklip.pth \
-    --text_encoder clinicalbert \
+    --visual resnet \
+    --pretrained /path/to/medklip.pth \
+    --text clinicalbert \
     --fusion bifmd \
     --num_heads 8 --expansion 4
 ```
@@ -312,7 +305,6 @@ BiFMD includes several architectural improvements for fusion tuning:
 | Parameter | CLI Arg | Default | Description |
 |-----------|---------|---------|-------------|
 | **num_heads** | `--num_heads` | 8 | Number of attention heads in fusion |
-| **attn_dropout** | `--attn_dropout` | 0.0 | Dropout on attention weights |
 | **expansion** | `--expansion` | 4 | MLP expansion ratio in fusion |
 
 ```bash
@@ -320,7 +312,7 @@ BiFMD includes several architectural improvements for fusion tuning:
 python run.py --config configs/qata.yaml --tag fusion_tuned \
     --fusion bifmd \
     --num_heads 4 \
-    --attn_dropout 0.1 \
+     \
     --expansion 2
 ```
 
@@ -337,8 +329,8 @@ The adapter captures both local (1x1) and spatial (3x3) context, enabling effect
 ```bash
 # ResNet encoder automatically uses MultiScale adapter
 python run.py --config configs/qata.yaml --tag fusion_tune \
-    --visual_encoder resnet \
-    --visual_pretrained /path/to/medklip.pth
+    --visual resnet \
+    --pretrained /path/to/medklip.pth
 ```
 
 ### Differential Learning Rate
@@ -356,12 +348,11 @@ When using pretrained visual encoders (e.g., MedKLIP), different components use 
 ```bash
 # Example: MedKLIP with automatic MultiScale adapter
 python run.py --config configs/qata.yaml --tag fusion_tune \
-    --visual_encoder resnet \
-    --visual_pretrained /path/to/medklip.pth \
-    --text_encoder clinicalbert \
+    --visual resnet \
+    --pretrained /path/to/medklip.pth \
+    --text clinicalbert \
     --fusion bifmd \
-    --freeze_visual \
-    --visual_lr_scale 0.01
+    --freeze
 ```
 
 ### MLP Design

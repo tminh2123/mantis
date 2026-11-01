@@ -300,26 +300,21 @@ def parse_args():
     p.add_argument('--mode', default='train', choices=['train', 'eval'])
     
     # Model options
-    p.add_argument('--visual_encoder', choices=['cnn', 'resnet'], help='Visual encoder')
-    p.add_argument('--text_encoder', choices=['clip', 'pubmedbert', 'clinicalbert'], help='Text encoder')
+    p.add_argument('--visual', choices=['cnn', 'resnet'], help='Visual encoder')
+    p.add_argument('--text', choices=['clip', 'pubmedbert', 'clinicalbert'], help='Text encoder')
     p.add_argument('--fusion', choices=['bcam', 'bifmd'], help='Fusion module')
-    p.add_argument('--visual_pretrained', help='Pretrained visual weights path')
-    p.add_argument('--freeze_visual', action='store_true', help='Freeze visual encoder')
+    p.add_argument('--pretrained', help='Pretrained visual weights path')
+    p.add_argument('--freeze', action='store_true', help='Freeze visual encoder')
     
     # Fusion tuning
-    p.add_argument('--num_heads', type=int, help='Number of attention heads (default: 8)')
-    p.add_argument('--attn_dropout', type=float, help='Attention dropout (default: 0.0)')
-    p.add_argument('--expansion', type=int, help='MLP expansion ratio (default: 4)')
-    
-    # Learning rate
-    p.add_argument('--lr', type=float, help='Base learning rate')
-    p.add_argument('--visual_lr_scale', type=float, help='Visual encoder LR scale (default: 0.1)')
+    p.add_argument('--num_heads', type=int, help='Attention heads')
+    p.add_argument('--expansion', type=int, help='MLP expansion ratio')
     
     # Training options
+    p.add_argument('--lr', type=float, help='Learning rate')
     p.add_argument('--epochs', type=int, help='Training epochs')
-    p.add_argument('--patience', type=int, help='Early stopping patience (default: 20)')
+    p.add_argument('--patience', type=int, help='Early stopping patience')
     p.add_argument('--batch_size', type=int, help='Batch size')
-    p.add_argument('--max_token_len', type=int, help='Max token length')
     p.add_argument('--checkpoint', help='Checkpoint for eval')
     p.add_argument('--output_dir', default='output', help='Output directory')
     
@@ -331,41 +326,32 @@ def main():
     cfg = load_config(args.config)
     
     # Apply CLI overrides
-    if args.visual_encoder:
-        cfg['model']['visual_encoder'] = args.visual_encoder
-    if args.text_encoder:
-        cfg['model']['text_encoder'] = args.text_encoder
+    if args.visual:
+        cfg['model']['visual_encoder'] = args.visual
+    if args.text:
+        cfg['model']['text_encoder'] = args.text
     if args.fusion:
         cfg['model']['fusion'] = args.fusion
-    if args.adapter:
-        cfg['model']['adapter'] = args.adapter
-    if args.visual_pretrained:
-        cfg['model']['visual_pretrained'] = args.visual_pretrained
-    if args.freeze_visual:
+    if args.pretrained:
+        cfg['model']['visual_pretrained'] = args.pretrained
+    if args.freeze:
         cfg['model']['freeze_visual'] = True
     
     # Fusion tuning overrides
     if args.num_heads:
         cfg['model']['num_heads'] = args.num_heads
-    if args.attn_dropout is not None:
-        cfg['model']['attn_dropout'] = args.attn_dropout
     if args.expansion:
         cfg['model']['expansion'] = args.expansion
     
-    # Learning rate overrides
+    # Training overrides
     if args.lr:
         cfg['train']['lr'] = args.lr
-    if args.visual_lr_scale is not None:
-        cfg['train']['visual_lr_scale'] = args.visual_lr_scale
-    
     if args.epochs:
         cfg['train']['epochs'] = args.epochs
     if args.patience:
         cfg['train']['es_patience'] = args.patience
     if args.batch_size:
         cfg['train']['batch_size'] = args.batch_size
-    if args.max_token_len:
-        cfg['model']['max_token_len'] = args.max_token_len
     
     # Set paths
     dataset = cfg['project']['dataset']

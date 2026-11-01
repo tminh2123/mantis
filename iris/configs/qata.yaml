@@ -9,12 +9,12 @@
 #
 #   # MedKLIP visual + CLIP text
 #   python run.py --config configs/qata.yaml --tag medklip_clip \
-#     --visual_encoder resnet --visual_pretrained medklip_checkpoints/MedKLIP/checkpoint_final.pth
+#     --visual resnet --pretrained medklip_checkpoints/MedKLIP/checkpoint_final.pth
 #
 #   # MedKLIP visual + ClinicalBERT text + BiFMD fusion
 #   python run.py --config configs/qata.yaml --tag fusion_tune \
-#     --visual_encoder resnet --visual_pretrained medklip_checkpoints/MedKLIP/checkpoint_final.pth \
-#     --text_encoder clinicalbert --fusion bifmd
+#     --visual resnet --pretrained medklip_checkpoints/MedKLIP/checkpoint_final.pth \
+#     --text clinicalbert --fusion bifmd
 #
 #   # Tune fusion parameters
 #   python run.py --config configs/qata.yaml --tag fusion_h4_e8 \
