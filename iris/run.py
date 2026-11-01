@@ -303,7 +303,7 @@ def parse_args():
     p.add_argument('--visual_encoder', choices=['cnn', 'resnet'], help='Visual encoder')
     p.add_argument('--text_encoder', choices=['clip', 'pubmedbert', 'clinicalbert'], help='Text encoder')
     p.add_argument('--fusion_type', choices=['bcam', 'bifmd'], help='Fusion module')
-    p.add_argument('--adapter', choices=['bottleneck', 'spatial', 'multiscale'], help='Adapter type')
+    p.add_argument('--adapter', action='store_true', help='Enable MultiScale adapter')
     p.add_argument('--visual_pretrained', help='Pretrained visual weights path')
     p.add_argument('--freeze_visual', action='store_true', help='Freeze visual encoder')
     

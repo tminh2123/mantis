@@ -179,7 +179,7 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 | `--visual_encoder` | cnn | `cnn`, `resnet` | Visual encoder type |
 | `--text_encoder` | clip | `clip`, `pubmedbert`, `clinicalbert` | Text encoder (frozen) |
 | `--fusion_type` | bcam | `bcam`, `bifmd` | Fusion module type |
-| `--adapter` | None | `bottleneck`, `spatial`, `multiscale` | Visual adapter for pretrained encoders |
+| `--adapter` | False | flag | Enable MultiScale adapter for pretrained encoders |
 | `--visual_pretrained` | None | path | Path to pretrained visual weights (e.g., MedKLIP) |
 | `--freeze_visual` | False | flag | Freeze visual encoder weights |
 
@@ -217,9 +217,9 @@ python run.py --config configs/qata.yaml --tag resnet_clip \
     --visual_encoder resnet \
     --visual_pretrained /path/to/medklip.pth
 
-# Frozen ResNet + Bottleneck Adapter
+# Frozen ResNet + MultiScale Adapter
 python run.py --config configs/qata.yaml --tag resnet_adapter \
-    --visual_encoder resnet --adapter bottleneck --freeze_visual \
+    --visual_encoder resnet --adapter --freeze_visual \
     --visual_pretrained /path/to/medklip.pth
 
 # Tune fusion params
@@ -232,7 +232,7 @@ python run.py --config configs/qata.yaml --tag best \
     --visual_pretrained /path/to/medklip.pth \
     --text_encoder clinicalbert \
     --fusion_type bifmd \
-    --adapter multiscale \
+    --adapter \
     --num_heads 8 --expansion 4
 ```
 
@@ -326,17 +326,23 @@ python run.py --config configs/qata.yaml --tag fusion_tuned \
     --expansion 2
 ```
 
-### Visual Adapters
+### Visual Adapter
 
-For parameter-efficient fine-tuning of pretrained visual encoders:
+For parameter-efficient fine-tuning of pretrained visual encoders, IRIS uses **MultiScale adapter**:
 
 | Adapter | Description | Params/Layer | Best For |
 |---------|-------------|--------------|----------|
-| **Bottleneck** | 1x1 conv down -> 1x1 conv up | ~20K | Lightweight |
-| **Spatial** | 1x1 down -> 3x3 conv -> 1x1 up | ~50K | Spatial context |
-| **MultiScale** | Parallel 1x1 + 3x3 branches | ~80K | Segmentation (recommended) |
+| **MultiScale** | Parallel 1x1 + 3x3 branches | ~80K | Segmentation |
 
-MultiScale adapter is recommended for segmentation tasks due to its spatial awareness and compatibility with deep supervision loss.
+MultiScale adapter captures both local (1x1) and spatial (3x3) context, making it ideal for segmentation tasks.
+
+```bash
+# Enable adapter with pretrained encoder
+python run.py --config configs/qata.yaml --tag fusion_tune \
+    --visual_encoder resnet \
+    --visual_pretrained /path/to/medklip.pth \
+    --adapter true
+```
 
 ### Differential Learning Rate
 

@@ -304,38 +304,11 @@ class UpBlock(nn.Module):
 
 
 # =============================================================================
-# Adapters
+# Adapter
 # =============================================================================
 
-class BottleneckAdapter(nn.Module):
-    """Lightweight adapter for frozen encoders."""
-    def __init__(self, channels: int, reduction: int = 4, scale: float = 0.1):
-        super().__init__()
-        mid = max(channels // reduction, 64)
-        self.adapter = nn.Sequential(
-            nn.Conv2d(channels, mid, 1, bias=False), nn.BatchNorm2d(mid), nn.ReLU(True),
-            nn.Conv2d(mid, channels, 1, bias=False), nn.BatchNorm2d(channels),
-        )
-        self.scale = nn.Parameter(torch.ones(1) * scale)
-    def forward(self, x): return x + self.scale * self.adapter(x)
-
-
-class SpatialAdapter(nn.Module):
-    """Adapter with spatial 3x3 convolution."""
-    def __init__(self, channels: int, reduction: int = 4, scale: float = 0.1):
-        super().__init__()
-        mid = max(channels // reduction, 64)
-        self.adapter = nn.Sequential(
-            nn.Conv2d(channels, mid, 1, bias=False), nn.BatchNorm2d(mid), nn.ReLU(True),
-            nn.Conv2d(mid, mid, 3, padding=1, bias=False), nn.BatchNorm2d(mid), nn.ReLU(True),
-            nn.Conv2d(mid, channels, 1, bias=False), nn.BatchNorm2d(channels),
-        )
-        self.scale = nn.Parameter(torch.ones(1) * scale)
-    def forward(self, x): return x + self.scale * self.adapter(x)
-
-
 class MultiScaleAdapter(nn.Module):
-    """Multi-branch adapter."""
+    """Multi-branch adapter for frozen encoders."""
     def __init__(self, channels: int, reduction: int = 4, scale: float = 0.1):
         super().__init__()
         mid = max(channels // reduction, 64)
@@ -354,9 +327,9 @@ class MultiScaleAdapter(nn.Module):
         return x + self.scale * self.fuse(torch.cat([self.local(x), self.spatial(x)], dim=1))
 
 
-def get_adapter(name: str, channels: int, reduction: int = 4, scale: float = 0.1):
-    adapters = {"bottleneck": BottleneckAdapter, "spatial": SpatialAdapter, "multiscale": MultiScaleAdapter}
-    return adapters[name](channels, reduction, scale) if name else nn.Identity()
+def get_adapter(channels: int, reduction: int = 4, scale: float = 0.1):
+    """Create MultiScaleAdapter for feature adaptation."""
+    return MultiScaleAdapter(channels, reduction, scale)
 
 
 # =============================================================================
@@ -516,7 +489,7 @@ class IRIS(nn.Module):
         visual_encoder: str = "cnn",
         text_encoder: str = "clip",
         fusion_type: str = "bcam",
-        adapter: Optional[str] = None,
+        adapter: bool = False,  # Use MultiScaleAdapter
         # Architecture
         num_classes: int = 1,
         img_size: int = 224,
@@ -560,10 +533,10 @@ class IRIS(nn.Module):
                 nn.Conv2d(v_ch[2], base_channel * 4, 1),
                 nn.Conv2d(v_ch[3], base_channel * 8, 1),
             ])
-            # Visual adapters (if using)
+            # Visual adapters
             if adapter:
                 self.v_adapters = nn.ModuleList([
-                    get_adapter(adapter, v_ch[i], adapter_reduction, adapter_scale)
+                    get_adapter(v_ch[i], adapter_reduction, adapter_scale)
                     for i in range(4)
                 ])
             else:
@@ -781,11 +754,16 @@ def build_iris(config) -> IRIS:
     mcfg = config.get('model', config)
     dcfg = config.get('data', {})
     
+    # Convert adapter to bool (backward compat with old configs using string)
+    adapter = mcfg.get('adapter', False)
+    if isinstance(adapter, str):
+        adapter = True  # Any string value means use adapter
+    
     return IRIS(
         visual_encoder=mcfg.get('visual_encoder', 'cnn'),
         text_encoder=mcfg.get('text_encoder', 'clip'),
         fusion_type=mcfg.get('fusion_type', 'bcam'),
-        adapter=mcfg.get('adapter', None),
+        adapter=adapter,
         num_classes=mcfg.get('num_classes', 1),
         img_size=dcfg.get('image_size', 224),
         base_channel=mcfg.get('base_channel', 64),
