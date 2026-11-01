@@ -191,16 +191,6 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 | `--attn_dropout` | 0.0 | Attention dropout rate |
 | `--expansion` | 4 | MLP expansion ratio in fusion |
 
-### Decoder Attention (NEW)
-
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `--decoder_attention` | False | Enable self-attention in decoder blocks |
-| `--decoder_attention_heads` | 4 | Number of attention heads in decoder |
-| `--decoder_attention_levels` | 2 | Number of decoder levels with attention (from deepest) |
-
-**Note:** Decoder attention is applied to low-resolution levels for efficiency. With `decoder_attention_levels=2`, attention is added to the two deepest decoder levels (28x28 and 56x56 for CNN encoder).
-
 ### Training Options
 
 | Argument | Default | Description |
@@ -236,25 +226,14 @@ python run.py --config configs/qata.yaml --tag resnet_adapter \
 python run.py --config configs/qata.yaml --tag tuned \
     --num_heads 4 --attn_dropout 0.1 --expansion 2
 
-# Enable decoder self-attention (2 levels, 4 heads)
-python run.py --config configs/qata.yaml --tag dec_attn \
-    --decoder_attention
-
-# Decoder attention with custom settings
-python run.py --config configs/qata.yaml --tag dec_attn_l3_h8 \
-    --decoder_attention \
-    --decoder_attention_levels 3 \
-    --decoder_attention_heads 8
-
-# Full fusion tuning + decoder attention
-python run.py --config configs/qata.yaml --tag fusion_dec \
+# Best config (84.61% Dice)
+python run.py --config configs/qata.yaml --tag best \
     --visual_encoder resnet \
     --visual_pretrained /path/to/medklip.pth \
     --text_encoder clinicalbert \
     --fusion_type bifmd \
     --adapter multiscale \
-    --num_heads 4 --expansion 8 \
-    --decoder_attention --decoder_attention_levels 2
+    --num_heads 8 --expansion 4
 ```
 
 ## Output Structure
