@@ -179,7 +179,6 @@ python run.py --config configs/qata.yaml --tag pretrain_cnn --mode eval
 | `--visual_encoder` | cnn | `cnn`, `resnet` | Visual encoder type |
 | `--text_encoder` | clip | `clip`, `pubmedbert`, `clinicalbert` | Text encoder (frozen) |
 | `--fusion_type` | bcam | `bcam`, `bifmd` | Fusion module type |
-| `--adapter` | False | flag | Enable MultiScale adapter for pretrained encoders |
 | `--visual_pretrained` | None | path | Path to pretrained visual weights (e.g., MedKLIP) |
 | `--freeze_visual` | False | flag | Freeze visual encoder weights |
 
@@ -217,9 +216,9 @@ python run.py --config configs/qata.yaml --tag resnet_clip \
     --visual_encoder resnet \
     --visual_pretrained /path/to/medklip.pth
 
-# Frozen ResNet + MultiScale Adapter
+# Frozen ResNet + Adapter (auto-enabled for ResNet)
 python run.py --config configs/qata.yaml --tag resnet_adapter \
-    --visual_encoder resnet --adapter --freeze_visual \
+    --visual_encoder resnet --freeze_visual \
     --visual_pretrained /path/to/medklip.pth
 
 # Tune fusion params
@@ -232,7 +231,6 @@ python run.py --config configs/qata.yaml --tag best \
     --visual_pretrained /path/to/medklip.pth \
     --text_encoder clinicalbert \
     --fusion_type bifmd \
-    --adapter \
     --num_heads 8 --expansion 4
 ```
 
@@ -328,20 +326,19 @@ python run.py --config configs/qata.yaml --tag fusion_tuned \
 
 ### Visual Adapter
 
-For parameter-efficient fine-tuning of pretrained visual encoders, IRIS uses **MultiScale adapter**:
+When using ResNet encoder (e.g., MedKLIP pretrained), IRIS automatically applies **MultiScale adapter** to each encoder level:
 
-| Adapter | Description | Params/Layer | Best For |
-|---------|-------------|--------------|----------|
-| **MultiScale** | Parallel 1x1 + 3x3 branches | ~80K | Segmentation |
+| Component | Description |
+|-----------|-------------|
+| **MultiScale Adapter** | Parallel 1x1 + 3x3 branches (~80K params/level) |
 
-MultiScale adapter captures both local (1x1) and spatial (3x3) context, making it ideal for segmentation tasks.
+The adapter captures both local (1x1) and spatial (3x3) context, enabling effective fine-tuning of pretrained features for segmentation.
 
 ```bash
-# Enable adapter with pretrained encoder
+# ResNet encoder automatically uses MultiScale adapter
 python run.py --config configs/qata.yaml --tag fusion_tune \
     --visual_encoder resnet \
-    --visual_pretrained /path/to/medklip.pth \
-    --adapter true
+    --visual_pretrained /path/to/medklip.pth
 ```
 
 ### Differential Learning Rate
@@ -357,13 +354,12 @@ When using pretrained visual encoders (e.g., MedKLIP), different components use 
 | Decoder | 1x | New trainable module |
 
 ```bash
-# Example: MedKLIP with MultiScale adapter
+# Example: MedKLIP with automatic MultiScale adapter
 python run.py --config configs/qata.yaml --tag fusion_tune \
     --visual_encoder resnet \
     --visual_pretrained /path/to/medklip.pth \
     --text_encoder clinicalbert \
     --fusion_type bifmd \
-    --adapter multiscale \
     --freeze_visual \
     --visual_lr_scale 0.01
 ```

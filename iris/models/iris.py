@@ -489,7 +489,6 @@ class IRIS(nn.Module):
         visual_encoder: str = "cnn",
         text_encoder: str = "clip",
         fusion_type: str = "bcam",
-        adapter: bool = False,  # Use MultiScaleAdapter
         # Architecture
         num_classes: int = 1,
         img_size: int = 224,
@@ -533,14 +532,11 @@ class IRIS(nn.Module):
                 nn.Conv2d(v_ch[2], base_channel * 4, 1),
                 nn.Conv2d(v_ch[3], base_channel * 8, 1),
             ])
-            # Visual adapters
-            if adapter:
-                self.v_adapters = nn.ModuleList([
-                    get_adapter(v_ch[i], adapter_reduction, adapter_scale)
-                    for i in range(4)
-                ])
-            else:
-                self.v_adapters = None
+            # MultiScale adapters (always used for ResNet)
+            self.v_adapters = nn.ModuleList([
+                get_adapter(v_ch[i], adapter_reduction, adapter_scale)
+                for i in range(4)
+            ])
         else:  # cnn
             self.v_enc = CNNEncoder(base_channel)
             self.num_levels = 5
@@ -754,16 +750,10 @@ def build_iris(config) -> IRIS:
     mcfg = config.get('model', config)
     dcfg = config.get('data', {})
     
-    # Convert adapter to bool (backward compat with old configs using string)
-    adapter = mcfg.get('adapter', False)
-    if isinstance(adapter, str):
-        adapter = True  # Any string value means use adapter
-    
     return IRIS(
         visual_encoder=mcfg.get('visual_encoder', 'cnn'),
         text_encoder=mcfg.get('text_encoder', 'clip'),
         fusion_type=mcfg.get('fusion_type', 'bcam'),
-        adapter=adapter,
         num_classes=mcfg.get('num_classes', 1),
         img_size=dcfg.get('image_size', 224),
         base_channel=mcfg.get('base_channel', 64),

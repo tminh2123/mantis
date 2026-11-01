@@ -14,7 +14,7 @@
 #   # MedKLIP visual + ClinicalBERT text + BiFMD fusion
 #   python run.py --config configs/qata.yaml --tag fusion_tune \
 #     --visual_encoder resnet --visual_pretrained medklip_checkpoints/MedKLIP/checkpoint_final.pth \
-#     --text_encoder clinicalbert --fusion_type bifmd --adapter
+#     --text_encoder clinicalbert --fusion_type bifmd
 #
 #   # Tune fusion parameters
 #   python run.py --config configs/qata.yaml --tag fusion_h4_e8 \
