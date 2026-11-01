@@ -223,7 +223,7 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
         else:
             no_improve += 1
         
-        if tcfg.get('early_stopping', False) and no_improve >= tcfg.get('es_patience', 20):
+        if no_improve >= tcfg.get('patience', 20):
             logger.info(f"Early stopping at epoch {epoch+1}")
             break
     
@@ -349,7 +349,7 @@ def main():
     if args.epochs:
         cfg['train']['epochs'] = args.epochs
     if args.patience:
-        cfg['train']['es_patience'] = args.patience
+        cfg['train']['patience'] = args.patience
     if args.batch_size:
         cfg['train']['batch_size'] = args.batch_size
     
