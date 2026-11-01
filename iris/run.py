@@ -165,7 +165,7 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
     else:
         scheduler = CosineAnnealingLR(optimizer, T_max=tcfg['epochs'])
     
-    ckpt_dir = Path(cfg['logging']['checkpoint_dir'])
+    ckpt_dir = Path(cfg['checkpoint_dir'])
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     
     logger.info(f"Train: {len(train_loader.dataset)} | Val: {len(val_loader.dataset)}")
@@ -205,7 +205,7 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
         scheduler.step()
         epoch_time = time.time() - epoch_start
         
-        metrics = evaluate(model, val_loader, device, cfg['eval']['threshold'])
+        metrics = evaluate(model, val_loader, device, 0.5)
         
         logger.info(
             f"Epoch [{epoch+1}/{tcfg['epochs']}] Loss: {loss_meter.avg:.4f} | "
@@ -270,7 +270,7 @@ def full_evaluate(cfg: dict, model: nn.Module, device: torch.device, logger: log
     logger.info("EVALUATION")
     logger.info("=" * 60)
     
-    ckpt_path = cfg['eval']['checkpoint']
+    ckpt_path = cfg['checkpoint_path']
     if Path(ckpt_path).exists():
         ckpt = load_checkpoint(ckpt_path, model)
         logger.info(f"Loaded: {ckpt_path}")
@@ -284,7 +284,7 @@ def full_evaluate(cfg: dict, model: nn.Module, device: torch.device, logger: log
         num_workers=cfg['data']['num_workers'],
     )
     
-    metrics = evaluate(model, test_loader, device, cfg['eval']['threshold'])
+    metrics = evaluate(model, test_loader, device, 0.5)
     
     logger.info(f"Test | Dice: {metrics['dice']:.2f}% | IoU: {metrics['iou']:.2f}%")
     return metrics
@@ -359,21 +359,18 @@ def main():
     cfg['exp_name'] = exp_name
     
     output_dir = args.output_dir
-    cfg['logging']['log_file'] = f"{output_dir}/logs/{exp_name}.log"
-    cfg['logging']['checkpoint_dir'] = f"{output_dir}/checkpoints/{exp_name}"
-    cfg['eval']['checkpoint'] = f"{output_dir}/checkpoints/{exp_name}/best.pth"
-    
-    if args.checkpoint:
-        cfg['eval']['checkpoint'] = args.checkpoint
+    log_file = f"{output_dir}/logs/{exp_name}.log"
+    cfg['checkpoint_dir'] = f"{output_dir}/checkpoints/{exp_name}"
+    cfg['checkpoint_path'] = args.checkpoint or f"{cfg['checkpoint_dir']}/best.pth"
     
     # Setup
     set_seed(cfg['project']['seed'])
     device = get_device()
     
-    os.makedirs(cfg['logging']['checkpoint_dir'], exist_ok=True)
+    os.makedirs(cfg['checkpoint_dir'], exist_ok=True)
     
     append_log = (args.mode == 'eval')
-    logger = setup_logger(cfg['logging']['log_file'], append=append_log)
+    logger = setup_logger(log_file, append=append_log)
     
     logger.info(f"Experiment: {cfg['exp_name']}")
     logger.info(f"Device: {device}")
