@@ -119,7 +119,6 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
     if mcfg.get('deep_supervision', True):
         criterion = DeepSupervisionLoss(
             loss_weights=tcfg['loss_weights'],
-            asymmetric_weights=tcfg['asymmetric_weights'],
             bce_weight=tcfg['bce_weight'],
         )
     else:
