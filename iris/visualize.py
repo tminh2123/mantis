@@ -60,8 +60,8 @@ def visualize_samples(
                 mask = masks[i, 0].cpu().numpy()
                 img = images[i].cpu().numpy().transpose(1, 2, 0)
                 
-                # Denormalize image
-                img = img * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
+                # Image is already in [0, 1] range (no normalization)
+                img = images[i].cpu().numpy().transpose(1, 2, 0)
                 img = np.clip(img, 0, 1)
                 
                 # Compute Dice

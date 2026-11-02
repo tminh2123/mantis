@@ -137,10 +137,10 @@ class IRISDataset(Dataset):
             if random.random() > 0.5:
                 image, mask = self._random_rotate(image, mask)
 
-        # Normalize image
-        mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
-        std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
-        image = (image - mean) / std
+        # Normalize image (ImageNet stats)
+        # mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+        # std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+        # image = (image - mean) / std
 
         return {
             'image': image,
