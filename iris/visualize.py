@@ -233,10 +233,29 @@ def main():
     parser.add_argument('--output_dir', default='output/visualizations', help='Output directory')
     parser.add_argument('--num_samples', type=int, default=12, help='Number of samples to visualize')
     parser.add_argument('--split', default='test', choices=['train', 'val', 'test'])
+    # Model overrides (must match checkpoint)
+    parser.add_argument('--visual', choices=['cnn', 'resnet'], help='Visual encoder')
+    parser.add_argument('--text', choices=['clip', 'pubmedbert', 'clinicalbert'], help='Text encoder')
+    parser.add_argument('--fusion', choices=['bcam', 'bifmd'], help='Fusion module')
+    parser.add_argument('--num_heads', type=int, help='Attention heads')
+    parser.add_argument('--expansion', type=int, help='MLP expansion')
     args = parser.parse_args()
     
     # Load config
     cfg = load_config(args.config)
+    
+    # Apply model overrides
+    if args.visual:
+        cfg['model']['visual_encoder'] = args.visual
+    if args.text:
+        cfg['model']['text_encoder'] = args.text
+    if args.fusion:
+        cfg['model']['fusion'] = args.fusion
+    if args.num_heads:
+        cfg['model']['num_heads'] = args.num_heads
+    if args.expansion:
+        cfg['model']['expansion'] = args.expansion
+    
     device = get_device()
     
     # Build model
