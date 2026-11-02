@@ -179,9 +179,10 @@ def train(cfg: dict, model: nn.Module, device: torch.device, logger: logging.Log
         epoch_start = time.time()
         
         pbar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{tcfg['epochs']}", leave=False)
-        for images, masks, texts in pbar:
-            images = images.to(device)
-            masks = masks.to(device).float().unsqueeze(1)
+        for batch in pbar:
+            images = batch['image'].to(device)
+            masks = batch['mask'].to(device)
+            texts = batch['text']
             
             outputs = model(images, texts)
             
@@ -241,9 +242,10 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, thresho
     all_dice = []
     all_iou = []
     
-    for images, masks, texts in loader:
-        images = images.to(device)
-        masks = masks.to(device).float()
+    for batch in loader:
+        images = batch['image'].to(device)
+        masks = batch['mask'].to(device)
+        texts = batch['text']
         
         outputs = model(images, texts)
         pred = outputs['pred']

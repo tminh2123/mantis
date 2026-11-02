@@ -110,7 +110,7 @@ class IRISDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, str]:
+    def __getitem__(self, idx: int) -> dict:
         img_path, mask_path, text = self.samples[idx]
 
         # Load image
@@ -128,7 +128,7 @@ class IRISDataset(Dataset):
 
         # Convert to tensors
         image = torch.from_numpy(image).permute(2, 0, 1).float() / 255.0
-        mask = torch.from_numpy(mask).long()
+        mask = torch.from_numpy(mask).float().unsqueeze(0)  # [1, H, W]
 
         # Augmentation
         if self.augment:
@@ -137,7 +137,17 @@ class IRISDataset(Dataset):
             if random.random() > 0.5:
                 image, mask = self._random_rotate(image, mask)
 
-        return image, mask, text
+        # Normalize image
+        mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+        std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+        image = (image - mean) / std
+
+        return {
+            'image': image,
+            'mask': mask,
+            'text': text,
+            'path': str(img_path)
+        }
 
     def _random_rot_flip(
         self, 
@@ -147,12 +157,12 @@ class IRISDataset(Dataset):
         """Random rotation by 0/90/180/270 + random flip."""
         k = random.randint(0, 3)
         image = torch.rot90(image, k, dims=[1, 2])
-        mask = torch.rot90(mask, k, dims=[0, 1])
+        mask = torch.rot90(mask, k, dims=[1, 2])
 
         if random.random() > 0.5:
             axis = random.choice([1, 2])
             image = torch.flip(image, dims=[axis])
-            mask = torch.flip(mask, dims=[axis - 1])
+            mask = torch.flip(mask, dims=[axis])
         
         return image, mask
 
@@ -167,10 +177,7 @@ class IRISDataset(Dataset):
         angle = random.uniform(-30, 30)
         
         image = TF.rotate(image, angle, interpolation=TF.InterpolationMode.BILINEAR)
-        
-        mask = mask.unsqueeze(0).float()
         mask = TF.rotate(mask, angle, interpolation=TF.InterpolationMode.NEAREST)
-        mask = mask.squeeze(0).long()
         
         return image, mask
 
