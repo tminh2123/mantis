@@ -277,8 +277,8 @@ def main():
         batch_size=16,
         image_size=cfg['data']['image_size'],
         num_workers=cfg['data']['num_workers'],
-        is_train=False,
-        return_path=True
+        augment=False,
+        shuffle=False
     )
     
     # Visualize
