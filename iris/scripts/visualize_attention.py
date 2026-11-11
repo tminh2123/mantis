@@ -197,7 +197,8 @@ def visualize_token_attention(
     tokens: list,
     attn_maps: dict,
     output_path: str,
-    sample_id: str
+    sample_id: str,
+    gt_mask: np.ndarray = None
 ):
     """
     Create visualization of per-token attention.
@@ -273,6 +274,36 @@ def visualize_token_attention(
     plt.close()
     
     # =========================================================================
+    # Plot 1.5: Summary with GT mask
+    # =========================================================================
+    if gt_mask is not None:
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        
+        # Original image
+        axes[0].imshow(image)
+        axes[0].set_title('Input Image', fontsize=12)
+        axes[0].axis('off')
+        
+        # GT mask overlay
+        axes[1].imshow(image)
+        axes[1].imshow(gt_mask, cmap='Reds', alpha=0.5)
+        axes[1].set_title('Ground Truth Mask', fontsize=12)
+        axes[1].axis('off')
+        
+        # Combined attention (average of all tokens)
+        combined_attn = np.mean(attn_up, axis=0)
+        combined_attn = (combined_attn - combined_attn.min()) / (combined_attn.max() - combined_attn.min() + 1e-8)
+        axes[2].imshow(image)
+        axes[2].imshow(combined_attn, cmap='jet', alpha=0.5)
+        axes[2].set_title('Combined Attention', fontsize=12)
+        axes[2].axis('off')
+        
+        plt.suptitle(f'Sample: {sample_id}', fontsize=14)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_path, f'{sample_id}_summary.png'), dpi=150, bbox_inches='tight')
+        plt.close()
+    
+    # =========================================================================
     # Plot 2: Attention across all layers
     # =========================================================================
     n_layers = len(layer_names)
@@ -313,13 +344,96 @@ def visualize_token_attention(
     print(f"Saved: {sample_id}_attention.png, {sample_id}_layers.png")
 
 
+def compute_all_dice_scores(model, dataset, device):
+    """Compute Dice scores for all samples in dataset."""
+    from tqdm import tqdm
+    
+    model.eval()
+    scores = []
+    
+    with torch.no_grad():
+        for idx in tqdm(range(len(dataset)), desc="Computing Dice scores"):
+            sample = dataset[idx]
+            img = sample['image'].unsqueeze(0).to(device)
+            mask = sample['mask'].unsqueeze(0).to(device)
+            text = sample['text']
+            
+            pred = model(img, [text])
+            pred_bin = (torch.sigmoid(pred) > 0.5).float()
+            
+            # Dice score
+            intersection = (pred_bin * mask).sum()
+            union = pred_bin.sum() + mask.sum()
+            dice = (2 * intersection / (union + 1e-8)).item()
+            
+            scores.append({
+                'idx': idx,
+                'image_id': sample['image_id'],
+                'text': text,
+                'dice': dice
+            })
+    
+    return scores
+
+
+def select_diverse_samples(scores, num_per_group=3):
+    """
+    Select samples with diverse Dice scores.
+    
+    Returns samples from:
+    - Worst (< 50%)
+    - Below average (50-70%)
+    - Average (70-85%)
+    - Good (85-95%)
+    - Best (> 95%)
+    """
+    groups = {
+        'worst': [],      # < 50%
+        'poor': [],       # 50-70%
+        'average': [],    # 70-85%
+        'good': [],       # 85-95%
+        'best': []        # > 95%
+    }
+    
+    for s in scores:
+        dice = s['dice'] * 100
+        if dice < 50:
+            groups['worst'].append(s)
+        elif dice < 70:
+            groups['poor'].append(s)
+        elif dice < 85:
+            groups['average'].append(s)
+        elif dice < 95:
+            groups['good'].append(s)
+        else:
+            groups['best'].append(s)
+    
+    selected = []
+    for group_name, samples in groups.items():
+        # Sort by dice within group
+        samples_sorted = sorted(samples, key=lambda x: x['dice'])
+        # Take first, middle, last
+        n = len(samples_sorted)
+        if n == 0:
+            continue
+        elif n <= num_per_group:
+            selected.extend([(group_name, s) for s in samples_sorted])
+        else:
+            indices = [0, n // 2, n - 1][:num_per_group]
+            selected.extend([(group_name, samples_sorted[i]) for i in indices])
+    
+    return selected
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--checkpoint', type=str, required=True)
-    parser.add_argument('--sample_idx', type=int, default=0, help='Sample index to visualize')
-    parser.add_argument('--sample_id', type=str, default=None, help='Or specify sample ID directly')
-    parser.add_argument('--num_samples', type=int, default=1, help='Number of samples to visualize')
+    parser.add_argument('--sample_idx', type=int, default=None, help='Specific sample index')
+    parser.add_argument('--sample_id', type=str, default=None, help='Specific sample ID')
+    parser.add_argument('--num_samples', type=int, default=1, help='Number of samples (if using sample_idx)')
+    parser.add_argument('--diverse', action='store_true', help='Select diverse samples by Dice score')
+    parser.add_argument('--num_per_group', type=int, default=2, help='Samples per Dice group (with --diverse)')
     parser.add_argument('--output_dir', type=str, default='output/analysis/attention_maps')
     # Model args
     parser.add_argument('--visual', type=str, default='resnet')
@@ -369,32 +483,54 @@ def main():
     # Visualize samples
     os.makedirs(args.output_dir, exist_ok=True)
     
-    if args.sample_id:
-        # Find sample by ID
-        sample_ids = [args.sample_id]
-    else:
-        # Use indices
-        sample_ids = list(range(args.sample_idx, min(args.sample_idx + args.num_samples, len(dataset))))
-    
-    for idx in sample_ids:
-        if isinstance(idx, str):
-            # Find index by sample_id
-            found = False
-            for i in range(len(dataset)):
-                if dataset.image_ids[i] == idx:
-                    idx = i
-                    found = True
-                    break
-            if not found:
-                print(f"Sample ID {idx} not found")
-                continue
+    # Determine which samples to visualize
+    if args.diverse:
+        print("\n=== Computing Dice scores for diverse sample selection ===")
+        scores = compute_all_dice_scores(model, dataset, device)
+        selected = select_diverse_samples(scores, args.num_per_group)
         
+        print(f"\nSelected {len(selected)} samples across Dice groups:")
+        for group, s in selected:
+            print(f"  [{group:>8}] {s['image_id']}: Dice={s['dice']*100:.1f}% - '{s['text'][:50]}...'")
+        
+        samples_to_viz = [(s['idx'], group, s['dice']) for group, s in selected]
+    elif args.sample_id:
+        # Find sample by ID
+        found_idx = None
+        for i in range(len(dataset)):
+            if dataset.image_ids[i] == args.sample_id or dataset.image_ids[i] == args.sample_id + '.png':
+                found_idx = i
+                break
+        if found_idx is None:
+            print(f"Sample ID {args.sample_id} not found")
+            return
+        samples_to_viz = [(found_idx, None, None)]
+    elif args.sample_idx is not None:
+        samples_to_viz = [(i, None, None) for i in range(args.sample_idx, min(args.sample_idx + args.num_samples, len(dataset)))]
+    else:
+        # Default: first 5 samples
+        samples_to_viz = [(i, None, None) for i in range(min(5, len(dataset)))]
+    
+    # Visualize each sample
+    print(f"\n=== Generating attention visualizations ===")
+    for idx, group, dice in samples_to_viz:
         sample = dataset[idx]
         img = sample['image']
         text = sample['text']
+        mask = sample['mask']
         sample_id = sample['image_id'].replace('.png', '')
         
-        print(f"\n[{idx}] {sample_id}: '{text}'")
+        # Add group prefix to output filename if diverse mode
+        if group:
+            output_prefix = f"{group}_{dice*100:.0f}pct_{sample_id}"
+        else:
+            output_prefix = sample_id
+        
+        if dice is not None:
+            print(f"\n[{idx}] {output_prefix}: Dice={dice*100:.1f}%")
+        else:
+            print(f"\n[{idx}] {output_prefix}")
+        print(f"  Text: '{text}'")
         
         # Compute attention
         tokens, attn_maps = compute_attention_maps(model, img, text, tokenizer, device)
@@ -406,8 +542,11 @@ def main():
         img_vis = img.permute(1, 2, 0) * std + mean
         img_vis = (img_vis.numpy() * 255).clip(0, 255).astype(np.uint8)
         
-        # Visualize
-        visualize_token_attention(img_vis, tokens, attn_maps, args.output_dir, sample_id)
+        # Also save GT mask overlay
+        mask_np = mask.squeeze().numpy()
+        
+        # Visualize attention
+        visualize_token_attention(img_vis, tokens, attn_maps, args.output_dir, output_prefix, mask_np)
     
     print(f"\nDone! Results saved to {args.output_dir}")
 
