@@ -415,6 +415,11 @@ def select_diverse_samples(scores, num_per_group=3):
         else:
             groups['best'].append(s)
     
+    # Print distribution
+    print(f"\nDice score distribution:")
+    for group_name, samples in groups.items():
+        print(f"  {group_name:>8}: {len(samples)} samples")
+    
     selected = []
     for group_name, samples in groups.items():
         # Sort by dice within group
