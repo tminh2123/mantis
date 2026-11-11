@@ -4,6 +4,7 @@ Compute Dice between masks that share the same text description.
 """
 import argparse
 import os
+import json
 from pathlib import Path
 from collections import defaultdict
 
@@ -29,23 +30,17 @@ def analyze_intra_text_dice(data_dir: str, output_dir: str):
     """
     Group samples by text, compute pairwise Dice within each group.
     """
-    img_dir = os.path.join(data_dir, 'images')
     mask_dir = os.path.join(data_dir, 'masks')
-    text_dir = os.path.join(data_dir, 'texts')
+    texts_json = os.path.join(data_dir, 'texts.json')
+    
+    # Load texts from JSON
+    with open(texts_json, 'r') as f:
+        texts_data = json.load(f)
     
     # Group by text
     text_to_samples = defaultdict(list)
     
-    for txt_file in os.listdir(text_dir):
-        if not txt_file.endswith('.txt'):
-            continue
-        
-        sample_id = txt_file.replace('.txt', '')
-        txt_path = os.path.join(text_dir, txt_file)
-        
-        with open(txt_path, 'r') as f:
-            text = f.read().strip()
-        
+    for sample_id, text in texts_data.items():
         # Find corresponding mask
         mask_path = None
         for ext in ['.png', '.jpg', '.jpeg']:
