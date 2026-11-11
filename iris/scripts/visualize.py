@@ -230,7 +230,7 @@ def main():
     parser = argparse.ArgumentParser(description='IRIS Visualization')
     parser.add_argument('--config', required=True, help='Config file')
     parser.add_argument('--checkpoint', required=True, help='Model checkpoint')
-    parser.add_argument('--output_dir', default='output/visualizations', help='Output directory')
+    parser.add_argument('--output_dir', default='output/analysis/visualizations', help='Output directory')
     parser.add_argument('--num_samples', type=int, default=12, help='Number of samples to visualize')
     parser.add_argument('--split', default='test', choices=['train', 'val', 'test'])
     # Model overrides (must match checkpoint)

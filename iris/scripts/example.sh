@@ -79,3 +79,31 @@ python run.py \
 #   --visual resnet --text clinicalbert --fusion bifmd \
 #   --pretrained $MEDKLIP_WEIGHTS --freeze \
 #   --num_heads 8 --expansion 4 --memory_size 64
+
+# =============================================================================
+# ANALYSIS SCRIPTS
+# =============================================================================
+#
+# All analysis outputs go to output/analysis/
+#
+# 1. Text pattern analysis (no model needed):
+#    python scripts/analyze_text.py --data_dir $DATA_DIR/train
+#    Output: output/analysis/text_patterns/
+#
+# 2. Per-text Dice analysis (requires model):
+#    python scripts/analyze_dice.py --config configs/qata.yaml \
+#      --checkpoint output/checkpoints/EXP_NAME/best.pth \
+#      --visual resnet --text clinicalbert --fusion bifmd --num_heads 8 --expansion 4
+#    Output: output/analysis/per_text_dice/EXP_NAME/
+#
+# 3. Laterality analysis (requires model):
+#    python scripts/analyze_laterality.py --config configs/qata.yaml \
+#      --checkpoint output/checkpoints/EXP_NAME/best.pth \
+#      --visual resnet --text clinicalbert --fusion bifmd --num_heads 8 --expansion 4
+#    Output: output/analysis/laterality/EXP_NAME/
+#
+# 4. Visualization (requires model):
+#    python scripts/visualize.py --config configs/qata.yaml \
+#      --checkpoint output/checkpoints/EXP_NAME/best.pth \
+#      --visual resnet --text clinicalbert --fusion bifmd --num_heads 8 --expansion 4
+#    Output: output/analysis/visualizations/EXP_NAME/

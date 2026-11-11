@@ -174,7 +174,7 @@ def main():
     parser = argparse.ArgumentParser(description='Per-Text Dice Analysis')
     parser.add_argument('--config', required=True, help='Config file')
     parser.add_argument('--checkpoint', required=True, help='Model checkpoint')
-    parser.add_argument('--output_dir', default='output/per_text_analysis', help='Output directory')
+    parser.add_argument('--output_dir', default='output/analysis/per_text_dice', help='Output directory')
     parser.add_argument('--split', default='test', choices=['train', 'val', 'test'])
     # Model overrides
     parser.add_argument('--visual', choices=['cnn', 'resnet'], help='Visual encoder')

@@ -241,7 +241,7 @@ def analyze_patterns(data_dir: str, output_dir: str):
 def main():
     parser = argparse.ArgumentParser(description='Text Pattern Analysis')
     parser.add_argument('--data_dir', required=True, help='Dataset directory')
-    parser.add_argument('--output_dir', default='output/text_patterns', help='Output directory')
+    parser.add_argument('--output_dir', default='output/analysis/text_patterns', help='Output directory')
     args = parser.parse_args()
     
     analyze_patterns(args.data_dir, args.output_dir)
