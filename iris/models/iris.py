@@ -180,13 +180,91 @@ class BCAModule(nn.Module):
         return self.proj(img_flat + fused).view(B, C, H, W)
 
 
+class LinearMemoryAttention(nn.Module):
+    """
+    Linear Attention with Read-Write Memory mechanism.
+    
+    Interprets attention as associative memory:
+    - Write: M = φ(K)^T @ V  (text → memory)
+    - Read: O = φ(Q) @ M     (visual queries memory)
+    
+    Model learns what to store in memory slots automatically.
+    memory_size controls capacity (like hidden dim in a neural net).
+    """
+    def __init__(self, visual_dim: int, text_dim: int, memory_size: int = 64, dropout: float = 0.0):
+        super().__init__()
+        self.memory_size = memory_size
+        self.visual_dim = visual_dim
+        
+        # Projections for write operation (text → memory)
+        self.write_key = nn.Linear(text_dim, memory_size)
+        self.write_value = nn.Linear(text_dim, visual_dim)
+        
+        # Projection for read operation (visual queries)
+        self.read_query = nn.Linear(visual_dim, memory_size)
+        
+        # Feature map φ: elu(x) + 1 (ensures positive, smooth)
+        self.feature_map = lambda x: F.elu(x) + 1
+        
+        # Output projection with residual scale
+        self.out_proj = nn.Linear(visual_dim, visual_dim)
+        self.scale = nn.Parameter(torch.ones(1) * 0.1)  # Small init for residual
+        self.dropout = nn.Dropout(dropout)
+        
+        # LayerNorm for stability
+        self.norm = nn.LayerNorm(visual_dim)
+    
+    def forward(self, visual_feat: torch.Tensor, text_feat: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            visual_feat: [B, P, C] visual features (P = H*W pixels)
+            text_feat: [B, N, D] text token embeddings
+        Returns:
+            memory_out: [B, P, C] memory-enhanced visual features
+        """
+        B, P, C = visual_feat.shape
+        
+        # Write: text → memory
+        K = self.feature_map(self.write_key(text_feat))    # [B, N, M]
+        V = self.write_value(text_feat)                     # [B, N, C]
+        
+        # Memory matrix M = K^T @ V: [B, M, C]
+        M = torch.bmm(K.transpose(1, 2), V)  # [B, M, C]
+        
+        # Normalize by sum of keys for numerical stability
+        K_sum = K.sum(dim=1, keepdim=True).clamp(min=1e-6)  # [B, 1, M]
+        M = M / K_sum.transpose(1, 2)  # [B, M, C]
+        
+        # Read: visual queries → memory
+        Q = self.feature_map(self.read_query(visual_feat))  # [B, P, M]
+        
+        # Output O = Q @ M: [B, P, C]
+        out = torch.bmm(Q, M)  # [B, P, C]
+        
+        # Normalize by query sum
+        Q_sum = Q.sum(dim=-1, keepdim=True).clamp(min=1e-6)  # [B, P, 1]
+        out = out / Q_sum
+        
+        # Project and apply residual connection
+        out = self.dropout(self.out_proj(out))
+        out = self.norm(visual_feat + self.scale * out)
+        
+        return out
+
+
 class BiFMD(nn.Module):
-    """Bidirectional FiLM-Modulated Decoder."""
+    """Bidirectional FiLM-Modulated Decoder with optional Linear Memory."""
     def __init__(self, channels: int, text_dim: int, num_heads: int = 4, 
-                 expansion_ratio: int = 4, attn_dropout: float = 0.0):
+                 expansion_ratio: int = 4, attn_dropout: float = 0.0,
+                 memory_size: int = 0):
+        """
+        Args:
+            memory_size: Size of linear memory (0 = disabled, >0 = enabled)
+        """
         super().__init__()
         self.channels, self.text_dim = channels, text_dim
         self.num_heads = num_heads
+        self.use_memory = memory_size > 0
         hd = channels // num_heads
         
         # Pre-attention LayerNorm for stability
@@ -212,6 +290,15 @@ class BiFMD(nn.Module):
         self.gate = nn.Conv2d(2 * channels, channels, 3, padding=1)
         self.fuse = nn.Conv2d(channels, channels, 1)
         self.norm = nn.GroupNorm(1, channels)
+        
+        # Linear Memory Attention (optional)
+        if self.use_memory:
+            self.memory = LinearMemoryAttention(channels, text_dim, memory_size, attn_dropout)
+            # Gate to blend memory output with attention output
+            self.memory_gate = nn.Sequential(
+                nn.Conv2d(channels * 2, channels, 1),
+                nn.Sigmoid()
+            )
         
         hidden = channels * expansion_ratio
         self.refine = nn.Sequential(
@@ -257,6 +344,17 @@ class BiFMD(nn.Module):
         fv, fl = self.v_proj(f_v), self.l_proj(f_l)
         g = torch.sigmoid(self.gate(torch.cat([fv, fl], dim=1)))
         mix = self.fuse(g * fv + (1 - g) * fl)
+        
+        # Apply linear memory if enabled
+        if self.use_memory:
+            img_flat = img_mod.flatten(2).transpose(1, 2)  # [B, P, C]
+            mem_out = self.memory(img_flat, text_mod)       # [B, P, C]
+            mem_out = mem_out.transpose(1, 2).reshape(B, C, H, W)
+            
+            # Blend memory output with attention output
+            mg = self.memory_gate(torch.cat([mix, mem_out], dim=1))
+            mix = mg * mem_out + (1 - mg) * mix
+        
         fused = self.norm(mix + img_mod)
         return fused + self.refine(fused)
 
@@ -506,6 +604,7 @@ class IRIS(nn.Module):
         img_mask_rate: float = 0.3,
         adapter_reduction: int = 4,
         adapter_scale: float = 0.1,
+        memory_size: int = 0,  # Linear memory size (0 = disabled)
     ):
         super().__init__()
         
@@ -565,16 +664,16 @@ class IRIS(nn.Module):
         scales = [img_size // (2 ** i) for i in range(5)]  # [224, 112, 56, 28, 14]
         
         if fusion == "bifmd":
-            # BiFMD: (channels, text_dim, num_heads, expansion_ratio, attn_dropout)
+            # BiFMD: (channels, text_dim, num_heads, expansion_ratio, attn_dropout, memory_size)
             if self.num_levels == 5:
-                self.fuse1 = BiFMD(base_channel, self._text_dim, num_heads, expansion, attn_dropout)
-                self.fuse2 = BiFMD(base_channel * 2, self._text_dim, num_heads, expansion, attn_dropout)
-                self.fuse3 = BiFMD(base_channel * 4, self._text_dim, num_heads, expansion, attn_dropout)
-                self.fuse4 = BiFMD(base_channel * 8, self._text_dim, num_heads, expansion, attn_dropout)
+                self.fuse1 = BiFMD(base_channel, self._text_dim, num_heads, expansion, attn_dropout, memory_size)
+                self.fuse2 = BiFMD(base_channel * 2, self._text_dim, num_heads, expansion, attn_dropout, memory_size)
+                self.fuse3 = BiFMD(base_channel * 4, self._text_dim, num_heads, expansion, attn_dropout, memory_size)
+                self.fuse4 = BiFMD(base_channel * 8, self._text_dim, num_heads, expansion, attn_dropout, memory_size)
             else:
-                self.fuse1 = BiFMD(base_channel * 2, self._text_dim, num_heads, expansion, attn_dropout)
-                self.fuse2 = BiFMD(base_channel * 4, self._text_dim, num_heads, expansion, attn_dropout)
-                self.fuse3 = BiFMD(base_channel * 8, self._text_dim, num_heads, expansion, attn_dropout)
+                self.fuse1 = BiFMD(base_channel * 2, self._text_dim, num_heads, expansion, attn_dropout, memory_size)
+                self.fuse2 = BiFMD(base_channel * 4, self._text_dim, num_heads, expansion, attn_dropout, memory_size)
+                self.fuse3 = BiFMD(base_channel * 8, self._text_dim, num_heads, expansion, attn_dropout, memory_size)
         else:
             # BCAM: (img_size, channels, text_dim, num_heads, dropout, expansion, attn_dropout)
             if self.num_levels == 5:
@@ -770,4 +869,5 @@ def build_iris(config) -> IRIS:
         img_mask_rate=mcfg.get('img_mask_rate', 0.3),
         adapter_reduction=mcfg.get('adapter_reduction', 4),
         adapter_scale=mcfg.get('adapter_scale', 0.1),
+        memory_size=mcfg.get('memory_size', 0),
     )

@@ -310,6 +310,7 @@ def parse_args():
     # Fusion tuning
     p.add_argument('--num_heads', type=int, help='Attention heads')
     p.add_argument('--expansion', type=int, help='MLP expansion ratio')
+    p.add_argument('--memory_size', type=int, help='Linear memory size (0=disabled)')
     
     # Training options
     p.add_argument('--lr', type=float, help='Learning rate')
@@ -343,6 +344,8 @@ def main():
         cfg['model']['num_heads'] = args.num_heads
     if args.expansion:
         cfg['model']['expansion'] = args.expansion
+    if args.memory_size is not None:
+        cfg['model']['memory_size'] = args.memory_size
     
     # Training overrides
     if args.lr:
