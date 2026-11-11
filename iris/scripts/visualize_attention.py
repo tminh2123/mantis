@@ -459,9 +459,9 @@ def main():
         visual_encoder=args.visual,
         text_encoder=args.text,
         fusion=args.fusion,
-        num_classes=cfg['num_classes'],
-        img_size=cfg['img_size'],
-        base_channel=cfg.get('base_channel', 64),
+        num_classes=cfg.get('model', {}).get('num_classes', 1),
+        img_size=cfg['data']['image_size'],
+        base_channel=cfg.get('model', {}).get('base_channel', 64),
         num_heads=args.num_heads,
         expansion=args.expansion,
         memory_size=args.memory_size,
@@ -474,10 +474,10 @@ def main():
     model.eval()
     print(f"Loaded checkpoint: {args.checkpoint}")
     
-    # Load dataset
+    # Load dataset (test split)
     dataset = IRISDataset(
-        root_dir=cfg['data_root'],
-        image_size=cfg['img_size'],
+        root_dir=cfg['data']['test_dir'],
+        image_size=cfg['data']['image_size'],
         augment=False,
     )
     
