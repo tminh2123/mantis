@@ -34,7 +34,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from models.iris import IRIS
-from datasets.dataset import QaTaDataset
+from datasets.dataset import IRISDataset
 from torch.utils.data import DataLoader
 
 
@@ -366,9 +366,13 @@ def compute_all_dice_scores(model, dataset, device):
             union = pred_bin.sum() + mask.sum()
             dice = (2 * intersection / (union + 1e-8)).item()
             
+            # Extract image_id from path
+            img_path = sample['path']
+            image_id = os.path.basename(img_path)
+            
             scores.append({
                 'idx': idx,
-                'image_id': sample['image_id'],
+                'image_id': image_id,
                 'text': text,
                 'dice': dice
             })
@@ -471,10 +475,10 @@ def main():
     print(f"Loaded checkpoint: {args.checkpoint}")
     
     # Load dataset
-    dataset = QaTaDataset(
-        root=cfg['data_root'],
-        split='test',
-        img_size=cfg['img_size'],
+    dataset = IRISDataset(
+        root_dir=cfg['data_root'],
+        image_size=cfg['img_size'],
+        augment=False,
     )
     
     # Get tokenizer for token display
@@ -498,7 +502,9 @@ def main():
         # Find sample by ID
         found_idx = None
         for i in range(len(dataset)):
-            if dataset.image_ids[i] == args.sample_id or dataset.image_ids[i] == args.sample_id + '.png':
+            sample_path = dataset.samples[i][0]
+            sample_name = os.path.basename(str(sample_path))
+            if sample_name == args.sample_id or sample_name == args.sample_id + '.png':
                 found_idx = i
                 break
         if found_idx is None:
@@ -518,7 +524,7 @@ def main():
         img = sample['image']
         text = sample['text']
         mask = sample['mask']
-        sample_id = sample['image_id'].replace('.png', '')
+        sample_id = os.path.basename(sample['path']).replace('.png', '')
         
         # Add group prefix to output filename if diverse mode
         if group:
