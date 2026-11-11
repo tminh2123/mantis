@@ -40,18 +40,13 @@ def analyze_intra_text_dice(data_dir: str, output_dir: str):
     # Group by text
     text_to_samples = defaultdict(list)
     
-    for sample_id, text in texts_data.items():
-        # Find corresponding mask
-        mask_path = None
-        for ext in ['.png', '.jpg', '.jpeg']:
-            p = os.path.join(mask_dir, sample_id + ext)
-            if os.path.exists(p):
-                mask_path = p
-                break
+    for filename, text in texts_data.items():
+        # filename already includes extension (e.g., "covid_1.png")
+        mask_path = os.path.join(mask_dir, filename)
         
-        if mask_path:
+        if os.path.exists(mask_path):
             text_to_samples[text].append({
-                'id': sample_id,
+                'id': filename,
                 'mask_path': mask_path,
                 'text': text
             })
