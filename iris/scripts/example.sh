@@ -50,8 +50,9 @@ python run.py \
 #   --freeze      Freeze visual encoder
 #
 # FUSION:
-#   --num_heads   Attention heads (default: 8)
-#   --expansion   MLP expansion (default: 4)
+#   --num_heads    Attention heads (default: 8)
+#   --expansion    MLP expansion (default: 4)
+#   --memory_size  Linear memory size (0=disabled, try 32/64/128)
 #
 # TRAINING:
 #   --lr          Learning rate
@@ -68,3 +69,13 @@ python run.py \
 #
 # 2. Baseline (84.25% Dice):
 #    --visual cnn --text clip --fusion bcam
+#
+# =============================================================================
+# EXPERIMENTS - Linear Memory
+# =============================================================================
+#
+# Test with memory_size 64:
+# python run.py --config configs/qata.yaml --tag memory_m64 \
+#   --visual resnet --text clinicalbert --fusion bifmd \
+#   --pretrained $MEDKLIP_WEIGHTS --freeze \
+#   --num_heads 8 --expansion 4 --memory_size 64
