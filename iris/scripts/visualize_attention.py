@@ -359,6 +359,9 @@ def compute_all_dice_scores(model, dataset, device):
             text = sample['text']
             
             pred = model(img, [text])
+            # Handle dict output (deep supervision mode)
+            if isinstance(pred, dict):
+                pred = pred['pred']
             pred_bin = (torch.sigmoid(pred) > 0.5).float()
             
             # Dice score
