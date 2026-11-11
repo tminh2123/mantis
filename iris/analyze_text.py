@@ -1,5 +1,5 @@
 """
-Analyze text patterns in QaTa-COV19 dataset.
+Analyze text patterns in QaTa-COV19 / MosMedData+ dataset.
 """
 import json
 from pathlib import Path
@@ -7,10 +7,50 @@ from collections import Counter
 import re
 
 
-def analyze_texts(texts_file: str):
+def load_texts(path: str) -> dict:
+    """Load texts from json or xlsx."""
+    p = Path(path)
+    
+    # If directory, look for texts.json or *_text.xlsx
+    if p.is_dir():
+        json_file = p / "texts.json"
+        if json_file.exists():
+            with open(json_file) as f:
+                return json.load(f)
+        
+        xlsx_files = list(p.glob("*_text.xlsx")) + list(p.glob("*_text.xls"))
+        if xlsx_files:
+            import pandas as pd
+            df = pd.read_excel(xlsx_files[0])
+            texts = {}
+            for _, row in df.iterrows():
+                img_name = str(row.iloc[0])
+                desc = str(row.iloc[1]) if len(row) > 1 else ""
+                texts[img_name] = desc.strip()
+            return texts
+        
+        raise FileNotFoundError(f"No texts.json or *_text.xlsx found in {p}")
+    
+    # Direct file
+    if p.suffix == '.json':
+        with open(p) as f:
+            return json.load(f)
+    elif p.suffix in ['.xlsx', '.xls']:
+        import pandas as pd
+        df = pd.read_excel(p)
+        texts = {}
+        for _, row in df.iterrows():
+            img_name = str(row.iloc[0])
+            desc = str(row.iloc[1]) if len(row) > 1 else ""
+            texts[img_name] = desc.strip()
+        return texts
+    else:
+        raise ValueError(f"Unsupported file type: {p.suffix}")
+
+
+def analyze_texts(path: str):
     """Analyze text annotations."""
-    with open(texts_file) as f:
-        texts = json.load(f)
+    texts = load_texts(path)
     
     print(f"Total samples: {len(texts)}")
     print()
@@ -69,9 +109,9 @@ if __name__ == '__main__':
     import sys
     
     if len(sys.argv) > 1:
-        texts_file = sys.argv[1]
+        path = sys.argv[1]
     else:
         # Default QaTa path
-        texts_file = "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train/texts.json"
+        path = "../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train"
     
-    analyze_texts(texts_file)
+    analyze_texts(path)
