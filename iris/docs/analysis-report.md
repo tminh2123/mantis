@@ -183,7 +183,72 @@ Checked if text labels match ground truth position:
 
 ---
 
-## 4. Attention Visualization
+## 4. AP vs PA View Analysis
+
+### Background
+
+X-ray images can be taken in two views:
+- **AP (Anterior-Posterior)**: X-ray source in front, detector behind
+- **PA (Posterior-Anterior)**: X-ray source behind, detector in front
+
+PA images appear horizontally mirrored compared to AP - anatomical "left" appears on the right side of the image.
+
+### Dataset Distribution
+
+| Split | AP | PA | Unknown | Total |
+|-------|-----|-----|---------|-------|
+| Train | 2352 (41%) | 797 (14%) | 2567 (45%) | 5716 |
+| Val | 559 (39%) | 203 (14%) | 667 (47%) | 1429 |
+| Test | 1606 (76%) | 312 (15%) | 195 (9%) | 2113 |
+
+Note: "Unknown" are `covid_*.png` files without view metadata.
+
+### Performance by View (Test Set)
+
+| View | Samples | Mean Dice | Std | Worst Rate (<50%) |
+|------|---------|-----------|-----|-------------------|
+| AP | 1801 | 85.84% | 15.74% | 4.0% |
+| **PA** | 312 | **77.52%** | 19.87% | **9.3%** |
+
+**Key Finding**: PA view performs significantly worse - 8.3% lower Dice, more than double the worst rate!
+
+### Flip Experiment
+
+Hypothesis: If we flip PA images to AP orientation during inference, performance should improve.
+
+Result: **Flip made it worse** (-1.21% for PA)
+
+| Condition | PA Dice | PA Worst Rate |
+|-----------|---------|---------------|
+| Baseline | 77.52% | 9.3% |
+| With flip | 76.30% | 10.3% |
+
+**Interpretation**: PA is not simply a mirror of AP. The views have different characteristics:
+- Heart appears smaller in PA (further from detector)
+- Clavicles/ribs have different orientation
+- Lung field proportions differ
+
+### Root Cause Found: Augmentation Bug
+
+During training, horizontal flip augmentation flips the image but NOT the text.
+
+Example:
+- Original: Image shows infection in LEFT lung, text says "left lung"
+- After flip: Image shows infection in RIGHT lung, text still says "left lung"
+
+This creates text-image mismatch, confusing the model about left/right.
+
+**Fix implemented**: Swap "left" ↔ "right" in text when horizontal flip is applied.
+
+### Next Steps
+
+1. [x] Implement text flip fix in augmentation
+2. [ ] Retrain with fix: `fusion_h8_e4_textflip`
+3. [ ] Compare PA performance before/after fix
+
+---
+
+## 5. Attention Visualization
 
 ### Observations
 
@@ -199,7 +264,7 @@ Checked if text labels match ground truth position:
 
 ---
 
-## 5. Architecture Experiments
+## 6. Architecture Experiments
 
 ### Linear Memory Attention
 
@@ -213,7 +278,7 @@ Linear memory didn't help - may need different approach.
 
 ---
 
-## 6. Recommendations
+## 7. Recommendations
 
 ### Short-term
 
@@ -234,12 +299,13 @@ Linear memory didn't help - may need different approach.
 
 ---
 
-## 7. Next Steps
+## 8. Next Steps
 
 1. [ ] Complete text ablation (fixed, empty)
-2. [ ] Increase max_token_len and retrain
-3. [ ] Analyze per-location Dice (left vs right, upper vs lower)
-4. [ ] Try explicit location encoding
+2. [ ] Retrain with text flip fix (`fusion_h8_e4_textflip`)
+3. [ ] Compare PA performance before/after fix
+4. [ ] Increase max_token_len and retrain
+5. [ ] Try explicit location encoding
 
 ---
 
