@@ -38,7 +38,8 @@ def compute_dice(pred, target):
     pred_bin = (torch.sigmoid(pred) > 0.5).float()
     intersection = (pred_bin * target).sum()
     union = pred_bin.sum() + target.sum()
-    return (2 * intersection / (union + 1e-8)).item()
+    dice = (2 * intersection / (union + 1e-8)).item()
+    return dice
 
 
 def evaluate_with_texts(model, dataset, text_fn, device, desc="Evaluating"):
@@ -56,7 +57,14 @@ def evaluate_with_texts(model, dataset, text_fn, device, desc="Evaluating"):
         for idx in tqdm(range(len(dataset)), desc=desc):
             sample = dataset[idx]
             img = sample['image'].unsqueeze(0).to(device)
-            mask = sample['mask'].unsqueeze(0).to(device)
+            mask = sample['mask'].to(device)
+            
+            # Ensure mask is [1, H, W]
+            if mask.dim() == 2:
+                mask = mask.unsqueeze(0)
+            elif mask.dim() == 3 and mask.shape[0] != 1:
+                mask = mask.unsqueeze(0)
+            
             original_text = sample['text']
             
             # Get text to use
@@ -69,6 +77,17 @@ def evaluate_with_texts(model, dataset, text_fn, device, desc="Evaluating"):
             
             dice = compute_dice(pred, mask)
             dice_scores.append(dice)
+            
+            # Debug first sample
+            if idx == 0:
+                pred_sig = torch.sigmoid(pred)
+                print(f"\n[DEBUG] First sample:")
+                print(f"  Image shape: {img.shape}, range: [{img.min():.3f}, {img.max():.3f}]")
+                print(f"  Mask shape: {mask.shape}, sum: {mask.sum().item():.0f}")
+                print(f"  Pred shape: {pred.shape}, range: [{pred.min():.3f}, {pred.max():.3f}]")
+                print(f"  Pred sigmoid range: [{pred_sig.min():.3f}, {pred_sig.max():.3f}]")
+                print(f"  Pred > 0.5 sum: {(pred_sig > 0.5).sum().item()}")
+                print(f"  Dice: {dice:.4f}")
     
     return dice_scores
 
