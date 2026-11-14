@@ -128,7 +128,62 @@ Truncated texts are typically the most complex (multiple regions).
 
 ---
 
-## 3. Attention Visualization
+## 3. Error Analysis - Where Model Goes Wrong
+
+### By Text Category
+
+Analyzed all 2113 test samples by text attributes:
+
+| Category | Samples | Mean Dice | Worst (<50%) |
+|----------|---------|-----------|--------------|
+| Bilateral | 1675 | 88.2% | 2.0% |
+| **Unilateral** | 438 | 70.9% | **15.5%** |
+| Two areas | 1594 | 88.8% | 1.8% |
+| **One area** | 417 | 70.6% | **15.8%** |
+| Both sides | 1666 | 88.3% | 1.9% |
+| **Left only** | 238 | 68.9% | **18.9%** |
+| Right only | 208 | 72.9% | 11.5% |
+
+Main problem: **"Unilateral, one infected area"** - model fails 15.9% of the time.
+
+### Prediction Confusion (101 worst samples)
+
+Compared what model predicts vs ground truth:
+
+| Type | Correct | Wrong | Wrong Rate |
+|------|---------|-------|------------|
+| Left/Right | 58 | 15 | 20.5% |
+| Upper/Middle/Lower | 53 | 17 | 24.3% |
+| Number of regions | 85 | 16 | 15.8% |
+
+Patterns found:
+- **Left/Right confusion**: Model predicts left when GT is right (10/15 cases)
+- **Vertical confusion**: Model often predicts middle when GT is upper
+- **Over-segmentation**: Model predicts 2 regions when GT has 1 (12/16 cases)
+
+### Dataset Quality Check
+
+Checked if text labels match ground truth position:
+
+| Dimension | Consistent | Inconsistent |
+|-----------|------------|--------------|
+| Left/Right | 97.5% | 2.5% (11 samples) |
+| Upper/Middle/Lower | 42.4% | 57.6% (392 samples) |
+
+- Left/right labels are reliable
+- Vertical labels don't match well (probably different definition of "upper/middle/lower")
+
+### Key Takeaways
+
+1. Model works well on bilateral/two-area cases (89% dice)
+2. Model struggles with single small lesions (71% dice)
+3. Model has slight bias toward predicting left side
+4. Model tends to over-segment (sees extra regions that don't exist)
+5. ~80% of worst cases are correct on position - main issue is missing the lesion entirely
+
+---
+
+## 4. Attention Visualization
 
 ### Observations
 
@@ -144,7 +199,7 @@ Truncated texts are typically the most complex (multiple regions).
 
 ---
 
-## 4. Architecture Experiments
+## 5. Architecture Experiments
 
 ### Linear Memory Attention
 
@@ -158,7 +213,7 @@ Linear memory didn't help - may need different approach.
 
 ---
 
-## 5. Recommendations
+## 6. Recommendations
 
 ### Short-term
 
@@ -179,7 +234,7 @@ Linear memory didn't help - may need different approach.
 
 ---
 
-## 6. Next Steps
+## 7. Next Steps
 
 1. [ ] Complete text ablation (fixed, empty)
 2. [ ] Increase max_token_len and retrain
