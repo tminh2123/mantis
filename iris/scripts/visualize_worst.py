@@ -74,6 +74,14 @@ def main():
     worst = sorted(worst, key=lambda x: x['dice'])
     print(f"Samples with Dice < 50%: {len(worst)}")
     
+    # Load consistency data to mark inconsistent samples
+    consistency_path = PROJECT_ROOT / 'output/analysis/text_gt_consistency/all_results.json'
+    cons_lookup = {}
+    if consistency_path.exists():
+        with open(consistency_path) as f:
+            consistency = json.load(f)
+        cons_lookup = {r['image_id']: r for r in consistency}
+    
     if len(worst) == 0:
         print("No samples with Dice < 50%!")
         return
@@ -84,6 +92,7 @@ def main():
         idx = r['idx']
         dice = r['dice']
         text = r['text']
+        image_id = Path(dataset.samples[idx][0]).name
         
         sample = dataset[idx]
         img = sample['image']
@@ -99,6 +108,16 @@ def main():
         
         # Convert image for display
         img_np = img.permute(1, 2, 0).numpy()
+        
+        # Check consistency
+        tags = []
+        if image_id in cons_lookup:
+            c = cons_lookup[image_id]
+            if c.get('h_consistent') == False:
+                tags.append('H-INCONS')
+            if c.get('v_consistent') == False:
+                tags.append('V-INCONS')
+        tag_str = f"_[{'_'.join(tags)}]" if tags else ""
         
         # Create figure: 3 columns
         fig, axes = plt.subplots(1, 3, figsize=(12, 4))
@@ -120,12 +139,13 @@ def main():
         axes[2].set_title(f'Prediction (area: {pred_mask.sum():.0f}px)', fontsize=10)
         axes[2].axis('off')
         
-        # Main title with dice and text
-        fig.suptitle(f"Dice: {dice*100:.1f}% | {text}", fontsize=9, y=1.02)
+        # Main title with dice, text, and inconsistency tags
+        title_tags = f" [{', '.join(tags)}]" if tags else ""
+        fig.suptitle(f"Dice: {dice*100:.1f}%{title_tags} | {text}", fontsize=9, y=1.02)
         plt.tight_layout()
         
-        # Save
-        filename = f"{i+1:02d}_dice{dice*100:.0f}_{r['image_id']}.png"
+        # Save with tags in filename
+        filename = f"{i+1:02d}_dice{dice*100:.0f}{tag_str}_{r['image_id']}.png"
         filepath = output_dir / filename
         plt.savefig(filepath, dpi=150, bbox_inches='tight')
         plt.close()
