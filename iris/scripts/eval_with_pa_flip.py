@@ -180,10 +180,21 @@ def main():
     parser.add_argument('--config', required=True, help='Config file')
     parser.add_argument('--tag', required=True, help='Experiment tag')
     parser.add_argument('--output_dir', default='output', help='Output directory')
+    parser.add_argument('--base_channel', type=int, help='Base channel (override config)')
+    parser.add_argument('--num_heads', type=int, help='Num heads (override config)')
+    parser.add_argument('--expansion', type=int, help='Expansion (override config)')
     args = parser.parse_args()
     
     # Load config
     cfg = load_config(args.config)
+    
+    # Apply overrides
+    if args.base_channel:
+        cfg['model']['base_channel'] = args.base_channel
+    if args.num_heads:
+        cfg['model']['num_heads'] = args.num_heads
+    if args.expansion:
+        cfg['model']['expansion'] = args.expansion
     device = get_device()
     
     # Build model
