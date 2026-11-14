@@ -28,26 +28,6 @@ from datasets import IRISDataset
 from utils import load_config, get_device, compute_metrics_per_sample
 
 
-def infer_config_from_checkpoint(ckpt_path: str, base_cfg: dict) -> dict:
-    """Infer model config from checkpoint weights."""
-    ckpt = torch.load(ckpt_path, map_location='cpu')
-    state = ckpt['model']
-    
-    # Infer base_channel from out0.weight shape [1, base_channel, 1, 1]
-    if 'out0.weight' in state:
-        base_channel = state['out0.weight'].shape[1]
-        base_cfg['model']['base_channel'] = base_channel
-        print(f"Inferred base_channel: {base_channel}")
-    
-    # Check if model has attention (up0.att)
-    has_att = any('up0.att' in k for k in state.keys())
-    if has_att:
-        base_cfg['model']['decoder_attention'] = True
-        print("Inferred decoder_attention: True")
-    
-    return base_cfg, ckpt
-
-
 def is_pa_view(filename: str) -> bool:
     """Check if image is PA view based on filename."""
     fname = filename.upper()
@@ -200,22 +180,35 @@ def main():
     parser.add_argument('--config', required=True, help='Config file')
     parser.add_argument('--tag', required=True, help='Experiment tag')
     parser.add_argument('--output_dir', default='output', help='Output directory')
-    parser.add_argument('--base_channel', type=int, help='Base channel (override config)')
-    parser.add_argument('--num_heads', type=int, help='Num heads (override config)')
-    parser.add_argument('--expansion', type=int, help='Expansion (override config)')
+    # Model overrides
+    parser.add_argument('--visual', help='Visual encoder (cnn/resnet)')
+    parser.add_argument('--text', help='Text encoder (clip/clinicalbert/pubmedbert)')
+    parser.add_argument('--fusion', help='Fusion type (bcam/bifmd)')
+    parser.add_argument('--adapter', help='Adapter type')
+    parser.add_argument('--base_channel', type=int, help='Base channel')
+    parser.add_argument('--num_heads', type=int, help='Num heads')
+    parser.add_argument('--expansion', type=int, help='Expansion')
     args = parser.parse_args()
     
     # Load config
     cfg = load_config(args.config)
     
     # Apply overrides
+    if args.visual:
+        cfg['model']['visual_encoder'] = args.visual
+    if args.text:
+        cfg['model']['text_encoder'] = args.text
+    if args.fusion:
+        cfg['model']['fusion'] = args.fusion
+        cfg['model']['fusion_type'] = args.fusion
+    if args.adapter:
+        cfg['model']['adapter'] = args.adapter
     if args.base_channel:
         cfg['model']['base_channel'] = args.base_channel
     if args.num_heads:
         cfg['model']['num_heads'] = args.num_heads
     if args.expansion:
         cfg['model']['expansion'] = args.expansion
-    device = get_device()
     
     # Checkpoint path
     dataset = cfg['project']['dataset']
@@ -226,11 +219,12 @@ def main():
         print(f"ERROR: Checkpoint not found: {ckpt_path}")
         return
     
-    # Infer config from checkpoint and load weights
-    cfg, ckpt = infer_config_from_checkpoint(ckpt_path, cfg)
-    
-    # Build model with inferred config
+    # Build model
+    device = get_device()
     model = build_iris(cfg).to(device)
+    
+    # Load checkpoint
+    ckpt = torch.load(ckpt_path, map_location=device)
     model.load_state_dict(ckpt['model'])
     print(f"Loaded checkpoint: {ckpt_path}")
     
