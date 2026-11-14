@@ -101,7 +101,7 @@ def main():
         sample = dataset[idx]
         mask = sample['mask'].squeeze().numpy()
         text = sample['text']
-        image_id = dataset.image_ids[idx]
+        image_id = Path(sample['path']).name
         
         text_side = get_text_side(text)
         gt_side = get_gt_side(mask)
