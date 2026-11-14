@@ -1,0 +1,295 @@
+TEXT PATTERN SUMMARY
+============================================================
+
+Total samples: 5716
+Unique texts: 273
+Avg samples per text: 20.9
+
+LATERALITY:
+  Bilateral: 218
+  Unilateral: 55
+
+NUMBER OF AREAS:
+  2: 139
+  3: 63
+  1: 42
+  4: 19
+  5: 5
+  None: 3
+  thrr: 1
+  6: 1
+
+ALL UNIQUE TEXTS:
+[1587] Bilateral pulmonary infection, two infected areas, all left lung and all right lung.
+[1182] Bilateral pulmonary infection, two infected areas, lower left lung and lower right lung.
+[ 437] Unilateral pulmonary infection, one infected area, lower right lung.
+[ 294] Unilateral pulmonary infection, one infected area, lower left lung.
+[ 226] Bilateral pulmonary infection, two infected areas, all left lung and lower right lung.
+[ 157] Bilateral pulmonary infection, two infected areas, middle lower left lung and lower right lung.
+[ 110] Unilateral pulmonary infection, one infected area, middle left lung.
+[ 103] Unilateral pulmonary infection, one infected area, middle right lung.
+[  88] Bilateral pulmonary infection, two infected areas, all left lung and middle lower right lung.
+[  88] Bilateral pulmonary infection, two infected areas, middle lower left lung and middle lower right lung.
+[  68] Bilateral pulmonary infection, two infected areas, middle left lung and middle right lung.
+[  56] Bilateral pulmonary infection, three infected areas, upper lower left lung and lower right lung.
+[  55] Bilateral pulmonary infection, two infected areas, lower left lung and all right lung.
+[  50] Bilateral pulmonary infection, two infected areas, middle left lung and lower right lung.
+[  46] Bilateral pulmonary infection, two infected areas, middle lower left lung and all right lung.
+[  40] Bilateral pulmonary infection, two infected areas, lower left lung and middle lower right lung.
+[  39] Bilateral pulmonary infection, two infected areas, all left lung and upper middle lower right lung.
+[  39] Unilateral pulmonary infection, one infected area, middle lower left lung.
+[  39] Bilateral pulmonary infection, two infected areas, upper left lung and lower right lung.
+[  34] Bilateral pulmonary infection, three infected areas, all left lung and upper lower right lung.
+[  33] Bilateral pulmonary infection, three infected areas, lower left lung and upper lower right lung.
+[  31] Unilateral pulmonary infection, one infected area, upper left lung.
+[  28] Bilateral pulmonary infection, two infected areas, lower left lung and middle right lung.
+[  26] Unilateral pulmonary infection, one infected area, all left lung.
+[  25] Bilateral pulmonary infection, two infected areas, lower left and lower right lung.
+[  23] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and lower right lung.
+[  22] Bilateral pulmonary infection, two infected areas, upper left lung and upper right lung.
+[  21] Bilateral pulmonary infection, two infected areas, all left lung and upper middle right lung.
+[  20] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and all right lung.
+[  20] Bilateral pulmonary infection, two infected areas, all left lung and upper right lung.
+[  18] Bilateral pulmonary infection, three infected areas, lower left lung and lower right lung.
+[  18] Bilateral pulmonary infection, four infected areas, upper lower left lung and upper lower right lung.
+[  17] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and upper middle lower right lung.
+[  17] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and middle lower right lung.
+[  17] Bilateral pulmonary infection, three infected areas, upper lower left lung and all right lung.
+[  17] Bilateral pulmonary infection, three infected areas, middle lower left lung and lower right lung.
+[  16] Unilateral pulmonary infection, one infected area, all right lung.
+[  15] Bilateral pulmonary infection,two infected areas,all left and all right lung.
+[  14] Unilateral pulmonary infection, one infected area, middle lower right lung.
+[  14] Unilateral pulmonary infection, one infected area, upper right lung.
+[  14] Bilateral pulmonary infection, two infected areas, all left lung and upper lower right lung.
+[  13] Bilateral pulmonary infection, two infected areas, upper middle left lung and upper middle right lung.
+[  11] Bilateral pulmonary infection, two infected areas, lower left lung and upper middle lower right lung.
+[  11] Bilateral pulmonary infection, two infected areas, middle lower left lung and upper middle lower right lung.
+[  11] Bilateral pulmonary infection, two infected areas, middle lower left lung and middle right lung.
+[  11] Bilateral pulmonary infection, two infected areas, upper left lung and all right lung.
+[  10] Bilateral pulmonary infection, two infected areas, upper left lung and middle right lung.
+[  10] Bilateral pulmonary infection, two infected areas, all left and lower right lung.
+[  10] Bilateral pulmonary infection, two infected areas, all left and all right lung.
+[   9] Bilateral pulmonary infection, two infected areas, middle left lung and middle lower right lung.
+[   9] Bilateral pulmonary infection,two infected areas,lower left and lower right lung.
+[   8] Bilateral pulmonary infection, two infected areas, middle left lung and all right lung.
+[   8] Bilateral pulmonary infection, two infected areas, upper middle left lung and lower right lung.
+[   8] Bilateral pulmonary infection, two infected areas, upper lower left lung and all right lung.
+[   8] Bilateral pulmonary infection, two infected areas, all left lung and middle right lung.
+[   7] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and all right lung.
+[   7] Unilateral pulmonary infection, one infected area, upper middle lower left lung.
+[   7] Bilateral pulmonary infection, three infected areas, upper lower left lung and upper right lung.
+[   7] Bilateral pulmonary infection, two infected areas, upper middle left lung and all right lung.
+[   7] Bilateral pulmonary infection, two infected areas, lower left lung and upper right lung.
+[   7] Bilateral pulmonary infection, two infected areas, upper lower left lung and lower right lung.
+[   6] Bilateral pulmonary infection, four infected areas, upper middle lower left lung and upper middle lower right lung.
+[   6] Bilateral pulmonary infection, three infected areas, upper left lung and upper lower right lung.
+[   6] Bilateral pulmonary infection, two infected areas, middle left lung and upper right lung.
+[   6] Unilateral pulmonary infection, two infected areas, upper lower right lung.
+[   6] Bilateral pulmonary infection,two infected areas, lower left and lower right lung.
+[   5] Bilateral pulmonary infection, three infected areas, all left lung and upper middle lower right lung.
+[   5] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and middle lower right lung.
+[   5] Bilateral pulmonary infection, three infected areas, upper lower left lung and middle lower right lung.
+[   5] Bilateral pulmonary infection, three infected areas, upper middle left lung and lower right lung.
+[   5] Unilateral pulmonary infection, two infected areas, upper lower left lung.
+[   5] Bilateral pulmonary infection, two infected areas, lowe left and lower right lung.
+[   4] Bilateral pulmonary infection, four infected areas, upper middle lower left lung and upper lower right lung.
+[   4] Bilateral pulmonary infection, three infected areas, middle lower left lung and upper lower right lung.
+[   4] Bilateral pulmonary infection, two infected areas, all left lung and right lung.
+[   4] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and lower right lung.
+[   4] Bilateral pulmonary infection, three infected areas, upper lower left lung and upper lower right lung.
+[   4] Bilateral pulmonary infection, two infected areas, lower left lung and upper lower right lung.
+[   4] Bilateral pulmonary infection, three infected areas, middle left lung and upper lower right lung.
+[   4] Bilateral pulmonary infection, two infected areas, lower left and all right lung.
+[   4] Bilateral pulmonary infection, two infected areas,all left and all right lung.
+[   4] Unilateral pulmonary infection, one infected area, upper middle right lung.
+[   3] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and upper middle lower right lung.
+[   3] Bilateral pulmonary infection, two infected areas, upper middle left lung and upper right lung.
+[   3] Bilateral pulmonary infection, two infected areas, upper middle left lung and middle lower right lung.
+[   3] Bilateral pulmonary infection, four infected areas, upper middle lower left lung and all right lung.
+[   3] Bilateral pulmonary infection, three infected areas, upper middle left lung and all right lung.
+[   3] Bilateral pulmonary infection, three infected areas, all left lung and upper middle right lung.
+[   3] Bilateral pulmonary infection, three infected areas, middle left lung and middle right lung.
+[   3] Bilateral pulmonary infection, two infected areas, upper lower left lung and middle lower right lung.
+[   3] Bilateral pulmonary infection, two infected areas, middle left lung and upper middle lower right lung.
+[   3] Unilateral pulmonary infection, one infected area, upper middle left lung.
+[   3] Unilateral pulmonary infection, one infected area, upper lower right lung.
+[   3] Bilateral pulmonary infection, three infected areas, upper middle left lung and upper lower right lung.
+[   3] Bilateral pulmonary infection, two infected areas, upper left lung and upper middle right lung.
+[   3] Bilateral pulmonary infection, three infected areas, middle lower left lung and upper middle lower right lung.
+[   3] Bilateral pulmonary infection, four infected areas, upper lower left lung and upper middle lower right lung.
+[   3] Bilateral pulmonary infection, three infected areas, middle left lung and lower right lung.
+[   3] Bilateral pulmonary infection, four infected areas, upper middle left lung and upper lower right lung.
+[   3] Bilateral pulmonary infection,two infected areas, all left and lower right lung.
+[   3] Bilateral pulmonary infection, two infected areas, middle lower left and lower right lung.
+[   3] Unilateral pulmonary infection, one infected areas,lower right lung.
+[   3] Bilateral pulmonary infection, two infected areas, left lung and right lung.
+[   3] Unilateral pulmonary infection, two infected areas, upper middle left lung.
+[   3] Bilateral pulmonary infection, two infected areas, middle left lung and upper middle right lung.
+[   2] Bilateral pulmonary infection, three infected areas, middle lower left lung and middle lower right lung.
+[   2] Unilateral pulmonary infection, two infected areas, lower right lung.
+[   2] Bilateral pulmonary infection, two infected areas, upper lower left lung and upper lower right lung.
+[   2] Bilateral pulmonary infection, three infected areas, all left lung and middle lower right lung.
+[   2] Bilateral pulmonary infection, four infected areas, all left lung and upper middle lower right lung.
+[   2] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and upper lower right lung.
+[   2] Bilateral pulmonary infection, two infected areas, upper lower right lung.
+[   2] Bilateral pulmonary infection, three infected areas, middle lower left lung and middle right lung.
+[   2] Unilateral pulmonary infection, two infected areas, middle right lung.
+[   2] Unilateral pulmonary infection, one infected area, middle right ung.
+[   2] Bilateral pulmonary infection, three infected areas, upper lower left lung and middle right lung.
+[   2] Unilateral pulmonary infection, two infected areas, lower left lung.
+[   2] Unilateral pulmonary infection, two infected areas, upper middle lower left lung.
+[   2] Unilateral pulmonary infection, oneinfected areas, lower left lung.
+[   2] Bilateral pulmonary infection, two infected areas, all lower left lung and all lower right lung.
+[   2] Bilateral pulmonary infection, three infected areas, upper middle left lung and middle right lung.
+[   2] Bilateral pulmonary infection, four infected areas, upper middle left lung and upper middle right lung.
+[   2] Bilateral pulmonary infection, three infected areas, lower left lung and upperlower right lung.
+[   2] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and upper right lung.
+[   2] Bilateral pulmonary infection, two infected areas, upper left lung and middle lower right lung.
+[   2] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and middle right lung.
+[   2] Bilateral pulmonary infection, three infected areas, middle left lung and middle lower right lung.
+[   2] Bilateral pulmonary infection, three infected areas, lower left lung and middle lower right lung.
+[   2] Bilateral pulmonary infection, two infected areas, all  left lung and lower right lung.
+[   2] Bilateral pulmonary infection, two infected areas, upper left lung and upper lower right lung.
+[   2] Unilateral pulmonary infection, one infected area, upper middle lower right lung.
+[   2] Bilateral pulmonary infection,two infected areas, middle lower left and lower right lung.
+[   2] Bilateral pulmonary infection,two infected areas, all left and all right lung.
+[   2] Bilateral pulmonary infection, two infected areas, upper left and all right lung.
+[   2] Unilateral pulmonary infection, one infected area,lower left lung.
+[   2] Bilateral pulmonary infection, three infected areas, upper lower left and lower right lung.
+[   2] Unilateral pulmonary infection, two infected areas, upper middle lower right lung.
+[   2] Bilateral pulmonary infection, two infected areas, lower left lung and lowerright lung.
+[   2] Unilateral pulmonary infection, one infected area, lower rightlung.
+[   2] Unilateral pulmonary infection, two infected areas, middle lower left lung.
+[   2] Bilateral pulmonary infection, two infected areas, middle lower left lung and upper middle right lung.
+[   1] Bilateral pulmonary infection, five infected areas, upper middle lower left lung and upper middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas,all left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas,all left lung and all right lung.
+[   1] Bilateral pulmonary infection, two infected areas,  middle lower left lung and all right lung.
+[   1] Bilateral pulmonary infection, six infected areas, upper middle lower left lung and upper middle lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and upper right lung.
+[   1] Bilateral pulmonary infection, four infected areas, all left lung and all right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper middle left lung and upper middle lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas,upper lower left lung and upper lower right lung.
+[   1] Unilateral pulmonary infection, one  infected areas, lower left lung.
+[   1] Bilateral pulmonary infection, two infected areas,  lower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower left lung and  lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower left lung and right lung.
+[   1] Bilateral pulmonary infection, three infected areas, all left lung and upper lower lung.
+[   1] Unilateral pulmonary infection, one infected area, lower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, higher left lung and lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper middlr lower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, all lower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, midldle left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper midldle left lung and lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, middle lower left lung and upper right lung.
+[   1] Unilateral pulmonary infection, one infected area, all left lung and all right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas, middle left lung and upper middle right lung.
+[   1] Bilateral pulmonary infection, five infected areas, upper lower left lung and upper lower right lung.
+[   1] Bilateral pulmonary infection, thrr infected areas, middle lower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, middle lower left lung and all right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper left lung and upper middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, all lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lwoer left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper middle left lung and upper lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper lower left lung and upper middle lowerl right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper middle  lower left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas, middle lower left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, middle left lung and upper middle lower right lung.
+[   1] Bilateral pulmonary infection, five infected areas, middle lower left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lowerl left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas, upper left lung and upper middle lower right lung.
+[   1] Bilateral pulmonary infection, one infected area, lower left lung.
+[   1] Unilateral pulmonary infection, one infected area, all left and upper middle left right lung.
+[   1] Bilateral pulmonary infection, two one infected area, lower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two one infected area, middle lower left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, two one infected area, all left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper lower  left lung and upper lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower left lung and lowoer right lung.
+[   1] Bilateral pulmonary infection, two infected areas, all left lung and alll right lung.
+[   1] Bilateral pulmonary infection, four infected areas, upper middle left lung and lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper lower left lung and upper middle right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper lower left lung and upperlower right lung.
+[   1] Unilateral pulmonary infection, two infected area, upper lower left lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper  left lung and upper lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and middle right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and upper midddle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, all left lung and middle upper right lung.
+[   1] Unilateral pulmonary infection, one infected area, upper middle right right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and ower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, higher middle left lung and higher middle lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas, higher middle lower  left lung and higher middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, all left lung and higher lower right lung.
+[   1] Unilateral pulmonary infection, one infected area, lower lift lung.
+[   1] Bilateral pulmonary infection, three infected areas, all left lung and upper middle lowerl right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper middle lower left lung and lowerl right lung.
+[   1] Bilateral pulmonary infection, five infected areas, upper middle lower left lung and upper lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas, lower left lung and upper middle lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, middle lower left lung and upper middle right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper lower left lung and upper middle lower right lung.
+[   1] Unilateral pulmonary infection,one infected area, lower left lung.
+[   1] Bilateral pulmonary infection, five infected areas, upper middle lower left lung and middle lower right lung.
+[   1] Unilateral pulmonary infection, one infected area, middle right left lung.
+[   1] Bilateral pulmonary infection, four infected areas, upper lower left lung and all right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle left lung.
+[   1] Bilateral pulmonary infection, two infected areas, all left lung and all lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower upper left lung and upper lower right lung.
+[   1] Bilateral pulmonary infection, threeinfected areas, lower left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper lower left lung and lower lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper lower left lung and upper middle right lung.
+[   1] Unilateral pulmonary infection, one infected area, upper midddle lower left lung.
+[   1] Unilateral pulmonary infection, one infected area, iddle left lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper middle lower left lung and upper middle lower  right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower left lung and lowerl right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lower left lung and lowerl right lung.
+[   1] Bilateral pulmonary infection,two infected areas,middle left and middle right lung.
+[   1] Unilateral pulmonary infection, one infected area, lower  right lung.
+[   1] Bilateral pulmonary infection,two infected areas,middle lower left and lower right lung.
+[   1] Bilateral pulmonary infection,two infected areas,all left and lower all lung.
+[   1] Bilateral pulmonary infection,three infected areas,all left and upper lower right lung.
+[   1] Bilateral pulmonary infection,three infected areas,all left and lower right lung.
+[   1] Bilateral pulmonary infection,two infected areas,lower left and all right lung.
+[   1] Bilateral pulmonary infection,two infected areas,upper middle lower left and upper right lung.
+[   1] Bilateral pulmonary infection,three infected areas,upper left and upper middle lower right lung.
+[   1] Unilateral pulmonary infection,one infected area, lower right lung.
+[   1] Unilateral pulmonary infection, two infected area, upper lower and right lung.
+[   1] Unilateral pulmonary infection, two infected area, lower left lung.
+[   1] Unilateral pulmonary infection, one infected area, left and right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper left and lower right lung.
+[   1] Bilateral pulmonary infection,three infected areas, all left and upper lower right lung.
+[   1] Bilateral pulmonary infection,two infected areas,all left and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower left and middle lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upper middle left and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle left and lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas, upper lower left lung and middle right lung.
+[   1] Bilateral pulmonary infection, three infected areas, lupper ower left lung and all right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper left lung andupper right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper lower lower left lung and all right lung.
+[   1] Unilateral pulmonary infection, one infected area, upper lower left lung.
+[   1] Unilateral pulmonary infection, one infected area,upper middle lower left lung.
+[   1] Bilateral pulmonary infection, two infected areas, middlelower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lower left lung and all  right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower ll left lung and all right lung.
+[   1] Bilateral pulmonary infection, two infected areas, all left lung and middle lowerright lung.
+[   1] Unilateral pulmonary infection, two infected area, upper lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, lower left lung and all lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, upperlower left lung and lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lower left lung and upper right lung.
+[   1] Unilateral pulmonary infection, one infected area, mddle right lung.
+[   1] Unilateral pulmonary infection, one infected area, middle lower leflung.
+[   1] Bilateral pulmonary infection, two infected areas, all left lung and all  right lung.
+[   1] Unilateral pulmonary infection, three infected areas, middle lower left lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lower ll left lung and middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper lower left lung and middle right lung.
+[   1] Unilateral pulmonary infection, two infected areas, middle lower right lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lower left lung and middle lower  right lung.
+[   1] Unilateral pulmonary infection, one infected area, middle lower  left lung.
+[   1] Unilateral pulmonary infection, one infected area, middle  left lung.
+[   1] Bilateral pulmonary infection, two infected areas, middle lower  left lung and lower right lung.
+[   1] Bilateral pulmonary infection, three infected areas, uooer middle left lung and middle right lung.
+[   1] Bilateral pulmonary infection, three infected areas, uppper lower left lung and upper right lung.
+[   1] Bilateral pulmonary infection, three infected areas, all left lung and lower right lung.
+[   1] Bilateral pulmonary infection, four infected areas, upper lower left lung and upper middle right lung.
+[   1] Bilateral pulmonary infection, two infected areas, upper middle left lung and middle right lung.
+[   1] Unilateral pulmonary infection, one infected area, all left lung
