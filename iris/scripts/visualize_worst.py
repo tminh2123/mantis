@@ -131,6 +131,86 @@ def main():
         plt.close()
         print(f"  [{i+1}/{len(worst)}] {filename}")
     
+    # Analyze left-right confusion
+    print("\n" + "="*60)
+    print("LEFT-RIGHT CONFUSION ANALYSIS")
+    print("="*60)
+    
+    n_confused = 0
+    confused_samples = []
+    
+    for i, r in enumerate(worst):
+        idx = r['idx']
+        sample = dataset[idx]
+        img = sample['image']
+        mask = sample['mask'].squeeze().numpy()
+        
+        # Get prediction
+        with torch.no_grad():
+            img_tensor = img.unsqueeze(0).to(device)
+            pred = model(img_tensor, [sample['text']])
+            if isinstance(pred, dict):
+                pred = pred['pred']
+            pred_mask = (torch.sigmoid(pred) > 0.5).float().cpu()[0, 0].numpy()
+        
+        # Calculate center of mass for GT and Prediction
+        h, w = mask.shape
+        mid_x = w // 2
+        
+        # GT: which side has more pixels?
+        gt_left = mask[:, :mid_x].sum()
+        gt_right = mask[:, mid_x:].sum()
+        gt_total = gt_left + gt_right
+        
+        # Pred: which side has more pixels?
+        pred_left = pred_mask[:, :mid_x].sum()
+        pred_right = pred_mask[:, mid_x:].sum()
+        pred_total = pred_left + pred_right
+        
+        if gt_total > 0 and pred_total > 0:
+            gt_side = 'left' if gt_left > gt_right else 'right'
+            pred_side = 'left' if pred_left > pred_right else 'right'
+            
+            # Check if confused (predict opposite side)
+            gt_ratio = max(gt_left, gt_right) / gt_total
+            pred_ratio = max(pred_left, pred_right) / pred_total
+            
+            # Only count if GT is clearly one-sided (>70%) and pred is opposite
+            if gt_ratio > 0.7 and pred_ratio > 0.7 and gt_side != pred_side:
+                n_confused += 1
+                confused_samples.append({
+                    'idx': idx,
+                    'dice': r['dice'],
+                    'text': r['text'],
+                    'image_id': r['image_id'],
+                    'gt_side': gt_side,
+                    'pred_side': pred_side,
+                    'gt_ratio': gt_ratio,
+                    'pred_ratio': pred_ratio,
+                })
+    
+    print(f"\nTotal samples < 50% Dice: {len(worst)}")
+    print(f"Left-right confused: {n_confused} ({n_confused/len(worst)*100:.1f}%)")
+    
+    if confused_samples:
+        print("\nConfused samples:")
+        for s in confused_samples:
+            print(f"  [{s['dice']*100:.1f}%] {s['image_id']}")
+            print(f"    GT: {s['gt_side']} ({s['gt_ratio']*100:.0f}%), Pred: {s['pred_side']} ({s['pred_ratio']*100:.0f}%)")
+            print(f"    Text: {s['text'][:60]}...")
+    
+    # Save analysis
+    analysis_path = output_dir / 'left_right_analysis.json'
+    analysis = {
+        'total_worst': len(worst),
+        'n_confused': n_confused,
+        'confused_ratio': n_confused / len(worst) if worst else 0,
+        'confused_samples': confused_samples,
+    }
+    with open(analysis_path, 'w') as f:
+        json.dump(analysis, f, indent=2)
+    print(f"\nAnalysis saved: {analysis_path}")
+    
     print(f"\nDone! Output: {output_dir}")
 
 
