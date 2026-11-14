@@ -133,7 +133,7 @@ class IRISDataset(Dataset):
         # Augmentation
         if self.augment:
             if random.random() > 0.5:
-                image, mask = self._random_rot_flip(image, mask)
+                image, mask, text = self._random_rot_flip(image, mask, text)
             if random.random() > 0.5:
                 image, mask = self._random_rotate(image, mask)
 
@@ -149,22 +149,38 @@ class IRISDataset(Dataset):
             'path': str(img_path)
         }
 
+    def _swap_left_right(self, text: str) -> str:
+        """Swap left/right in text when image is horizontally flipped."""
+        # Use placeholder to avoid double swap
+        text = text.replace('left', '__LEFT__').replace('right', '__RIGHT__')
+        text = text.replace('__LEFT__', 'right').replace('__RIGHT__', 'left')
+        return text
+
     def _random_rot_flip(
         self, 
         image: torch.Tensor, 
-        mask: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Random rotation by 0/90/180/270 + random flip."""
+        mask: torch.Tensor,
+        text: str
+    ) -> Tuple[torch.Tensor, torch.Tensor, str]:
+        """Random rotation by 0/90/180/270 + random flip with text adjustment."""
         k = random.randint(0, 3)
         image = torch.rot90(image, k, dims=[1, 2])
         mask = torch.rot90(mask, k, dims=[1, 2])
+        
+        # 90 or 270 degree rotation effectively swaps left/right
+        if k in [1, 3]:
+            text = self._swap_left_right(text)
 
         if random.random() > 0.5:
             axis = random.choice([1, 2])
             image = torch.flip(image, dims=[axis])
             mask = torch.flip(mask, dims=[axis])
+            
+            # Horizontal flip (axis=2) swaps left/right
+            if axis == 2:
+                text = self._swap_left_right(text)
         
-        return image, mask
+        return image, mask, text
 
     def _random_rotate(
         self, 
