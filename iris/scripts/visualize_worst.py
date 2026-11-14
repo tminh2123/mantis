@@ -180,13 +180,13 @@ def main():
                 n_confused += 1
                 confused_samples.append({
                     'idx': idx,
-                    'dice': r['dice'],
+                    'dice': float(r['dice']),
                     'text': r['text'],
                     'image_id': r['image_id'],
                     'gt_side': gt_side,
                     'pred_side': pred_side,
-                    'gt_ratio': gt_ratio,
-                    'pred_ratio': pred_ratio,
+                    'gt_ratio': float(gt_ratio),
+                    'pred_ratio': float(pred_ratio),
                 })
     
     print(f"\nTotal samples < 50% Dice: {len(worst)}")
