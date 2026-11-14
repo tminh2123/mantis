@@ -167,16 +167,14 @@ class IRISDataset(Dataset):
         image = torch.rot90(image, k, dims=[1, 2])
         mask = torch.rot90(mask, k, dims=[1, 2])
         
-        # 180 degree rotation swaps left/right
-        if k == 2:
-            text = self._swap_left_right(text)
+        # Rotation doesn't swap left/right (just rotates the whole image)
 
         if random.random() > 0.5:
             axis = random.choice([1, 2])
             image = torch.flip(image, dims=[axis])
             mask = torch.flip(mask, dims=[axis])
             
-            # Horizontal flip (axis=2) swaps left/right
+            # Only horizontal flip (axis=2) swaps left/right
             if axis == 2:
                 text = self._swap_left_right(text)
         
