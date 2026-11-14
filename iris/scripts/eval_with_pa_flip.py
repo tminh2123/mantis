@@ -30,9 +30,9 @@ from utils import load_config, get_device, compute_metrics_per_sample
 
 def is_pa_view(filename: str) -> bool:
     """Check if image is PA view based on filename."""
-    fname = filename.upper()
-    # QaTa naming: contains _PA_ or ends with PA before extension
-    return '_PA_' in fname or '_PA.' in fname
+    fname = filename.lower()
+    # QaTa naming: vp-pa or vp-ap in filename
+    return 'vp-pa' in fname or '_pa_' in fname
 
 
 @torch.no_grad()
