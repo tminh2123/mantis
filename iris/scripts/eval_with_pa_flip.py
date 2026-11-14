@@ -25,7 +25,27 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from models import build_iris
 from datasets import IRISDataset
-from utils import load_config, get_device, load_checkpoint, compute_metrics_per_sample
+from utils import load_config, get_device, compute_metrics_per_sample
+
+
+def infer_config_from_checkpoint(ckpt_path: str, base_cfg: dict) -> dict:
+    """Infer model config from checkpoint weights."""
+    ckpt = torch.load(ckpt_path, map_location='cpu')
+    state = ckpt['model']
+    
+    # Infer base_channel from out0.weight shape [1, base_channel, 1, 1]
+    if 'out0.weight' in state:
+        base_channel = state['out0.weight'].shape[1]
+        base_cfg['model']['base_channel'] = base_channel
+        print(f"Inferred base_channel: {base_channel}")
+    
+    # Check if model has attention (up0.att)
+    has_att = any('up0.att' in k for k in state.keys())
+    if has_att:
+        base_cfg['model']['decoder_attention'] = True
+        print("Inferred decoder_attention: True")
+    
+    return base_cfg, ckpt
 
 
 def is_pa_view(filename: str) -> bool:
@@ -197,20 +217,22 @@ def main():
         cfg['model']['expansion'] = args.expansion
     device = get_device()
     
-    # Build model
-    model = build_iris(cfg).to(device)
-    
-    # Load checkpoint
+    # Checkpoint path
     dataset = cfg['project']['dataset']
     exp_name = f"{dataset}_{args.tag}"
     ckpt_path = f"{args.output_dir}/checkpoints/{exp_name}/best.pth"
     
-    if Path(ckpt_path).exists():
-        load_checkpoint(ckpt_path, model)
-        print(f"Loaded checkpoint: {ckpt_path}")
-    else:
+    if not Path(ckpt_path).exists():
         print(f"ERROR: Checkpoint not found: {ckpt_path}")
         return
+    
+    # Infer config from checkpoint and load weights
+    cfg, ckpt = infer_config_from_checkpoint(ckpt_path, cfg)
+    
+    # Build model with inferred config
+    model = build_iris(cfg).to(device)
+    model.load_state_dict(ckpt['model'])
+    print(f"Loaded checkpoint: {ckpt_path}")
     
     # Load test dataset
     test_dataset = IRISDataset(
