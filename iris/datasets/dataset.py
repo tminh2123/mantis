@@ -167,8 +167,8 @@ class IRISDataset(Dataset):
         image = torch.rot90(image, k, dims=[1, 2])
         mask = torch.rot90(mask, k, dims=[1, 2])
         
-        # 90 or 270 degree rotation effectively swaps left/right
-        if k in [1, 3]:
+        # 180 degree rotation swaps left/right
+        if k == 2:
             text = self._swap_left_right(text)
 
         if random.random() > 0.5:
