@@ -130,19 +130,28 @@ def main():
     
     # Load checkpoint
     ckpt = torch.load(args.checkpoint, map_location=device)
-    state = ckpt.get('model_state_dict', ckpt)
     
     # Check what's in checkpoint
     print(f"\nCheckpoint keys: {list(ckpt.keys())}")
+    
+    # Get state dict - try different keys
+    if 'model_state_dict' in ckpt:
+        state = ckpt['model_state_dict']
+    elif 'model' in ckpt:
+        state = ckpt['model']
+    elif 'state_dict' in ckpt:
+        state = ckpt['state_dict']
+    else:
+        state = ckpt
     
     # Load with strict to see missing/unexpected keys
     missing, unexpected = model.load_state_dict(state, strict=False)
     print(f"Missing keys: {len(missing)}")
     if missing:
-        print(f"  First 10: {missing[:10]}")
+        print(f"  First 5: {missing[:5]}")
     print(f"Unexpected keys: {len(unexpected)}")
     if unexpected:
-        print(f"  First 10: {unexpected[:10]}")
+        print(f"  First 5: {unexpected[:5]}")
     
     print(f"Loaded: {args.checkpoint}")
     
