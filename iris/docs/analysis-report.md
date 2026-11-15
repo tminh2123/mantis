@@ -8,35 +8,6 @@
 
 ---
 
-## 1. Text Ablation Study
-
-Evaluating how much the model relies on text vs visual features.
-
-### Results
-
-| Text Condition | Dice | Std | Delta |
-|----------------|------|-----|-------|
-| Correct text | 84.61% | 16.68% | baseline |
-| Random text | 69.46% | 24.61% | -15.15% |
-| Fixed text ("pulmonary infection") | TBD | - | - |
-| Empty text | TBD | - | - |
-
-### Key Findings
-
-1. **Text IS important**: Random text drops 15% Dice
-   - Model genuinely uses text information, not just visual features
-   
-2. **Variance increases with wrong text**: Std 16.68% -> 24.61%
-   - Some samples are robust to text, others are not
-
-### Interpretation
-
-- ~15% of performance comes from text guidance
-- Improving text understanding has potential for gains
-- Focus areas: location words (left/right, upper/lower)
-
----
-
 ## 2. Dice Score Distribution
 
 ### Statistics
@@ -183,71 +154,6 @@ Checked if text labels match ground truth position:
 
 ---
 
-## 4. AP vs PA View Analysis
-
-### Background
-
-X-ray images can be taken in two views:
-- **AP (Anterior-Posterior)**: X-ray source in front, detector behind
-- **PA (Posterior-Anterior)**: X-ray source behind, detector in front
-
-PA images appear horizontally mirrored compared to AP - anatomical "left" appears on the right side of the image.
-
-### Dataset Distribution
-
-| Split | AP | PA | Unknown | Total |
-|-------|-----|-----|---------|-------|
-| Train | 2352 (41%) | 797 (14%) | 2567 (45%) | 5716 |
-| Val | 559 (39%) | 203 (14%) | 667 (47%) | 1429 |
-| Test | 1606 (76%) | 312 (15%) | 195 (9%) | 2113 |
-
-Note: "Unknown" are `covid_*.png` files without view metadata.
-
-### Performance by View (Test Set)
-
-| View | Samples | Mean Dice | Std | Worst Rate (<50%) |
-|------|---------|-----------|-----|-------------------|
-| AP | 1801 | 85.84% | 15.74% | 4.0% |
-| **PA** | 312 | **77.52%** | 19.87% | **9.3%** |
-
-**Key Finding**: PA view performs significantly worse - 8.3% lower Dice, more than double the worst rate!
-
-### Flip Experiment
-
-Hypothesis: If we flip PA images to AP orientation during inference, performance should improve.
-
-Result: **Flip made it worse** (-1.21% for PA)
-
-| Condition | PA Dice | PA Worst Rate |
-|-----------|---------|---------------|
-| Baseline | 77.52% | 9.3% |
-| With flip | 76.30% | 10.3% |
-
-**Interpretation**: PA is not simply a mirror of AP. The views have different characteristics:
-- Heart appears smaller in PA (further from detector)
-- Clavicles/ribs have different orientation
-- Lung field proportions differ
-
-### Root Cause Found: Augmentation Bug
-
-During training, horizontal flip augmentation flips the image but NOT the text.
-
-Example:
-- Original: Image shows infection in LEFT lung, text says "left lung"
-- After flip: Image shows infection in RIGHT lung, text still says "left lung"
-
-This creates text-image mismatch, confusing the model about left/right.
-
-**Fix implemented**: Swap "left" ↔ "right" in text when horizontal flip is applied.
-
-### Next Steps
-
-1. [x] Implement text flip fix in augmentation
-2. [ ] Retrain with fix: `fusion_h8_e4_textflip`
-3. [ ] Compare PA performance before/after fix
-
----
-
 ## 5. Attention Visualization
 
 ### Observations
@@ -272,41 +178,44 @@ This creates text-image mismatch, confusing the model about left/right.
 |--------|-------------|------|-------|
 | Baseline | 0 | 84.61% | - |
 | memory_m64 | 64 | 84.16% | -0.45% |
-| memory_m128 | 128 | TBD | - |
+| memory_m128 | 128 | 83.85% | - |
 
-Linear memory didn't help - may need different approach.
+Linear memory didn't help — may need different approach.
+
+#### Architecture Note
+
+`LinearMemoryAttention` implements a **read-write associative memory** between text and visual features, with O(N) complexity instead of standard O(N²) cross-attention.
+
+**Core idea**: thay vì mỗi visual token attend vào tất cả N text tokens (O(NP) matmul), text tokens trước tiên "write" kiến thức vào một memory matrix nhỏ M có kích thước `memory_size × visual_dim`, rồi visual tokens "read" từ M. Toàn bộ P visual tokens cùng đọc từ M duy nhất → không cần attention map P×N.
+
+**Write step** — text tokens nén vào memory M:
+```
+K = φ(W_k @ text)        # [B, N, memory_size]  — text keys
+V = W_v @ text            # [B, N, visual_dim]   — text values
+M = K^T @ V / K.sum(0)   # [B, memory_size, visual_dim]
+```
+Mỗi trong số `memory_size` slots của M là weighted average của text value vectors, với trọng số là feature map của text key tương ứng. Hiểu như: M slots = M "concepts" được rút trích từ text.
+
+**Read step** — visual tokens query memory:
+```
+Q = φ(W_q @ visual)   # [B, P, memory_size]  — visual queries
+O = Q @ M / Q.sum(-1) # [B, P, visual_dim]   — read output
+output = LayerNorm(visual + scale * proj(O))
+```
+Mỗi visual token đọc một combination của M slots, weighted bởi similarity với query. Không có softmax — dùng kernel approximation.
+
+**Feature map** `φ(x) = ELU(x) + 1`: đảm bảo keys/queries dương để linear attention stable (tránh denominator âm). `scale` learnable khởi tạo 0.1 — residual nhỏ để training ổn định ban đầu.
+
+**Tại sao không hiệu quả (+0, -0.45%)**:
+
+1. **Spatial info lost trong bottleneck**: Text tokens "bilateral infection upper left lung" viết vào M=64 slots theo cơ chế averaging. Thông tin vị trí ("upper", "left") bị pha loãng qua K^T @ V — M chỉ capture semantic concept, không preserve spatial specificity. Cross-attention thông thường vẫn giữ N=18 token riêng lẻ.
+
+2. **Memory capacity không đủ vs task complexity**: Với M=64 slots nhưng có nhiều loại text (bilateral/unilateral × upper/middle/lower × left/right × 1/2/3 areas ≈ 36+ combinations), mỗi slot phải represent nhiều pattern overlap nhau → thông tin mờ.
+
+3. **Write chỉ từ text, không từ visual**: M được build hoàn toàn từ text, không conditioned on visual input. Standard cross-attention: visual query attend vào text key — query adapts theo content ảnh. Ở đây: visual query attend vào memory đã fixed (không depend on image) → less dynamic.
+
+4. **ELU+1 feature map vs softmax**: Linear attention thường kém hơn softmax attention trên task yêu cầu "sharp" focus (segmentation boundary rất localised). `φ` tạo smooth, non-sparse attention — visual tokens đọc diffuse combination thay vì focus vào đúng text token ("left" hay "upper").
+
+**Potential fix**: Thay vì fixed M slots, dùng cross-attention nhưng giảm text token length (truncate sớm hơn, max_len=12 thay vì 18) → giảm memory mà giữ token-level granularity.
 
 ---
-
-## 7. Recommendations
-
-### Short-term
-
-1. **Increase max_token_len to 24**: Avoid truncation of complex texts
-2. **Clean text data**: Fix typos in training data
-3. **Text augmentation**: Paraphrase to increase diversity
-
-### Medium-term
-
-1. **Location-aware text encoding**: Add explicit position encoding for spatial words
-2. **Separate left/right embeddings**: Force model to distinguish laterality
-3. **Auxiliary task**: Predict location as classification head
-
-### Long-term
-
-1. **Try different dataset**: MosMedData+ may have better text quality
-2. **Spatial text grounding**: Pre-train on text-location pairs
-
----
-
-## 8. Next Steps
-
-1. [ ] Complete text ablation (fixed, empty)
-2. [ ] Retrain with text flip fix (`fusion_h8_e4_textflip`)
-3. [ ] Compare PA performance before/after fix
-4. [ ] Increase max_token_len and retrain
-5. [ ] Try explicit location encoding
-
----
-
-*Last updated: Based on exp/linear-memory branch experiments*

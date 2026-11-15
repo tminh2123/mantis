@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedLangViT — Presentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #0f0f10;
+           width: 100vw; height: 100vh; overflow: hidden; }
+
+    .deck { width: 100%; height: 100%; position: relative; }
+    .slide { position: absolute; inset: 0; display: none; flex-direction: column; background: #f5f5f5; }
+    .slide.active { display: flex; }
+
+    /* ── Slide 1 ── */
+    #slide-1 { padding: 44px 64px 100px; }
+
+    .slide-eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+                     letter-spacing: 0.18em; text-transform: uppercase; color: #4f5d75; margin-bottom: 6px; }
+    .slide-1-title { font-family: 'Instrument Serif', serif; font-size: 3rem; font-weight: 400;
+                     color: #2d3142; line-height: 1.1; margin-bottom: 12px; }
+    .slide-1-lead { font-size: 15px; color: #4f5d75; max-width: 760px;
+                    line-height: 1.6; margin-bottom: 40px; }
+
+    .gap-cards { display: grid; grid-template-columns: 1fr 1fr 1fr;
+                 gap: 24px; margin-bottom: 32px; align-items: start; }
+    .gap-card { background: #fff; border: 1px solid rgba(45,49,66,0.10);
+                border-radius: 10px; padding: 24px 24px 20px;
+                display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    .gap-card::before { content: ''; position: absolute; top: 0; left: 0;
+                        width: 4px; height: 100%; border-radius: 10px 0 0 10px; }
+    .gap-card.card-1::before { background: #bf4520; }
+    .gap-card.card-2::before { background: #3b6ea5; }
+    .gap-card.card-3::before { background: #b8860b; }
+
+    .card-num { font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600;
+                color: #bfc0c0; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .card-title { font-size: 15px; font-weight: 600; color: #2d3142; margin-bottom: 10px; line-height: 1.3; }
+    .card-body { font-size: 13px; color: #4f5d75; line-height: 1.65; }
+    .card-body strong { color: #2d3142; }
+    .card-body em { color: #5a6580; }
+    .card-insight { margin-top: 12px; padding: 7px 12px; border-radius: 6px;
+                    font-family: 'Geist Mono', monospace; font-size: 11px; }
+    .card-1 .card-insight { background: rgba(191,69,32,0.07); color: #bf4520; }
+    .card-2 .card-insight { background: rgba(59,110,165,0.07); color: #3b6ea5; }
+    .card-3 .card-insight { background: rgba(184,134,11,0.07); color: #b8860b; }
+
+    .solution-box { background: #2d3142; border-radius: 10px;
+                    padding: 18px 28px; display: flex; align-items: center; gap: 24px; }
+    .solution-label { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600;
+                      letter-spacing: 0.14em; color: #bfc0c0; text-transform: uppercase; white-space: nowrap; }
+    .solution-text { font-size: 14px; color: #f5f5f5; line-height: 1.6; }
+    .solution-text strong { color: #f08a59; }
+
+    /* ── Iframe slides ── */
+    .slide-iframe-wrap { flex: 1; overflow: hidden; position: relative; }
+    .slide-iframe-wrap iframe { border: none; transform-origin: top left; display: block; }
+    .slide-header { padding: 12px 32px 10px; background: #f5f5f5;
+                    border-bottom: 1px solid rgba(45,49,66,0.08);
+                    display: flex; align-items: baseline; gap: 12px; }
+    .slide-header-eyebrow { font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 500;
+                             letter-spacing: 0.18em; text-transform: uppercase; color: #bfc0c0; }
+    .slide-header-title { font-family: 'Instrument Serif', serif; font-size: 1.3rem;
+                          font-weight: 400; color: #2d3142; }
+    .slide-header-note { font-size: 12px; color: #4f5d75; margin-left: auto;
+                         font-family: 'Geist Mono', monospace; }
+
+    /* ── Nav ── */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 56px;
+               background: rgba(15,15,16,0.92); backdrop-filter: blur(8px);
+               display: flex; align-items: center; justify-content: space-between;
+               padding: 0 32px; z-index: 999; }
+    .nav-title { font-family: 'Geist Mono', monospace; font-size: 11px;
+                 color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
+    .nav-controls { display: flex; align-items: center; gap: 12px; }
+    .nav-dots { display: flex; gap: 6px; }
+    .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); cursor: pointer; transition: background 0.2s; }
+    .nav-dot.active { background: #f5f5f5; }
+    .nav-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+               color: #f5f5f5; border-radius: 6px; width: 36px; height: 36px;
+               display: flex; align-items: center; justify-content: center;
+               cursor: pointer; font-size: 16px; transition: background 0.15s; }
+    .nav-btn:hover { background: rgba(255,255,255,0.14); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .nav-hint { font-family: 'Geist Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.25); }
+  </style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ═══════════ SLIDE 1: Research Gap ═══════════ -->
+  <div class="slide active" id="slide-1">
+    <p class="slide-eyebrow">MedLangViT · 2025 · Electronics</p>
+    <h1 class="slide-1-title">Double U-Shape Language–Vision<br>Network for Medical Segmentation</h1>
+    <p class="slide-1-lead">
+      Language-guided segmentation hiện tại còn nhiều hạn chế trong cách <strong>encode text</strong>
+      và <strong>fuse text–image</strong>. MedLangViT giải quyết 3 vấn đề cơ bản.
+    </p>
+
+    <div class="gap-cards">
+
+      <div class="gap-card card-1">
+        <div class="card-num">01 / TEXT ENCODER</div>
+        <div class="card-title">Lightweight text embeddings</div>
+        <div class="card-body">
+          Thay vì dùng full text encoder, MedLangViT dùng <strong>frozen BioBERT + adapter nhỏ</strong>
+          (projection layers) — gọi là <em>BioBERT-Embed</em>.
+          <br><br>
+          Frozen weights giữ nguyên domain knowledge, adapter điều chỉnh không gian embedding
+          cho task segmentation. Nhẹ hơn nhiều so với train toàn bộ encoder.
+        </div>
+        <div class="card-insight">→ Domain knowledge + computational efficiency</div>
+      </div>
+
+      <div class="gap-card card-2">
+        <div class="card-num">02 / WHY BIOBERT</div>
+        <div class="card-title">Medical-aware text understanding</div>
+        <div class="card-body">
+          BERT generic không hiểu thuật ngữ y tế: <em>"bilateral pulmonary infection"</em>,
+          <em>"ground-glass opacity"</em>, <em>"upper right lobe"</em> gần như vô nghĩa với BERT thường.
+          <br><br>
+          BioBERT pretrain trên PubMed + PMC → <strong>hiểu sâu ngữ cảnh y tế</strong>
+          mà không cần train lại từ đầu.
+        </div>
+        <div class="card-insight">→ Rich medical semantics from pretraining</div>
+      </div>
+
+      <div class="gap-card card-3">
+        <div class="card-num">03 / FUSION PROBLEM</div>
+        <div class="card-title">CBAM / LViT chưa phù hợp ảnh y tế</div>
+        <div class="card-body">
+          <strong>CBAM:</strong> channel attention dùng global pooling → mất local detail;
+          không capture được biên mờ đặc thù ảnh y tế.
+          <br><br>
+          <strong>LViT-style:</strong> fuse text–image sớm ở encoder → nhòe đặc trưng
+          vốn đã yếu tại biên tổn thương; thêm khối lớn → cồng kềnh.
+        </div>
+        <div class="card-insight">→ Cần fusion muộn + local-aware + lightweight</div>
+      </div>
+
+    </div>
+
+    <div class="solution-box">
+      <div class="solution-label">MedLang<br>ViT</div>
+      <div class="solution-text">
+        Double U-Shape: CNN encoder giữ spatial detail, ViT branch inject text ở mọi scale.
+        <strong>ECSAM</strong> (Enhanced Channel-Spatial Attention) fuse text–image tại skip connections
+        bằng self-attention động — không global pooling, không fuse sớm, nhẹ và multi-scale.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 2: Architecture ═══════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-header">
+      <span class="slide-header-eyebrow">Architecture</span>
+      <span class="slide-header-title">MedLangViT — Double U-Shape with ECSAM Skip Connections</span>
+      <span class="slide-header-note">DownCNN + DownViT encoders · UpViT + UpCNN decoders · ECSAM at skip</span>
+    </div>
+    <div class="slide-iframe-wrap" id="wrap-2">
+      <iframe id="frame-2" src="medlangvit-architecture.html"></iframe>
+    </div>
+  </div>
+
+  <!-- ═══════════ SLIDE 3: ECSAM ═══════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-header">
+      <span class="slide-header-eyebrow">Module Detail</span>
+      <span class="slide-header-title">ECSAM — Enhanced Channel-Spatial Attention Module</span>
+      <span class="slide-header-note">Channel self-attention (dynamic) + SAM spatial (= CBAM) + γ residual</span>
+    </div>
+    <div class="slide-iframe-wrap" id="wrap-3">
+      <iframe id="frame-3" src="ecsam-module-detail.html"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════ NAV BAR ═══════════ -->
+<div class="nav-bar">
+  <div class="nav-title">MEDLANGVIT · PRESENTATION</div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="btn-prev" onclick="go(-1)">←</button>
+    <div class="nav-dots">
+      <div class="nav-dot active" onclick="go(0, true)"></div>
+      <div class="nav-dot" onclick="go(1, true)"></div>
+      <div class="nav-dot" onclick="go(2, true)"></div>
+    </div>
+    <button class="nav-btn" id="btn-next" onclick="go(1)">→</button>
+  </div>
+  <div class="nav-hint">← → or click dots</div>
+</div>
+
+<script>
+  let cur = 0;
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.nav-dot');
+  const total  = slides.length;
+
+  function scaleIframe(wrapId, frameId) {
+    const wrap  = document.getElementById(wrapId);
+    const frame = document.getElementById(frameId);
+    if (!wrap || !frame) return;
+    const W = wrap.clientWidth;
+    const H = wrap.clientHeight;
+    const contentW = 1200;
+    const scale = Math.min(W / contentW, H / 700);
+    frame.style.width  = contentW + 'px';
+    frame.style.height = Math.ceil(H / scale) + 'px';
+    frame.style.transform = `scale(${scale})`;
+  }
+
+  function show(n) {
+    slides[cur].classList.remove('active');
+    dots[cur].classList.remove('active');
+    cur = (n + total) % total;
+    slides[cur].classList.add('active');
+    dots[cur].classList.add('active');
+    document.getElementById('btn-prev').disabled = cur === 0;
+    document.getElementById('btn-next').disabled = cur === total - 1;
+    if (cur === 1) scaleIframe('wrap-2', 'frame-2');
+    if (cur === 2) scaleIframe('wrap-3', 'frame-3');
+  }
+
+  function go(delta, absolute) { show(absolute ? delta : cur + delta); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'Space') go(1);
+    if (e.key === 'ArrowLeft') go(-1);
+  });
+
+  document.getElementById('btn-prev').disabled = true;
+  window.addEventListener('resize', () => {
+    if (cur === 1) scaleIframe('wrap-2', 'frame-2');
+    if (cur === 2) scaleIframe('wrap-3', 'frame-3');
+  });
+</script>
+</body>
+</html>

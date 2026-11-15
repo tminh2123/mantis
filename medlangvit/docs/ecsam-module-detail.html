@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECSAM — Enhanced Channel-Spatial Attention Module</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #f5f5f5; padding: 48px 24px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #4f5d75; margin-bottom: 8px; }
+    h1 { font-family: 'Instrument Serif', serif; font-size: 2rem; font-weight: 400; color: #2d3142; margin-bottom: 8px; }
+    .subtitle { color: #4f5d75; font-size: 14px; margin-bottom: 32px; }
+    .diagram-wrapper { overflow-x: auto; }
+    svg { display: block; width: 100%; height: auto; }
+    .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
+    .step-card { background: #fff; border: 1px solid rgba(45,49,66,0.10); border-radius: 10px; padding: 18px 20px; }
+    .step-num { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 5px; }
+    .step-title { font-size: 14px; font-weight: 600; color: #2d3142; margin-bottom: 7px; }
+    .step-body { font-size: 13px; color: #4f5d75; line-height: 1.6; }
+    .formula { font-family: 'Geist Mono', monospace; font-size: 11.5px; background: rgba(45,49,66,0.05); border-radius: 6px; padding: 8px 12px; margin-top: 8px; color: #2d3142; line-height: 1.6; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 7px; margin-bottom: 5px; }
+    .tag-new { background: rgba(184,134,11,0.12); color: #b8860b; }
+    .tag-same { background: rgba(59,110,165,0.10); color: #3b6ea5; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <p class="eyebrow">MedLangViT — Module Detail</p>
+  <h1>ECSAM — Enhanced Channel-Spatial Attention</h1>
+  <p class="subtitle">Input X ∈ ℝ^{B×C×H×W} = DownCNN features + Reconstructed UpViT features (element-wise add)</p>
+
+  <div class="diagram-wrapper">
+  <svg viewBox="0 0 1100 310" role="img">
+    <defs>
+      <marker id="a"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4f5d75"/></marker>
+      <marker id="ab" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#b8860b"/></marker>
+      <marker id="ag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#6b8e23"/></marker>
+      <marker id="av" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3b6ea5"/></marker>
+    </defs>
+    <rect width="100%" height="100%" fill="#f5f5f5"/>
+
+    <!-- ===================== SECTION LABELS ===================== -->
+    <!-- Section 1: Channel Self-Attention (ECSAM innovation) -->
+    <rect x="150" y="12" width="490" height="16" rx="3" fill="rgba(184,134,11,0.08)" stroke="rgba(184,134,11,0.25)" stroke-width="0.8"/>
+    <text x="395" y="23" fill="#b8860b" font-size="8" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">① Channel Self-Attention — ECSAM innovation (replaces SE's global pooling)</text>
+
+    <!-- Section 2: SAM (same as CBAM) -->
+    <rect x="655" y="12" width="195" height="16" rx="3" fill="rgba(59,110,165,0.08)" stroke="rgba(59,110,165,0.25)" stroke-width="0.8"/>
+    <text x="752" y="23" fill="#3b6ea5" font-size="8" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">② SAM — identical to CBAM spatial</text>
+
+    <!-- Section 3: Residual -->
+    <rect x="865" y="12" width="90" height="16" rx="3" fill="rgba(45,49,66,0.06)" stroke="rgba(45,49,66,0.20)" stroke-width="0.8"/>
+    <text x="910" y="23" fill="#4f5d75" font-size="8" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">③ Residual</text>
+
+    <!-- ===================== MAIN FLOW (y=100 center) ===================== -->
+
+    <!-- INPUT X -->
+    <rect x="20" y="80" width="85" height="40" rx="5" fill="rgba(45,49,66,0.07)" stroke="rgba(45,49,66,0.30)" stroke-width="1.2"/>
+    <text x="62" y="98" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">Input X</text>
+    <text x="62" y="110" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">B×C×H×W</text>
+
+    <!-- X → fork point -->
+    <line x1="105" y1="100" x2="122" y2="100" stroke="#4f5d75" stroke-width="1" marker-end="url(#a)"/>
+    <!-- fork up to QK Conv -->
+    <line x1="122" y1="100" x2="122" y2="78" stroke="#4f5d75" stroke-width="1"/>
+    <line x1="122" y1="78" x2="142" y2="78" stroke="#4f5d75" stroke-width="1" marker-end="url(#ab)"/>
+    <!-- fork down to V Conv -->
+    <line x1="122" y1="100" x2="122" y2="200" stroke="#3b6ea5" stroke-width="1"/>
+    <line x1="122" y1="200" x2="142" y2="200" stroke="#3b6ea5" stroke-width="1" marker-end="url(#av)"/>
+
+    <!-- ============ TOP PATH: Channel Attention ============ -->
+
+    <!-- Shared QK Conv -->
+    <rect x="142" y="58" width="105" height="40" rx="5" fill="rgba(184,134,11,0.12)" stroke="#b8860b" stroke-width="1.2"/>
+    <text x="194" y="74" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">Shared QK Conv</text>
+    <text x="194" y="85" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">Conv1×1→BN→ReLU</text>
+    <text x="194" y="95" fill="#b8860b" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">split → Q, K ∈ C/r</text>
+
+    <line x1="247" y1="78" x2="265" y2="78" stroke="#b8860b" stroke-width="1" marker-end="url(#ab)"/>
+
+    <!-- Q⊗K -->
+    <rect x="265" y="58" width="80" height="40" rx="5" fill="rgba(184,134,11,0.08)" stroke="#b8860b" stroke-width="1"/>
+    <text x="305" y="74" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">Q ⊗ K</text>
+    <text x="305" y="85" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">Channel Energy</text>
+    <text x="305" y="95" fill="#4f5d75" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">B×C/r × C/r</text>
+
+    <line x1="345" y1="78" x2="363" y2="78" stroke="#b8860b" stroke-width="1" marker-end="url(#ab)"/>
+
+    <!-- Softmax -->
+    <rect x="363" y="58" width="68" height="40" rx="5" fill="rgba(184,134,11,0.08)" stroke="#b8860b" stroke-width="1"/>
+    <text x="397" y="74" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">Softmax</text>
+    <text x="397" y="85" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">Attention A</text>
+    <text x="397" y="95" fill="#b8860b" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">B×C/r × C/r</text>
+
+    <line x1="431" y1="78" x2="449" y2="78" stroke="#b8860b" stroke-width="1" marker-end="url(#ab)"/>
+
+    <!-- A⊗V circle -->
+    <circle cx="462" cy="78" r="13" fill="#fff" stroke="#b8860b" stroke-width="1.3"/>
+    <text x="462" y="82" fill="#b8860b" font-size="11" font-weight="700" font-family="'Geist',sans-serif" text-anchor="middle">⊗</text>
+    <text x="462" y="55" fill="#b8860b" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">A ⊗ V</text>
+
+    <!-- V from bottom path: goes right at y=200 to x=462, then up to ⊗ -->
+    <line x1="247" y1="200" x2="462" y2="200" stroke="#3b6ea5" stroke-width="1"/>
+    <line x1="462" y1="200" x2="462" y2="91" stroke="#3b6ea5" stroke-width="1" marker-end="url(#av)"/>
+    <text x="467" y="155" fill="#3b6ea5" font-size="7" font-family="'Geist Mono',monospace">V</text>
+
+    <line x1="475" y1="78" x2="493" y2="78" stroke="#b8860b" stroke-width="1" marker-end="url(#ab)"/>
+
+    <!-- GroupConv restore C -->
+    <rect x="493" y="58" width="105" height="40" rx="5" fill="rgba(184,134,11,0.08)" stroke="#b8860b" stroke-width="1"/>
+    <text x="545" y="72" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">GroupConv+BN</text>
+    <text x="545" y="83" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">C/r → C (restore dim)</text>
+    <text x="545" y="93" fill="#b8860b" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">V' ∈ B×C×H×W</text>
+
+    <line x1="598" y1="78" x2="618" y2="78" stroke="#b8860b" stroke-width="1" marker-end="url(#ab)"/>
+
+    <!-- V' fork: right to ⊙, down to SAM -->
+    <!-- right to ⊙ at x=760 -->
+    <line x1="618" y1="78" x2="618" y2="78" stroke="#b8860b" stroke-width="0"/>
+    <!-- down from V' to SAM -->
+    <line x1="618" y1="98" x2="618" y2="178" stroke="#b8860b" stroke-width="1"/>
+    <line x1="618" y1="178" x2="635" y2="178" stroke="#b8860b" stroke-width="1" marker-end="url(#ab)"/>
+    <!-- V' continues right to ⊙ -->
+    <line x1="618" y1="78" x2="740" y2="78" stroke="#b8860b" stroke-width="1" marker-end="url(#ab)"/>
+    <!-- V' label fork indicator -->
+    <circle cx="618" cy="78" r="3" fill="#b8860b"/>
+
+    <!-- ============ BOTTOM PATH: V Conv ============ -->
+    <rect x="142" y="180" width="105" height="40" rx="5" fill="rgba(59,110,165,0.10)" stroke="#3b6ea5" stroke-width="1.2"/>
+    <text x="194" y="197" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">V Conv</text>
+    <text x="194" y="208" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">Conv1×1→BN→ReLU</text>
+    <text x="194" y="218" fill="#3b6ea5" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">V ∈ B×C/r×HW</text>
+
+    <!-- ============ SAM block (same as CBAM spatial) ============ -->
+    <rect x="635" y="158" width="150" height="40" rx="5" fill="rgba(59,110,165,0.08)" stroke="#3b6ea5" stroke-width="1.2"/>
+    <text x="710" y="174" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">SAM (= CBAM spatial)</text>
+    <text x="710" y="185" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">AvgPool+MaxPool→concat</text>
+    <text x="710" y="195" fill="#3b6ea5" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">→ Convk×k → sigmoid → S</text>
+
+    <!-- SAM → up to ⊙ at (753,78) -->
+    <line x1="785" y1="158" x2="785" y2="91" stroke="#3b6ea5" stroke-width="1" marker-end="url(#av)"/>
+    <text x="789" y="130" fill="#3b6ea5" font-size="7" font-family="'Geist Mono',monospace">S</text>
+
+    <!-- ============ ⊙ spatial multiply ============ -->
+    <circle cx="753" cy="78" r="13" fill="#fff" stroke="#3b6ea5" stroke-width="1.3"/>
+    <text x="753" y="82" fill="#3b6ea5" font-size="11" font-weight="700" font-family="'Geist',sans-serif" text-anchor="middle">⊙</text>
+    <text x="753" y="55" fill="#3b6ea5" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">V' ⊙ S = X'</text>
+
+    <line x1="766" y1="78" x2="800" y2="78" stroke="#4f5d75" stroke-width="1" marker-end="url(#a)"/>
+
+    <!-- ============ γ scale ============ -->
+    <rect x="800" y="58" width="68" height="40" rx="5" fill="rgba(107,142,35,0.08)" stroke="#6b8e23" stroke-width="1"/>
+    <text x="834" y="74" fill="#2d3142" font-size="8.5" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">γ · X'</text>
+    <text x="834" y="84" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">learnable scale</text>
+    <text x="834" y="94" fill="#6b8e23" font-size="6" font-family="'Geist Mono',monospace" text-anchor="middle">init γ = 0</text>
+
+    <line x1="868" y1="78" x2="886" y2="78" stroke="#4f5d75" stroke-width="1" marker-end="url(#a)"/>
+
+    <!-- ============ Residual + ============ -->
+    <circle cx="899" cy="78" r="13" fill="#fff" stroke="#4f5d75" stroke-width="1.5"/>
+    <text x="899" y="82" fill="#4f5d75" font-size="11" font-weight="700" font-family="'Geist',sans-serif" text-anchor="middle">+</text>
+
+    <!-- Input X → residual path: down to y=255 → right → up to + -->
+    <path d="M 62,120 L 62,255 L 899,255 L 899,91" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#a)"/>
+    <text x="480" y="270" fill="#4f5d75" font-size="7" font-family="'Geist Mono',monospace" text-anchor="middle">residual X  (γ=0 at init → output = X initially, attention grows gradually)</text>
+
+    <line x1="912" y1="78" x2="930" y2="78" stroke="#4f5d75" stroke-width="1" marker-end="url(#a)"/>
+
+    <!-- ============ OUTPUT O ============ -->
+    <rect x="930" y="58" width="90" height="40" rx="5" fill="rgba(45,49,66,0.07)" stroke="rgba(45,49,66,0.30)" stroke-width="1.2"/>
+    <text x="975" y="74" fill="#2d3142" font-size="9" font-weight="600" font-family="'Geist',sans-serif" text-anchor="middle">Output O</text>
+    <text x="975" y="85" fill="#4f5d75" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">B×C×H×W</text>
+    <text x="975" y="95" fill="#b8860b" font-size="6.5" font-family="'Geist Mono',monospace" text-anchor="middle">O = γ·X' + X</text>
+
+  </svg>
+  </div>
+
+  <!-- ============ STEP CARDS ============ -->
+  <div class="steps">
+
+    <div class="step-card">
+      <div class="tag tag-new">ECSAM INNOVATION</div>
+      <div class="step-title">① Channel Self-Attention</div>
+      <div class="step-body">
+        <strong>Shared QK projection</strong> — 1 Conv 1×1 tạo cả Q và K, giảm params so với 2 conv riêng.
+        Sau đó V từ conv riêng. Dot-product Q⊗K tạo <em>channel correlation matrix</em>, normalize bằng softmax.
+        Áp dụng lên V → V'_low, rồi GroupConv restore về C channels → <strong>V'</strong>.
+        <div class="formula">A = softmax(Q ⊗ K)
+V'_low = A ⊗ V  →  V' = GroupConv(V'_low)
+V' ∈ ℝ^{B×C×H×W}</div>
+        <div style="font-size:12px;color:#b8860b;margin-top:8px;">
+          Khác SE Block: SE dùng GlobalAvgPool tĩnh. ECSAM dùng self-attention học dynamic relationships giữa channels.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="tag tag-same">GIỐNG CBAM SPATIAL</div>
+      <div class="step-title">② Spatial Attention — SAM</div>
+      <div class="step-body">
+        Cơ chế <strong>y hệt spatial attention của CBAM</strong>. AvgPool và MaxPool trên chiều channel của V', concat thành 2×H×W,
+        qua Conv k×k → sigmoid → spatial mask S ∈ [0,1].
+        <div class="formula">avg = AvgPool(V'),  max = MaxPool(V')
+S = σ(Convk×k(concat(avg, max)))
+X' = V' ⊙ S</div>
+        <div style="font-size:12px;color:#3b6ea5;margin-top:8px;">
+          Điểm khác so với CBAM: SAM nhận V' từ <em>self-attention channel</em> (dynamic) thay vì V' từ SE-style channel attention (static). Input tốt hơn → output spatial mask tốt hơn.
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="tag tag-new">DESIGN CHOICE</div>
+      <div class="step-title">③ Learnable γ Residual</div>
+      <div class="step-body">
+        γ ∈ ℝ^{1×C×1×1} là per-channel scale, <strong>khởi tạo = 0</strong>.
+        Lúc đầu training, output = X (identity). γ dần học mức đóng góp của attention.
+        Giúp training ổn định, tránh attention gây nhiễu ngay từ đầu.
+        <div class="formula">O = γ ⊙ X' + X
+γ init = 0  →  O = X at start</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">COMPARISON</div>
+      <div class="step-title">ECSAM vs SE Block vs CBAM</div>
+      <div class="step-body">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <tr style="color:#2d3142;font-weight:600;">
+            <td style="padding:4px 6px;border-bottom:1px solid #eee;"></td>
+            <td style="padding:4px 6px;border-bottom:1px solid #eee;">Channel Attn</td>
+            <td style="padding:4px 6px;border-bottom:1px solid #eee;">Spatial Attn</td>
+            <td style="padding:4px 6px;border-bottom:1px solid #eee;">Residual</td>
+          </tr>
+          <tr style="color:#4f5d75;">
+            <td style="padding:4px 6px;font-weight:600;">SE</td>
+            <td style="padding:4px 6px;">GlobalPool+FC<br><em>static</em></td>
+            <td style="padding:4px 6px;color:#aaa;">None</td>
+            <td style="padding:4px 6px;color:#aaa;">No</td>
+          </tr>
+          <tr style="color:#4f5d75;">
+            <td style="padding:4px 6px;font-weight:600;">CBAM</td>
+            <td style="padding:4px 6px;">MaxPool+AvgPool+MLP<br><em>semi-static</em></td>
+            <td style="padding:4px 6px;">SAM<br><em>same as below</em></td>
+            <td style="padding:4px 6px;color:#aaa;">No</td>
+          </tr>
+          <tr style="color:#b8860b;font-weight:600;">
+            <td style="padding:4px 6px;">ECSAM</td>
+            <td style="padding:4px 6px;">Self-Attention Q⊗K<br><span style="font-weight:400;color:#4f5d75;font-size:11px;">dynamic, shared QK</span></td>
+            <td style="padding:4px 6px;">SAM (=CBAM)<br><span style="font-weight:400;color:#3b6ea5;font-size:11px;">same mechanism</span></td>
+            <td style="padding:4px 6px;">γ·X'+X<br><span style="font-weight:400;color:#4f5d75;font-size:11px;">learnable, init=0</span></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

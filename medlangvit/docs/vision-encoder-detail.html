@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vision Encoder - Detail</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 48px;
+      max-width: 1000px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 28px;
+    }
+    .zone-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .component-label {
+      font-size: 11px;
+      font-weight: 600;
+      fill: #1a1a2e;
+    }
+    .component-sublabel {
+      font-size: 9px;
+      fill: #6b7280;
+    }
+    .dim-label {
+      font-size: 8px;
+      fill: #9ca3af;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Vision Encoder (ResNet-50)</h1>
+    <p class="subtitle">Multi-Scale Feature Extraction with Residual Learning</p>
+    
+    <svg width="900" height="520" viewBox="0 0 900 520">
+      <defs>
+        <linearGradient id="convGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.15"/>
+          <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.08"/>
+        </linearGradient>
+        <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af"/>
+        </marker>
+        <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1"/>
+        </marker>
+      </defs>
+      
+      <!-- ============ Input ============ -->
+      <rect x="30" y="200" width="100" height="100" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+      <text x="80" y="245" text-anchor="middle" class="component-label">Input</text>
+      <text x="80" y="262" text-anchor="middle" class="component-sublabel">Image</text>
+      <text x="80" y="315" text-anchor="middle" class="dim-label">224×224×3</text>
+      
+      <!-- ============ Stage 0: Stem ============ -->
+      <rect x="160" y="40" width="120" height="420" rx="12" fill="url(#convGrad)" stroke="#6366f1" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="180" y="65" class="zone-label" fill="#6366f1">Stem</text>
+      
+      <rect x="175" y="85" width="90" height="50" rx="5" fill="#e0e7ff" stroke="#818cf8" stroke-width="1"/>
+      <text x="220" y="107" text-anchor="middle" class="component-label">Conv 7×7</text>
+      <text x="220" y="122" text-anchor="middle" class="component-sublabel">stride=2, 64</text>
+      
+      <rect x="175" y="150" width="90" height="35" rx="5" fill="#c7d2fe" stroke="#6366f1" stroke-width="1"/>
+      <text x="220" y="173" text-anchor="middle" class="component-sublabel">BatchNorm</text>
+      
+      <rect x="175" y="200" width="90" height="35" rx="5" fill="#a5b4fc" stroke="#6366f1" stroke-width="1"/>
+      <text x="220" y="223" text-anchor="middle" class="component-sublabel">ReLU</text>
+      
+      <rect x="175" y="250" width="90" height="50" rx="5" fill="#818cf8" stroke="#6366f1" stroke-width="1.2"/>
+      <text x="220" y="272" text-anchor="middle" class="component-label" fill="white">MaxPool</text>
+      <text x="220" y="287" text-anchor="middle" class="component-sublabel" fill="#e0e7ff">3×3, s=2</text>
+      
+      <!-- Output f0 -->
+      <rect x="175" y="320" width="90" height="40" rx="5" fill="#6366f1" stroke="#4f46e5" stroke-width="1.5"/>
+      <text x="220" y="345" text-anchor="middle" class="component-label" fill="white">f₀</text>
+      <text x="220" y="375" text-anchor="middle" class="dim-label">56×56×64</text>
+      
+      <!-- Arrows stem -->
+      <path d="M130 250 L175 250 L175 110" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      <path d="M220 135 L220 150" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      <path d="M220 185 L220 200" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      <path d="M220 235 L220 250" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      <path d="M220 300 L220 320" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      
+      <!-- ============ Stage 1 ============ -->
+      <rect x="310" y="40" width="120" height="200" rx="12" fill="url(#convGrad)" stroke="#6366f1" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="330" y="65" class="zone-label" fill="#6366f1">Stage 1</text>
+      
+      <!-- Bottleneck blocks -->
+      <g transform="translate(325, 85)">
+        <rect x="0" y="0" width="90" height="55" rx="5" fill="#e0e7ff" stroke="#818cf8" stroke-width="1"/>
+        <text x="45" y="20" text-anchor="middle" class="component-sublabel">Bottleneck</text>
+        <text x="45" y="35" text-anchor="middle" class="dim-label">1×1→3×3→1×1</text>
+        <text x="45" y="48" text-anchor="middle" class="dim-label">×3 blocks</text>
+      </g>
+      
+      <!-- Output f1 -->
+      <rect x="325" y="160" width="90" height="40" rx="5" fill="#818cf8" stroke="#6366f1" stroke-width="1.5"/>
+      <text x="370" y="185" text-anchor="middle" class="component-label" fill="white">f₁</text>
+      <text x="370" y="215" text-anchor="middle" class="dim-label">56×56×256</text>
+      
+      <!-- Arrow to stage 1 -->
+      <path d="M265 340 L295 340 L295 112 L325 112" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arrowBlue)"/>
+      <path d="M370 140 L370 160" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      
+      <!-- ============ Stage 2 ============ -->
+      <rect x="460" y="40" width="120" height="200" rx="12" fill="url(#convGrad)" stroke="#6366f1" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="480" y="65" class="zone-label" fill="#6366f1">Stage 2</text>
+      
+      <g transform="translate(475, 85)">
+        <rect x="0" y="0" width="90" height="55" rx="5" fill="#a5b4fc" stroke="#818cf8" stroke-width="1.2"/>
+        <text x="45" y="20" text-anchor="middle" class="component-sublabel">Bottleneck</text>
+        <text x="45" y="35" text-anchor="middle" class="dim-label">stride=2</text>
+        <text x="45" y="48" text-anchor="middle" class="dim-label">×4 blocks</text>
+      </g>
+      
+      <rect x="475" y="160" width="90" height="40" rx="5" fill="#6366f1" stroke="#4f46e5" stroke-width="1.5"/>
+      <text x="520" y="185" text-anchor="middle" class="component-label" fill="white">f₂</text>
+      <text x="520" y="215" text-anchor="middle" class="dim-label">28×28×512</text>
+      
+      <path d="M415 180 L475 112" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arrowBlue)"/>
+      <path d="M520 140 L520 160" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      
+      <!-- ============ Stage 3 ============ -->
+      <rect x="610" y="40" width="120" height="200" rx="12" fill="url(#convGrad)" stroke="#6366f1" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="630" y="65" class="zone-label" fill="#6366f1">Stage 3</text>
+      
+      <g transform="translate(625, 85)">
+        <rect x="0" y="0" width="90" height="55" rx="5" fill="#818cf8" stroke="#6366f1" stroke-width="1.3"/>
+        <text x="45" y="20" text-anchor="middle" class="component-sublabel" fill="white">Bottleneck</text>
+        <text x="45" y="35" text-anchor="middle" class="dim-label" fill="#e0e7ff">stride=2</text>
+        <text x="45" y="48" text-anchor="middle" class="dim-label" fill="#e0e7ff">×6 blocks</text>
+      </g>
+      
+      <rect x="625" y="160" width="90" height="40" rx="5" fill="#4f46e5" stroke="#4338ca" stroke-width="1.5"/>
+      <text x="670" y="185" text-anchor="middle" class="component-label" fill="white">f₃</text>
+      <text x="670" y="215" text-anchor="middle" class="dim-label">14×14×1024</text>
+      
+      <path d="M565 180 L625 112" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arrowBlue)"/>
+      <path d="M670 140 L670 160" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      
+      <!-- ============ Stage 4 ============ -->
+      <rect x="760" y="40" width="120" height="200" rx="12" fill="url(#convGrad)" stroke="#6366f1" stroke-width="1" stroke-opacity="0.3"/>
+      <text x="780" y="65" class="zone-label" fill="#6366f1">Stage 4</text>
+      
+      <g transform="translate(775, 85)">
+        <rect x="0" y="0" width="90" height="55" rx="5" fill="#6366f1" stroke="#4f46e5" stroke-width="1.5"/>
+        <text x="45" y="20" text-anchor="middle" class="component-sublabel" fill="white">Bottleneck</text>
+        <text x="45" y="35" text-anchor="middle" class="dim-label" fill="#c7d2fe">stride=2</text>
+        <text x="45" y="48" text-anchor="middle" class="dim-label" fill="#c7d2fe">×3 blocks</text>
+      </g>
+      
+      <rect x="775" y="160" width="90" height="40" rx="5" fill="#4338ca" stroke="#3730a3" stroke-width="2"/>
+      <text x="820" y="185" text-anchor="middle" class="component-label" fill="white">f₄</text>
+      <text x="820" y="215" text-anchor="middle" class="dim-label">7×7×2048</text>
+      
+      <path d="M715 180 L775 112" stroke="#6366f1" stroke-width="1.5" fill="none" marker-end="url(#arrowBlue)"/>
+      <path d="M820 140 L820 160" stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+      
+      <!-- ============ Skip Connections to ECSAM ============ -->
+      <text x="310" y="290" class="zone-label" fill="#f59e0b">Skip Connections to ECSAM</text>
+      
+      <rect x="310" y="310" width="560" height="80" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" stroke-opacity="0.5"/>
+      
+      <g transform="translate(330, 330)">
+        <rect x="0" y="0" width="100" height="40" rx="4" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="50" y="18" text-anchor="middle" class="component-sublabel">f₁ → ECSAM-1</text>
+        <text x="50" y="32" text-anchor="middle" class="dim-label">56×56×256</text>
+      </g>
+      <g transform="translate(450, 330)">
+        <rect x="0" y="0" width="100" height="40" rx="4" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="50" y="18" text-anchor="middle" class="component-sublabel">f₂ → ECSAM-2</text>
+        <text x="50" y="32" text-anchor="middle" class="dim-label">28×28×512</text>
+      </g>
+      <g transform="translate(570, 330)">
+        <rect x="0" y="0" width="100" height="40" rx="4" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="50" y="18" text-anchor="middle" class="component-sublabel">f₃ → ECSAM-3</text>
+        <text x="50" y="32" text-anchor="middle" class="dim-label">14×14×1024</text>
+      </g>
+      <g transform="translate(690, 330)">
+        <rect x="0" y="0" width="100" height="40" rx="4" fill="#fde68a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="50" y="18" text-anchor="middle" class="component-sublabel">f₄ → ECSAM-4</text>
+        <text x="50" y="32" text-anchor="middle" class="dim-label">7×7×2048</text>
+      </g>
+      
+      <!-- Skip arrows -->
+      <path d="M370 200 L380 310" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" fill="none" marker-end="url(#arrow)"/>
+      <path d="M520 200 L500 310" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" fill="none" marker-end="url(#arrow)"/>
+      <path d="M670 200 L620 310" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" fill="none" marker-end="url(#arrow)"/>
+      <path d="M820 200 L740 310" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" fill="none" marker-end="url(#arrow)"/>
+      
+      <!-- ============ Bottleneck Detail ============ -->
+      <rect x="30" y="420" width="240" height="80" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+      <text x="45" y="445" class="component-sublabel" font-weight="600">Bottleneck Block</text>
+      <text x="45" y="465" class="dim-label">1×1 Conv (reduce) → BN → ReLU</text>
+      <text x="45" y="480" class="dim-label">3×3 Conv → BN → ReLU</text>
+      <text x="45" y="495" class="dim-label">1×1 Conv (expand) → BN → Residual Add</text>
+      
+      <!-- Specs -->
+      <rect x="290" y="420" width="180" height="80" rx="8" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+      <text x="305" y="445" class="component-sublabel" font-weight="600">ResNet-50 Specs</text>
+      <text x="305" y="465" class="dim-label">Total blocks: 16 (3+4+6+3)</text>
+      <text x="305" y="480" class="dim-label">Pretrained: ImageNet</text>
+      <text x="305" y="495" class="dim-label">Output: 4 multi-scale features</text>
+    </svg>
+  </div>
+</body>
+</html>
