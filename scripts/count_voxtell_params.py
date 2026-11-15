@@ -15,9 +15,8 @@ if os.path.isdir(VOXTELL_DIR):
 
 import pydoc
 import torch
-from voxtell.utils.download import download_voxtell_model
+from voxtell.inference.predictor import download_voxtell_model
 from voxtell.model.voxtell_model import VoxTellModel
-from nnunetv2.utilities.json_export import recursive_fix_for_json_export
 from batchgenerators.utilities.file_and_folder_operations import load_json, join
 
 
