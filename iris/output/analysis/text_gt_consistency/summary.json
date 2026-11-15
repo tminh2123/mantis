@@ -1,0 +1,33 @@
+{
+  "total_samples": 2113,
+  "text_side_distribution": {
+    "both": 1666,
+    "left": 238,
+    "right": 208,
+    "none": 1
+  },
+  "text_vert_distribution": {
+    "none": 689,
+    "lower": 569,
+    "upper": 62,
+    "multi": 641,
+    "middle": 152
+  },
+  "gt_side_distribution": {
+    "both": 1345,
+    "left": 467,
+    "right": 301
+  },
+  "gt_vert_distribution": {
+    "multi": 673,
+    "middle": 1188,
+    "lower": 158,
+    "upper": 94
+  },
+  "h_unilateral_samples": 435,
+  "h_consistent_count": 424,
+  "h_inconsistent_count": 11,
+  "v_single_samples": 681,
+  "v_consistent_count": 289,
+  "v_inconsistent_count": 392
+}

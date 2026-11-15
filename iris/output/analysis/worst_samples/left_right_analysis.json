@@ -1,0 +1,157 @@
+{
+  "total_worst": 101,
+  "n_confused": 15,
+  "confused_ratio": 0.1485148514851485,
+  "confused_samples": [
+    {
+      "idx": 12,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected area, upper middle left lung.",
+      "image_id": "sub-S08097_ses-E17492_run-1_bp-chest_vp-ap_dx.png",
+      "gt_side": "left",
+      "pred_side": "right",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 540,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection ,one infected area, middle left lung.",
+      "image_id": "sub-S09395_ses-E26750_run-1_bp-chest_vp-pa_cr.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 541,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection ,one infected area, middle left lung.",
+      "image_id": "sub-S09397_ses-E16200_acq-1_run-1_bp-chest_vp-ll_dx.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 542,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection ,one infected area, middle left lung.",
+      "image_id": "sub-S09397_ses-E18638_acq-1_run-1_bp-chest_vp-pa_dx.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 772,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected areas, upper right lung.",
+      "image_id": "sub-S09481_ses-E16313_run-1_bp-chest_vp-ap_cr.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 0.7230215668678284
+    },
+    {
+      "idx": 1092,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected area, lower left lung.",
+      "image_id": "sub-S09594_ses-E18157_run-1_bp-chest_vp-ap_dx.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 1437,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected area, lower left lung.",
+      "image_id": "sub-S09687_ses-E23618_run-1_bp-chest_vp-pa_cr.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 1541,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected areas, middle left lung.",
+      "image_id": "sub-S09721_ses-E25059_run-1_bp-chest_vp-ap_dx.png",
+      "gt_side": "left",
+      "pred_side": "right",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 1570,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected areas, upper left lung.",
+      "image_id": "sub-S09739_ses-E18557_run-1_bp-chest_vp-ap_dx.png",
+      "gt_side": "left",
+      "pred_side": "right",
+      "gt_ratio": 1.0,
+      "pred_ratio": 0.9802761077880859
+    },
+    {
+      "idx": 1624,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected area, lower left lung.",
+      "image_id": "sub-S09766_ses-E16740_run-1_bp-chest_vp-ap_dx.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 1779,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected area, lower right lung.",
+      "image_id": "sub-S09831_ses-E18239_run-1_bp-chest_vp-ap_dx.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 1917,
+      "dice": 0.0,
+      "text": "Unilateral pulmonary infection, one infected area, lower right lung.",
+      "image_id": "sub-S09877_ses-E20962_run-1_bp-chest_vp-pa_cr.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 1.0,
+      "pred_ratio": 1.0
+    },
+    {
+      "idx": 1141,
+      "dice": 0.23913542926311493,
+      "text": "Bilateral pulmonary infection, two infected areas, middle left lung and lower right lung.",
+      "image_id": "sub-S09611_ses-E17966_acq-1_run-1_bp-chest_vp-ll_dx.png",
+      "gt_side": "right",
+      "pred_side": "left",
+      "gt_ratio": 0.7065368294715881,
+      "pred_ratio": 0.7512396574020386
+    },
+    {
+      "idx": 1867,
+      "dice": 0.30957889556884766,
+      "text": "Unilateral pulmonary infection, two infected areas, upper lower right lung.",
+      "image_id": "sub-S09863_ses-E26073_run-1_bp-chest_vp-ap_cr.png",
+      "gt_side": "left",
+      "pred_side": "right",
+      "gt_ratio": 0.758846640586853,
+      "pred_ratio": 0.7358583211898804
+    },
+    {
+      "idx": 48,
+      "dice": 0.39985719323158264,
+      "text": "Bilateral pulmonary infection, two infected areas, lower left lung and lower right lung.",
+      "image_id": "sub-S09313_ses-E20772_run-1_bp-chest_vp-ap_dx.png",
+      "gt_side": "left",
+      "pred_side": "right",
+      "gt_ratio": 0.8588082790374756,
+      "pred_ratio": 0.720328688621521
+    }
+  ]
+}

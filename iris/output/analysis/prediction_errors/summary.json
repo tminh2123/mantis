@@ -1,0 +1,198 @@
+{
+  "laterality": {
+    "bilateral": {
+      "count": 1675,
+      "mean_dice": 0.8820726083018886,
+      "excellent": 1233,
+      "good": 319,
+      "poor": 90,
+      "worst": 33,
+      "worst_pct": 1.9701492537313434
+    },
+    "unilateral": {
+      "count": 438,
+      "mean_dice": 0.708724167282995,
+      "excellent": 146,
+      "good": 142,
+      "poor": 82,
+      "worst": 68,
+      "worst_pct": 15.52511415525114
+    }
+  },
+  "num_areas": {
+    "four": {
+      "count": 7,
+      "mean_dice": 0.7413997394698006,
+      "excellent": 0,
+      "good": 4,
+      "poor": 3,
+      "worst": 0,
+      "worst_pct": 0.0
+    },
+    "one": {
+      "count": 417,
+      "mean_dice": 0.7060464642388071,
+      "excellent": 140,
+      "good": 134,
+      "poor": 77,
+      "worst": 66,
+      "worst_pct": 15.827338129496402
+    },
+    "three": {
+      "count": 94,
+      "mean_dice": 0.7658318268491867,
+      "excellent": 35,
+      "good": 36,
+      "poor": 16,
+      "worst": 7,
+      "worst_pct": 7.446808510638298
+    },
+    "two": {
+      "count": 1594,
+      "mean_dice": 0.8881421161808513,
+      "excellent": 1204,
+      "good": 287,
+      "poor": 75,
+      "worst": 28,
+      "worst_pct": 1.7565872020075282
+    },
+    "unknown": {
+      "count": 1,
+      "mean_dice": 0.5949054956436157,
+      "excellent": 0,
+      "good": 0,
+      "poor": 1,
+      "worst": 0,
+      "worst_pct": 0.0
+    }
+  },
+  "side": {
+    "both": {
+      "count": 1666,
+      "mean_dice": 0.8833154449049307,
+      "excellent": 1231,
+      "good": 316,
+      "poor": 87,
+      "worst": 32,
+      "worst_pct": 1.9207683073229291
+    },
+    "left": {
+      "count": 238,
+      "mean_dice": 0.6887896382132498,
+      "excellent": 84,
+      "good": 71,
+      "poor": 38,
+      "worst": 45,
+      "worst_pct": 18.907563025210084
+    },
+    "none": {
+      "count": 1,
+      "mean_dice": 0.6497175097465515,
+      "excellent": 0,
+      "good": 0,
+      "poor": 1,
+      "worst": 0,
+      "worst_pct": 0.0
+    },
+    "right": {
+      "count": 208,
+      "mean_dice": 0.7293635651899072,
+      "excellent": 64,
+      "good": 74,
+      "poor": 46,
+      "worst": 24,
+      "worst_pct": 11.538461538461538
+    }
+  },
+  "vertical": {
+    "lower": {
+      "count": 569,
+      "mean_dice": 0.796025824657787,
+      "excellent": 278,
+      "good": 190,
+      "poor": 64,
+      "worst": 37,
+      "worst_pct": 6.502636203866433
+    },
+    "middle": {
+      "count": 152,
+      "mean_dice": 0.7110522690131084,
+      "excellent": 50,
+      "good": 53,
+      "poor": 30,
+      "worst": 19,
+      "worst_pct": 12.5
+    },
+    "multi": {
+      "count": 641,
+      "mean_dice": 0.8210259047852664,
+      "excellent": 349,
+      "good": 195,
+      "poor": 70,
+      "worst": 27,
+      "worst_pct": 4.212168486739469
+    },
+    "none": {
+      "count": 689,
+      "mean_dice": 0.9557926793013671,
+      "excellent": 678,
+      "good": 7,
+      "poor": 2,
+      "worst": 2,
+      "worst_pct": 0.29027576197387517
+    },
+    "upper": {
+      "count": 62,
+      "mean_dice": 0.6783129685378123,
+      "excellent": 24,
+      "good": 16,
+      "poor": 6,
+      "worst": 16,
+      "worst_pct": 25.806451612903224
+    }
+  },
+  "cross_laterality_num_areas": {
+    "bilateral_four": {
+      "count": 7,
+      "mean_dice": 0.7413997394698006,
+      "worst": 0,
+      "worst_pct": 0.0
+    },
+    "bilateral_one": {
+      "count": 2,
+      "mean_dice": 0.7760896682739258,
+      "worst": 0,
+      "worst_pct": 0.0
+    },
+    "bilateral_three": {
+      "count": 94,
+      "mean_dice": 0.7658318268491867,
+      "worst": 7,
+      "worst_pct": 7.446808510638298
+    },
+    "bilateral_two": {
+      "count": 1572,
+      "mean_dice": 0.8897846371940226,
+      "worst": 26,
+      "worst_pct": 1.653944020356234
+    },
+    "unilateral_one": {
+      "count": 415,
+      "mean_dice": 0.7057089066289993,
+      "worst": 66,
+      "worst_pct": 15.903614457831324
+    },
+    "unilateral_two": {
+      "count": 22,
+      "mean_dice": 0.7707765237851576,
+      "worst": 2,
+      "worst_pct": 9.090909090909092
+    },
+    "unilateral_unknown": {
+      "count": 1,
+      "mean_dice": 0.5949054956436157,
+      "worst": 0,
+      "worst_pct": 0.0
+    }
+  }
+}

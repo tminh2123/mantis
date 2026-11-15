@@ -1,0 +1,21 @@
+{
+  "total_worst": 101,
+  "confusion_counts": {
+    "side": {
+      "correct": 58,
+      "confused": 15,
+      "na": 28
+    },
+    "vertical": {
+      "correct": 53,
+      "confused": 17,
+      "na": 31
+    },
+    "num_regions": {
+      "correct": 85,
+      "fewer": 4,
+      "more": 12,
+      "na": 0
+    }
+  }
+}
