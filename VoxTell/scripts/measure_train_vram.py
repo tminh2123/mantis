@@ -85,8 +85,9 @@ def main():
     snapshot("forward done")
 
     # --- Backward ---
+    torch.cuda.reset_peak_memory_stats()
     loss.backward()
-    snapshot("backward done")
+    snapshot("backward done  (peak = backward only)")
 
     # --- Optimizer step (allocates m, v states here) ---
     optimizer.step()
