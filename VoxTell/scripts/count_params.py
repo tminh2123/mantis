@@ -75,6 +75,24 @@ def main():
     print("-" * 50)
     print(f"{'TOTAL':<30} {fmt(total):>18}")
 
+    # --- VRAM (inference, bf16) ---
+    if not torch.cuda.is_available():
+        print("\nNo CUDA available, skipping VRAM measurement.")
+        return
+
+    torch.cuda.reset_peak_memory_stats()
+    before = torch.cuda.memory_allocated()
+
+    model = model.cuda().bfloat16()
+    model.eval()
+
+    after = torch.cuda.memory_allocated()
+    peak  = torch.cuda.max_memory_allocated()
+
+    print(f"\n--- VRAM (inference, bf16) ---")
+    print(f"Model on GPU:   {(after - before) / 1024**3:.2f} GB")
+    print(f"Peak allocated: {peak / 1024**3:.2f} GB")
+
 
 if __name__ == "__main__":
     main()
