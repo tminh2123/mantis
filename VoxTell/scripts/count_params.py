@@ -1,23 +1,19 @@
 """Count trainable parameters of VoxTell model by component.
 
-Run from the VoxTell directory after installing:
+Only downloads plans.json (~few KB), NOT the model weights (~1.7GB).
+
+Run after installing VoxTell:
     cd VoxTell && pip install -e .
-    python ../scripts/count_voxtell_params.py
+    python scripts/count_params.py
 """
 
-import sys
 import os
-
-# Allow running from workspace root or from VoxTell dir
-VOXTELL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'VoxTell')
-if os.path.isdir(VOXTELL_DIR):
-    sys.path.insert(0, os.path.abspath(VOXTELL_DIR))
-
 import pydoc
 import torch
-from voxtell.inference.predictor import download_voxtell_model
+
 from voxtell.model.voxtell_model import VoxTellModel
-from batchgenerators.utilities.file_and_folder_operations import load_json, join
+from huggingface_hub import hf_hub_download
+from batchgenerators.utilities.file_and_folder_operations import load_json
 
 
 def count_params(module: torch.nn.Module) -> int:
@@ -33,16 +29,19 @@ def fmt(n: int) -> str:
 
 
 def main():
-    print("Downloading VoxTell model (cached after first run)...")
-    model_dir = download_voxtell_model()
+    print("Downloading plans.json only (~few KB)...")
+    plans_path = hf_hub_download(
+        repo_id='mrokuss/VoxTell',
+        filename='voxtell_v1.1/plans.json',
+    )
 
-    plans = load_json(join(model_dir, 'plans.json'))
+    plans = load_json(plans_path)
     arch_kwargs = dict(**plans['configurations']['3d_fullres']['architecture']['arch_kwargs'])
     for key in plans['configurations']['3d_fullres']['architecture']['_kw_requires_import']:
         if arch_kwargs[key] is not None:
             arch_kwargs[key] = pydoc.locate(arch_kwargs[key])
 
-    print("Instantiating model...")
+    print("Instantiating model (no weights loaded)...")
     model = VoxTellModel(
         input_channels=1,
         **arch_kwargs,
@@ -55,11 +54,10 @@ def main():
         deep_supervision=False,
     )
 
-    # --- Per-component breakdown ---
     components = {
-        "encoder":              model.encoder,
-        "decoder":              model.decoder,
-        "transformer_decoder":  model.transformer_decoder,
+        "encoder":             model.encoder,
+        "decoder":             model.decoder,
+        "transformer_decoder": model.transformer_decoder,
     }
 
     total = count_params(model)
@@ -69,7 +67,6 @@ def main():
         n = count_params(mod)
         print(f"{name:<30} {fmt(n):>18}  ({100*n/total:.1f}%)")
 
-    # Catch any params not under the 3 main components
     accounted = sum(count_params(m) for m in components.values())
     other = total - accounted
     if other > 0:
