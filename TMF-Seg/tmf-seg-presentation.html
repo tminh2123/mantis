@@ -267,6 +267,153 @@
       </svg>
     </div>
   </div>
+  <!-- ── Slide 5: DCT Channel Attention ── -->
+  <div class="slide svg-slide" id="s5">
+    <div class="slide-header">
+      <span class="eyebrow">TMF-Seg · TGME Detail</span>
+      <h1 class="stitle">Multi-Frequency Channel Attention + Text-Guided Weighting</h1>
+    </div>
+    <div class="body">
+      <svg viewBox="0 0 760 296" style="max-width:100%;max-height:100%;">
+        <defs>
+          <marker id="t1" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#4f5d75"/>
+          </marker>
+          <marker id="t2" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#bf4520"/>
+          </marker>
+          <marker id="t3" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#2e5aa8"/>
+          </marker>
+        </defs>
+
+        <!-- INPUT z_fused -->
+        <rect x="300" y="8" width="160" height="30" rx="6" fill="white" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="380" y="22" text-anchor="middle" font-family="Geist,sans-serif" font-size="12" font-weight="600" fill="#2d3142">z_fused</text>
+        <text x="380" y="33" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">B×4×32×32</text>
+
+        <!-- fan-out to 3 branches -->
+        <line x1="380" y1="38" x2="380" y2="52" stroke="#4f5d75" stroke-width="1.5"/>
+        <polyline points="380,52 110,52 110,62" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#t1)"/>
+        <line x1="380" y1="52" x2="380" y2="62" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#t1)"/>
+        <polyline points="380,52 580,52 580,62" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#t1)"/>
+
+        <!-- ═══ HIGH-FREQ BRANCH ═══ -->
+        <rect x="20" y="62" width="180" height="156" rx="8" fill="rgba(191,69,32,0.05)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="110" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#bf4520" letter-spacing="0.06em">HIGH FREQ  (N=16)</text>
+
+        <!-- DCT filter visual -->
+        <rect x="34" y="84" width="36" height="36" rx="3" fill="white" stroke="#bfc0c0" stroke-width="1"/>
+        <!-- checkerboard for high-freq -->
+        <rect x="34" y="84" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <rect x="43" y="84" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="52" y="84" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <rect x="61" y="84" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="34" y="93" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="43" y="93" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <rect x="52" y="93" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="61" y="93" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <rect x="34" y="102" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <rect x="43" y="102" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="52" y="102" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <rect x="61" y="102" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="34" y="111" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="43" y="111" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <rect x="52" y="111" width="9" height="9" fill="rgba(191,69,32,0.05)"/>
+        <rect x="61" y="111" width="9" height="9" fill="rgba(191,69,32,0.3)"/>
+        <text x="78" y="96" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">dct_weight_k</text>
+        <text x="78" y="108" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">4×32×32, fixed</text>
+        <text x="78" y="120" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">high u,v → fine detail</text>
+
+        <text x="110" y="138" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">x × dct_weight_k → AvgPool/MaxPool</text>
+        <text x="110" y="150" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">→ sum over k=1..16 → avg → B×4×1×1</text>
+        <text x="110" y="164" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Conv1×1(4→2)→ReLU→Conv1×1(2→4)</text>
+        <text x="110" y="178" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">sigmoid → attn B×4×1×1</text>
+        <text x="110" y="195" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2d3142">x × attn</text>
+
+        <rect x="30" y="200" width="160" height="10" rx="3" fill="rgba(191,69,32,0.1)" stroke="#bf4520" stroke-width="1"/>
+        <text x="110" y="209" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">z_high  B×4×32×32</text>
+
+        <!-- ═══ MID-FREQ BRANCH ═══ -->
+        <rect x="220" y="62" width="180" height="156" rx="8" fill="rgba(61,124,74,0.05)" stroke="#3d7c4a" stroke-width="1.5"/>
+        <text x="310" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#3d7c4a" letter-spacing="0.06em">MID FREQ  (N=8)</text>
+
+        <!-- gradient for mid-freq -->
+        <rect x="234" y="84" width="36" height="36" rx="3" fill="white" stroke="#bfc0c0" stroke-width="1"/>
+        <rect x="234" y="84" width="18" height="18" fill="rgba(61,124,74,0.35)"/>
+        <rect x="252" y="84" width="18" height="18" fill="rgba(61,124,74,0.15)"/>
+        <rect x="234" y="102" width="18" height="18" fill="rgba(61,124,74,0.15)"/>
+        <rect x="252" y="102" width="18" height="18" fill="rgba(61,124,74,0.05)"/>
+        <text x="278" y="96" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">dct_weight_k</text>
+        <text x="278" y="108" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">4×32×32, fixed</text>
+        <text x="278" y="120" font-family="Geist Mono,monospace" font-size="8.5" fill="#3d7c4a">mid u,v → edges/shapes</text>
+
+        <text x="310" y="138" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">x × dct_weight_k → pool</text>
+        <text x="310" y="150" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">→ sum over k=1..8 → avg → B×4×1×1</text>
+        <text x="310" y="164" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Conv1×1(4→2)→ReLU→Conv1×1(2→4)</text>
+        <text x="310" y="178" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">sigmoid → attn B×4×1×1</text>
+        <text x="310" y="195" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2d3142">x × attn</text>
+
+        <rect x="230" y="200" width="160" height="10" rx="3" fill="rgba(61,124,74,0.1)" stroke="#3d7c4a" stroke-width="1"/>
+        <text x="310" y="209" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#3d7c4a">z_mid  B×4×32×32</text>
+
+        <!-- ═══ LOW-FREQ BRANCH ═══ -->
+        <rect x="420" y="62" width="180" height="156" rx="8" fill="rgba(46,90,168,0.05)" stroke="#2e5aa8" stroke-width="1.5"/>
+        <text x="510" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#2e5aa8" letter-spacing="0.06em">LOW FREQ  (N=8)</text>
+
+        <!-- smooth gradient for low-freq -->
+        <rect x="434" y="84" width="36" height="36" rx="3" fill="white" stroke="#bfc0c0" stroke-width="1"/>
+        <rect x="434" y="84" width="36" height="36" rx="3" fill="url(#lowfreq)"/>
+        <defs><radialGradient id="lowfreq" cx="0%" cy="0%"><stop offset="0%" stop-color="rgba(46,90,168,0.5)"/><stop offset="100%" stop-color="rgba(46,90,168,0.02)"/></radialGradient></defs>
+        <text x="478" y="96" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">dct_weight_k</text>
+        <text x="478" y="108" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">4×32×32, fixed</text>
+        <text x="478" y="120" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">low u,v → global structure</text>
+
+        <text x="510" y="138" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">x × dct_weight_k → pool</text>
+        <text x="510" y="150" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">→ sum over k=1..8 → avg → B×4×1×1</text>
+        <text x="510" y="164" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Conv1×1(4→2)→ReLU→Conv1×1(2→4)</text>
+        <text x="510" y="178" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">sigmoid → attn B×4×1×1</text>
+        <text x="510" y="195" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2d3142">x × attn</text>
+
+        <rect x="430" y="200" width="160" height="10" rx="3" fill="rgba(46,90,168,0.1)" stroke="#2e5aa8" stroke-width="1"/>
+        <text x="510" y="209" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">z_low  B×4×32×32</text>
+
+        <!-- ═══ TEXT-GUIDED WEIGHTING ═══ -->
+        <rect x="626" y="62" width="128" height="156" rx="8" fill="rgba(79,93,117,0.05)" stroke="#4f5d75" stroke-width="1.5"/>
+        <text x="690" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75" letter-spacing="0.04em">TEXT WEIGHTING</text>
+        <text x="690" y="94" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">z_text B×10×768</text>
+        <text x="690" y="108" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">MeanPool → B×768</text>
+        <text x="690" y="122" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">W₁+ReLU → W₂</text>
+        <text x="690" y="136" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">B×3</text>
+        <text x="690" y="150" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Softmax</text>
+        <circle cx="666" cy="175" r="13" fill="rgba(191,69,32,0.1)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="666" y="179" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" font-weight="600" fill="#bf4520">α_h</text>
+        <circle cx="690" cy="175" r="13" fill="rgba(61,124,74,0.1)" stroke="#3d7c4a" stroke-width="1.5"/>
+        <text x="690" y="179" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" font-weight="600" fill="#3d7c4a">α_m</text>
+        <circle cx="714" cy="175" r="13" fill="rgba(46,90,168,0.1)" stroke="#2e5aa8" stroke-width="1.5"/>
+        <text x="714" y="179" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" font-weight="600" fill="#2e5aa8">α_l</text>
+
+        <!-- arrows from branches to merge -->
+        <line x1="110" y1="210" x2="110" y2="240" stroke="#bf4520" stroke-width="1.5" marker-end="url(#t2)"/>
+        <line x1="310" y1="210" x2="310" y2="240" stroke="#3d7c4a" stroke-width="1.5" marker-end="url(#t1)"/>
+        <line x1="510" y1="210" x2="510" y2="240" stroke="#2e5aa8" stroke-width="1.5" marker-end="url(#t3)"/>
+        <!-- α arrows from text-guided to merge -->
+        <polyline points="666,188 666,230 420,230" fill="none" stroke="#bf4520" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polyline points="690,188 690,232 420,232" fill="none" stroke="#3d7c4a" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polyline points="714,188 714,234 420,234" fill="none" stroke="#2e5aa8" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+        <!-- MERGE box -->
+        <rect x="130" y="240" width="420" height="30" rx="6" fill="#2d3142"/>
+        <text x="340" y="254" text-anchor="middle" font-family="Geist,sans-serif" font-size="12" font-weight="600" fill="white">α_h·z_high  +  α_m·z_mid  +  α_l·z_low</text>
+        <text x="340" y="265" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="rgba(245,245,245,0.7)">weighted sum, element-wise</text>
+
+        <!-- output -->
+        <line x1="340" y1="270" x2="340" y2="282" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#t1)"/>
+        <rect x="265" y="282" width="150" height="12" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="340" y="292" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#bf4520">z_enhanced  B×4×32×32</text>
+      </svg>
+    </div>
+  </div>
 
 </div><!-- .deck -->
 
@@ -277,6 +424,7 @@
     <div class="dot"        data-i="1"></div>
     <div class="dot"        data-i="2"></div>
     <div class="dot"        data-i="3"></div>
+    <div class="dot"        data-i="4"></div>
   </div>
   <button class="nav-btn" id="next">›</button>
 </nav>
