@@ -421,118 +421,129 @@
       <h1 class="stitle">Denoising U-Net — model_channels=192, channel_mult=[1,2,2,4,4]</h1>
     </div>
     <div class="body">
-      <svg viewBox="0 0 760 300" style="max-width:100%;max-height:100%;">
+      <svg viewBox="0 0 760 290" style="max-width:100%;max-height:100%;">
         <defs>
           <marker id="u1" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
             <path d="M0,0 L8,3 L0,6 Z" fill="#4f5d75"/>
           </marker>
           <marker id="u2" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#2e5aa8"/>
+          </marker>
+          <marker id="u3" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
             <path d="M0,0 L8,3 L0,6 Z" fill="#3d7c4a"/>
           </marker>
         </defs>
 
-        <!-- ── INPUT ── -->
-        <rect x="20" y="10" width="160" height="30" rx="6" fill="white" stroke="#2d3142" stroke-width="1.5"/>
-        <text x="100" y="23" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2d3142">Concat(y_t, z_enh)</text>
-        <text x="100" y="35" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">B×8×32×32</text>
+        <!-- top banner: t_emb note -->
+        <rect x="8" y="8" width="744" height="18" rx="4" fill="rgba(79,93,117,0.07)" stroke="#bfc0c0" stroke-width="1"/>
+        <text x="380" y="20" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#4f5d75">⊕ t_emb = sinusoidal(t) → MLP → injected via additive bias into every ResBlock</text>
 
-        <!-- ── ENCODER LEVELS ── -->
+        <!-- ── INPUT (top-left) ── -->
+        <rect x="10" y="34" width="168" height="26" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="94" y="45" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#bf4520">Concat(y_t, z_enh)</text>
+        <text x="94" y="56" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">B×8×32×32</text>
 
-        <!-- L0 -->
-        <line x1="100" y1="40" x2="100" y2="52" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="20" y="54" width="160" height="40" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
-        <text x="40" y="68" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">ENC L0</text>
-        <text x="100" y="68" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock×2 + Attn</text>
-        <text x="100" y="82" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">192ch · 32×32  ⊕t</text>
+        <!-- ── OUTPUT (top-right) ── -->
+        <rect x="582" y="34" width="168" height="26" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="666" y="45" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#bf4520">ε̂  =  GroupNorm → SiLU → Conv</text>
+        <text x="666" y="56" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">B×4×32×32</text>
 
-        <!-- L1 -->
-        <line x1="100" y1="94" x2="100" y2="106" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="20" y="108" width="160" height="40" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
-        <text x="40" y="122" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">ENC L1</text>
-        <text x="100" y="122" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock×2 + Attn</text>
-        <text x="100" y="136" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">384ch · 16×16  ⊕t</text>
+        <!-- ── ENCODER BOXES (left column) ── -->
 
-        <!-- L2 -->
-        <line x1="100" y1="148" x2="100" y2="160" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="20" y="162" width="160" height="40" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
-        <text x="40" y="176" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">ENC L2</text>
-        <text x="100" y="176" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock×2 + Attn</text>
-        <text x="100" y="190" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">384ch · 8×8  ⊕t</text>
+        <!-- L0 32×32 192ch -->
+        <line x1="94" y1="60" x2="94" y2="70" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
+        <rect x="10" y="72" width="168" height="40" rx="6" fill="white" stroke="#2e5aa8" stroke-width="1.5"/>
+        <rect x="10" y="72" width="168" height="22" rx="6" fill="#2e5aa8"/>
+        <rect x="10" y="80" width="168" height="14" fill="#2e5aa8"/>
+        <text x="94" y="86" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">ENC L0  ·  192ch  ·  32×32</text>
+        <text x="94" y="104" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">ResBlock×2 + Attn  ⊕t</text>
 
-        <!-- L3 -->
-        <line x1="100" y1="202" x2="100" y2="214" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="20" y="216" width="160" height="40" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
-        <text x="40" y="230" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">ENC L3</text>
-        <text x="100" y="230" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock×2 + Attn</text>
-        <text x="100" y="244" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">768ch · 4×4  ⊕t</text>
+        <!-- L1 16×16 384ch -->
+        <line x1="94" y1="112" x2="94" y2="122" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
+        <rect x="10" y="124" width="168" height="40" rx="6" fill="white" stroke="#2e5aa8" stroke-width="1.5"/>
+        <rect x="10" y="124" width="168" height="22" rx="6" fill="#2e5aa8"/>
+        <rect x="10" y="132" width="168" height="14" fill="#2e5aa8"/>
+        <text x="94" y="138" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">ENC L1  ·  384ch  ·  16×16</text>
+        <text x="94" y="156" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">ResBlock×2 + Attn  ⊕t</text>
 
-        <!-- L4 + Bottleneck arrow -->
-        <line x1="100" y1="256" x2="100" y2="268" stroke="#4f5d75" stroke-width="1.5"/>
-        <line x1="100" y1="268" x2="300" y2="268" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
+        <!-- L2 8×8 384ch -->
+        <line x1="94" y1="164" x2="94" y2="174" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
+        <rect x="10" y="176" width="168" height="40" rx="6" fill="white" stroke="#2e5aa8" stroke-width="1.5"/>
+        <rect x="10" y="176" width="168" height="22" rx="6" fill="#2e5aa8"/>
+        <rect x="10" y="184" width="168" height="14" fill="#2e5aa8"/>
+        <text x="94" y="190" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">ENC L2  ·  384ch  ·  8×8</text>
+        <text x="94" y="208" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">ResBlock×2 + Attn  ⊕t</text>
 
-        <!-- ── BOTTLENECK ── -->
-        <rect x="300" y="256" width="160" height="40" rx="6" fill="#2d3142"/>
-        <text x="380" y="271" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="rgba(245,245,245,0.7)">BOTTLENECK</text>
-        <text x="380" y="284" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="white">ResBlock → Attn → ResBlock</text>
-        <text x="310" y="292" font-family="Geist Mono,monospace" font-size="8.5" fill="rgba(245,245,245,0.6)">768ch · 2×2  ⊕t</text>
+        <!-- L3 4×4 768ch -->
+        <line x1="94" y1="216" x2="94" y2="226" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
+        <rect x="10" y="228" width="168" height="40" rx="6" fill="white" stroke="#2e5aa8" stroke-width="1.5"/>
+        <rect x="10" y="228" width="168" height="22" rx="6" fill="#2e5aa8"/>
+        <rect x="10" y="236" width="168" height="14" fill="#2e5aa8"/>
+        <text x="94" y="242" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">ENC L3  ·  768ch  ·  4×4</text>
+        <text x="94" y="260" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">ResBlock×2 + Attn  ⊕t</text>
 
-        <!-- Bottleneck → decoder -->
-        <line x1="460" y1="276" x2="580" y2="276" stroke="#4f5d75" stroke-width="1.5"/>
-        <line x1="580" y1="276" x2="580" y2="258" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
+        <!-- enc L3 → bottleneck path -->
+        <polyline points="94,268 94,278 296,278" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
 
-        <!-- ── DECODER LEVELS ── -->
+        <!-- ── BOTTLENECK (center bottom) ── -->
+        <rect x="296" y="264" width="168" height="22" rx="6" fill="#2d3142"/>
+        <text x="380" y="275" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="rgba(245,245,245,0.9)">BOTTLENECK</text>
+        <text x="296" y="285" font-family="Geist Mono,monospace" font-size="8.5" fill="#5a6580">ResBlock→Attn→ResBlock  768ch·2×2</text>
+
+        <!-- bottleneck → dec L3 path -->
+        <polyline points="464,275 666,275 666,268" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u3)"/>
+
+        <!-- ── DECODER BOXES (right column) ── -->
 
         <!-- L3' -->
-        <rect x="580" y="216" width="160" height="40" rx="6" fill="rgba(61,124,74,0.06)" stroke="#3d7c4a" stroke-width="1.5"/>
-        <text x="600" y="230" font-family="Geist Mono,monospace" font-size="8.5" fill="#3d7c4a">DEC L3</text>
-        <text x="660" y="230" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Up×2 + ResBlock×2 + Attn</text>
-        <text x="660" y="244" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">768ch · 4×4  ⊕t + skip</text>
+        <rect x="582" y="228" width="168" height="40" rx="6" fill="white" stroke="#3d7c4a" stroke-width="1.5"/>
+        <rect x="582" y="228" width="168" height="22" rx="6" fill="#3d7c4a"/>
+        <rect x="582" y="236" width="168" height="14" fill="#3d7c4a"/>
+        <text x="666" y="242" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">DEC L3  ·  768ch  ·  4×4</text>
+        <text x="666" y="260" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">Up×2 + ResBlock×2 + Attn  ⊕t</text>
 
         <!-- L2' -->
-        <line x1="660" y1="216" x2="660" y2="204" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="580" y="162" width="160" height="40" rx="6" fill="rgba(61,124,74,0.06)" stroke="#3d7c4a" stroke-width="1.5"/>
-        <text x="600" y="176" font-family="Geist Mono,monospace" font-size="8.5" fill="#3d7c4a">DEC L2</text>
-        <text x="660" y="176" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Up×2 + ResBlock×2 + Attn</text>
-        <text x="660" y="190" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">384ch · 8×8  ⊕t + skip</text>
+        <line x1="666" y1="228" x2="666" y2="218" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u3)"/>
+        <rect x="582" y="176" width="168" height="40" rx="6" fill="white" stroke="#3d7c4a" stroke-width="1.5"/>
+        <rect x="582" y="176" width="168" height="22" rx="6" fill="#3d7c4a"/>
+        <rect x="582" y="184" width="168" height="14" fill="#3d7c4a"/>
+        <text x="666" y="190" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">DEC L2  ·  384ch  ·  8×8</text>
+        <text x="666" y="208" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">Up×2 + ResBlock×2 + Attn  ⊕t</text>
 
         <!-- L1' -->
-        <line x1="660" y1="162" x2="660" y2="150" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="580" y="108" width="160" height="40" rx="6" fill="rgba(61,124,74,0.06)" stroke="#3d7c4a" stroke-width="1.5"/>
-        <text x="600" y="122" font-family="Geist Mono,monospace" font-size="8.5" fill="#3d7c4a">DEC L1</text>
-        <text x="660" y="122" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Up×2 + ResBlock×2 + Attn</text>
-        <text x="660" y="136" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">384ch · 16×16  ⊕t + skip</text>
+        <line x1="666" y1="176" x2="666" y2="166" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u3)"/>
+        <rect x="582" y="124" width="168" height="40" rx="6" fill="white" stroke="#3d7c4a" stroke-width="1.5"/>
+        <rect x="582" y="124" width="168" height="22" rx="6" fill="#3d7c4a"/>
+        <rect x="582" y="132" width="168" height="14" fill="#3d7c4a"/>
+        <text x="666" y="138" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">DEC L1  ·  384ch  ·  16×16</text>
+        <text x="666" y="156" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">Up×2 + ResBlock×2 + Attn  ⊕t</text>
 
         <!-- L0' -->
-        <line x1="660" y1="108" x2="660" y2="96" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="580" y="54" width="160" height="40" rx="6" fill="rgba(61,124,74,0.06)" stroke="#3d7c4a" stroke-width="1.5"/>
-        <text x="600" y="68" font-family="Geist Mono,monospace" font-size="8.5" fill="#3d7c4a">DEC L0</text>
-        <text x="660" y="68" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Up×2 + ResBlock×2 + Attn</text>
-        <text x="660" y="82" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">192ch · 32×32  ⊕t + skip</text>
+        <line x1="666" y1="124" x2="666" y2="114" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u3)"/>
+        <rect x="582" y="72" width="168" height="40" rx="6" fill="white" stroke="#3d7c4a" stroke-width="1.5"/>
+        <rect x="582" y="72" width="168" height="22" rx="6" fill="#3d7c4a"/>
+        <rect x="582" y="80" width="168" height="14" fill="#3d7c4a"/>
+        <text x="666" y="86" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">DEC L0  ·  192ch  ·  32×32</text>
+        <text x="666" y="104" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">Up×2 + ResBlock×2 + Attn  ⊕t</text>
 
-        <!-- OUTPUT -->
-        <line x1="660" y1="54" x2="660" y2="42" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="580" y="10" width="160" height="30" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
-        <text x="660" y="22" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#bf4520">Conv → ε̂</text>
-        <text x="660" y="34" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">B×4×32×32</text>
+        <!-- dec L0 → output -->
+        <line x1="666" y1="72" x2="666" y2="62" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
 
-        <!-- ── SKIP CONNECTIONS (dashed) ── -->
-        <line x1="180" y1="74" x2="580" y2="74" stroke="#3d7c4a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#u2)"/>
-        <line x1="180" y1="128" x2="580" y2="128" stroke="#3d7c4a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#u2)"/>
-        <line x1="180" y1="182" x2="580" y2="182" stroke="#3d7c4a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#u2)"/>
-        <line x1="180" y1="236" x2="580" y2="236" stroke="#3d7c4a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#u2)"/>
+        <!-- ── SKIP CONNECTIONS (clean short arrows center) ── -->
+        <!-- at center x=380, connecting enc→dec for each level -->
+        <line x1="178" y1="92" x2="582" y2="92" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="178" y1="144" x2="582" y2="144" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="178" y1="196" x2="582" y2="196" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="178" y1="248" x2="296" y2="248" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3"/>
+        <line x1="464" y1="248" x2="582" y2="248" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3"/>
 
         <!-- skip label -->
-        <rect x="336" y="68" width="88" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="380" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#3d7c4a">skip connections</text>
-
-        <!-- t_emb annotation -->
-        <rect x="210" y="150" width="80" height="20" rx="4" fill="rgba(79,93,117,0.08)" stroke="#4f5d75" stroke-width="1"/>
-        <text x="250" y="164" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">⊕t = t_emb</text>
-        <text x="250" y="178" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#5a6580">sinusoidal → MLP</text>
-        <text x="250" y="190" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#5a6580">inject each ResBlock</text>
+        <rect x="336" y="86" width="88" height="12" rx="2" fill="#f5f5f5"/>
+        <text x="380" y="96" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#5a6580">skip connections</text>
       </svg>
     </div>
-  </div>
+
+
 
 </div><!-- .deck -->
 
