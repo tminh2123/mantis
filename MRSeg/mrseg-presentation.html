@@ -950,6 +950,140 @@
 
 </div><!-- .deck -->
 
+<!-- ── Slide 6 : Decoder ── -->
+<div class="slide svg-slide" id="s6">
+  <div class="slide-header">
+    <span class="eyebrow">MRSeg · Decoder</span>
+    <h1 class="stitle">Multiscale Decoder Flow</h1>
+  </div>
+  <div class="body">
+    <svg viewBox="0 0 760 580" style="max-width:100%;max-height:100%;">
+      <defs>
+        <marker id="d1" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4f5d75"/></marker>
+        <marker id="d2" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#bf4520"/></marker>
+        <marker id="d3" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3d7c4a"/></marker>
+        <marker id="d4" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2e5aa8"/></marker>
+      </defs>
+
+      <!-- ── SKIP BOXES ── -->
+      <!-- f₃'' -->
+      <rect x="490" y="42" width="195" height="30" rx="5" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
+      <text x="588" y="55" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#bf4520">f₃'' (Region Bridge)</text>
+      <text x="588" y="67" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">14×14 · text-guided · no gate</text>
+      <!-- f₂ -->
+      <rect x="490" y="136" width="195" height="36" rx="5" fill="rgba(61,124,74,0.07)" stroke="#3d7c4a" stroke-width="1.5"/>
+      <text x="588" y="150" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#3d7c4a">f₂ (encoder)</text>
+      <text x="588" y="163" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#3d7c4a">28×28</text>
+      <rect x="496" y="170" width="183" height="12" rx="3" fill="#3d7c4a"/>
+      <text x="588" y="179" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="white">gated: f̃ = f + f⊙tanh(G([x;f]))</text>
+      <!-- f₁ -->
+      <rect x="490" y="234" width="195" height="36" rx="5" fill="rgba(61,124,74,0.07)" stroke="#3d7c4a" stroke-width="1.5"/>
+      <text x="588" y="248" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#3d7c4a">f₁ (encoder)</text>
+      <text x="588" y="261" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#3d7c4a">56×56</text>
+      <rect x="496" y="268" width="183" height="12" rx="3" fill="#3d7c4a"/>
+      <text x="588" y="277" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="white">gated: f̃ = f + f⊙tanh(G([x;f]))</text>
+      <!-- skip1 -->
+      <rect x="75" y="306" width="155" height="28" rx="5" fill="rgba(46,90,168,0.07)" stroke="#2e5aa8" stroke-width="1.5"/>
+      <text x="152" y="318" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2e5aa8">skip1  (stem H/2)</text>
+      <text x="152" y="329" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">112×112 · from I₃</text>
+      <!-- skip2 -->
+      <rect x="75" y="366" width="155" height="28" rx="5" fill="rgba(46,90,168,0.07)" stroke="#2e5aa8" stroke-width="1.5"/>
+      <text x="152" y="378" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2e5aa8">skip2  (stem H)</text>
+      <text x="152" y="389" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2e5aa8">224×224 · from I₃</text>
+
+      <!-- ── MAIN FLOW BOXES ── -->
+      <rect x="285" y="8" width="130" height="30" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
+      <text x="350" y="21" text-anchor="middle" font-family="Geist,sans-serif" font-size="12" font-weight="600" fill="#bf4520">f₄''</text>
+      <text x="350" y="33" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">B × 768 × 7 × 7</text>
+
+      <rect x="295" y="52" width="110" height="20" rx="4" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+      <text x="350" y="66" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">1×1 proj + Up×2  → 14×14</text>
+
+      <rect x="280" y="84" width="140" height="30" rx="6" fill="white" stroke="#2d3142" stroke-width="2"/>
+      <text x="350" y="97" text-anchor="middle" font-family="Geist,sans-serif" font-size="11.5" font-weight="600" fill="#2d3142">fuse  f₃''</text>
+      <text x="350" y="109" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">x₁  B×192×14×14</text>
+
+      <rect x="300" y="126" width="100" height="20" rx="4" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+      <text x="350" y="140" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Up×2  → 28×28</text>
+
+      <rect x="280" y="158" width="140" height="30" rx="6" fill="white" stroke="#2d3142" stroke-width="2"/>
+      <text x="350" y="171" text-anchor="middle" font-family="Geist,sans-serif" font-size="11.5" font-weight="600" fill="#2d3142">fuse  f̃₂  (gated)</text>
+      <text x="350" y="183" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">x₂  28×28</text>
+
+      <rect x="300" y="200" width="100" height="20" rx="4" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+      <text x="350" y="214" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Up×2  → 56×56</text>
+
+      <rect x="280" y="236" width="140" height="30" rx="6" fill="white" stroke="#2d3142" stroke-width="2"/>
+      <text x="350" y="249" text-anchor="middle" font-family="Geist,sans-serif" font-size="11.5" font-weight="600" fill="#2d3142">fuse  f̃₁  (gated)</text>
+      <text x="350" y="261" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">x₃  56×56</text>
+
+      <rect x="300" y="280" width="100" height="20" rx="4" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+      <text x="350" y="294" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Up×2  → 112×112</text>
+
+      <rect x="280" y="316" width="140" height="22" rx="5" fill="white" stroke="#2d3142" stroke-width="1.5"/>
+      <text x="350" y="331" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2d3142">+ skip1  → x₄</text>
+
+      <rect x="300" y="350" width="100" height="20" rx="4" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+      <text x="350" y="364" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Up×2  → 224×224</text>
+
+      <rect x="280" y="382" width="140" height="22" rx="5" fill="white" stroke="#2d3142" stroke-width="1.5"/>
+      <text x="350" y="397" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2d3142">+ skip2  → x₅</text>
+
+      <!-- mask head -->
+      <rect x="260" y="416" width="180" height="32" rx="6" fill="#2d3142"/>
+      <text x="350" y="430" text-anchor="middle" font-family="Geist,sans-serif" font-size="12" font-weight="700" fill="white">Mask Head</text>
+      <text x="350" y="443" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="rgba(245,245,245,0.7)">x₅ (B×192×H×W)</text>
+
+      <!-- coarse + detail branches -->
+      <rect x="135" y="462" width="130" height="44" rx="5" fill="rgba(79,93,117,0.06)" stroke="#4f5d75" stroke-width="1.5"/>
+      <text x="200" y="477" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#2d3142">1×1 Conv</text>
+      <text x="200" y="491" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">Ŷ_coarse</text>
+      <text x="200" y="503" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#5a6580">semantic · no spatial</text>
+
+      <rect x="435" y="462" width="130" height="44" rx="5" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
+      <text x="500" y="477" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#2d3142">DW 3×3 → 1×1</text>
+      <text x="500" y="491" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#bf4520">ΔŶ_detail</text>
+      <text x="500" y="503" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#5a6580">boundary correction</text>
+
+      <!-- ⊕ + output -->
+      <circle cx="350" cy="530" r="12" fill="white" stroke="#2d3142" stroke-width="1.5"/>
+      <text x="350" y="535" text-anchor="middle" font-family="Geist,sans-serif" font-size="15" fill="#2d3142">⊕</text>
+
+      <rect x="290" y="552" width="120" height="28" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="2"/>
+      <text x="350" y="564" text-anchor="middle" font-family="Geist,sans-serif" font-size="13" font-weight="700" fill="#bf4520">Ŷ</text>
+      <text x="350" y="576" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">B×1×H×W</text>
+
+      <!-- ── ARROWS LAST ── -->
+      <line x1="350" y1="38" x2="350" y2="50" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="72" x2="350" y2="82" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="114" x2="350" y2="124" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="146" x2="350" y2="156" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="188" x2="350" y2="198" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="220" x2="350" y2="234" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="266" x2="350" y2="278" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="300" x2="350" y2="314" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="338" x2="350" y2="348" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="370" x2="350" y2="380" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="404" x2="350" y2="414" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <!-- head → branches -->
+      <polyline points="350,448 350,456 215,456 215,460" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <polyline points="350,448 350,456 500,456 500,460" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <!-- branches → ⊕ -->
+      <polyline points="200,506 200,530 338,530" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <polyline points="500,506 500,530 362,530" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <line x1="350" y1="542" x2="350" y2="550" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#d1)"/>
+      <!-- skip → main -->
+      <line x1="488" y1="57" x2="422" y2="93" stroke="#bf4520" stroke-width="1.5" marker-end="url(#d2)"/>
+      <line x1="488" y1="154" x2="422" y2="168" stroke="#3d7c4a" stroke-width="1.5" marker-end="url(#d3)"/>
+      <line x1="488" y1="252" x2="422" y2="252" stroke="#3d7c4a" stroke-width="1.5" marker-end="url(#d3)"/>
+      <line x1="232" y1="320" x2="278" y2="324" stroke="#2e5aa8" stroke-width="1.5" marker-end="url(#d4)"/>
+      <line x1="232" y1="380" x2="278" y2="390" stroke="#2e5aa8" stroke-width="1.5" marker-end="url(#d4)"/>
+    </svg>
+  </div>
+</div>
+
+</div><!-- .deck -->
+
 <!-- Navigation -->
 <nav class="nav">
   <button class="nav-btn" id="prev">‹</button>
@@ -959,6 +1093,7 @@
     <div class="dot"        data-i="2"></div>
     <div class="dot"        data-i="3"></div>
     <div class="dot"        data-i="4"></div>
+    <div class="dot"        data-i="5"></div>
   </div>
   <button class="nav-btn" id="next">›</button>
 </nav>
