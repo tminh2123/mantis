@@ -141,6 +141,8 @@
       <span>TGME → <strong>z_enhanced B×4×32×32</strong></span>·
       <br>
       <span>Concat(y_T,z_enh) → <strong>B×8×32×32</strong> → U-Net → ε̂ <strong>B×4×32×32</strong> → D() → <strong>Ŝ B×1×256×256</strong></span>
+      <br>
+      <span>GT mask <strong>B×1×256×256</strong> → E() → <strong>y_0 B×4×32×32</strong> → add noise →  <strong>y_t B×4×32×32</strong> (training only)</span>
     </div>
   </div>
 
