@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MRSeg — Multimodal Routing and Region Refinement</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Geist', system-ui, sans-serif;
+      background: #0f0f10;
+      width: 100vw; height: 100vh;
+      overflow: hidden;
+    }
+    .deck { width: 100%; height: 100%; position: relative; }
+    .slide {
+      position: absolute; inset: 0;
+      display: none; flex-direction: column;
+      background: #f5f5f5;
+    }
+    .slide.active { display: flex; }
+
+    /* Header */
+    .slide-header {
+      padding: 18px 40px 12px;
+      border-bottom: 1px solid #bfc0c0;
+      display: flex; align-items: baseline; gap: 14px;
+      flex-shrink: 0;
+    }
+    .eyebrow {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px; color: #4f5d75;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .stitle {
+      font-family: 'Instrument Serif', serif;
+      font-size: 21px; color: #2d3142;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed; bottom: 18px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px; z-index: 100;
+    }
+    .nav-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #f5f5f5; width: 30px; height: 30px; border-radius: 6px;
+      cursor: pointer; font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.22); }
+    .dots { display: flex; gap: 6px; }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.28); cursor: pointer;
+    }
+    .dot.active { background: #f5f5f5; }
+
+    /* ── Slide 1 ── */
+    #s1 .body {
+      flex: 1; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden;
+    }
+    .col { padding: 24px 36px; }
+    .col + .col { border-left: 1px solid #bfc0c0; }
+    .col-label {
+      font-family: 'Geist Mono', monospace; font-size: 10px;
+      color: #bf4520; text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 18px;
+    }
+    .prob {
+      display: flex; gap: 12px; margin-bottom: 18px;
+    }
+    .prob-n {
+      font-family: 'Geist Mono', monospace; font-size: 11px;
+      color: #bf4520; min-width: 20px; padding-top: 1px;
+    }
+    .prob-t { font-size: 13px; color: #2d3142; line-height: 1.65; }
+    .prob-t strong { font-weight: 600; }
+    .card {
+      display: flex; gap: 10px; margin-bottom: 12px;
+      padding: 11px 13px; background: white;
+      border: 1px solid #bfc0c0; border-radius: 6px;
+    }
+    .card-icon { font-size: 15px; min-width: 22px; padding-top: 1px; }
+    .card-title { font-size: 12px; font-weight: 600; color: #2d3142; margin-bottom: 3px; }
+    .card-desc { font-size: 11.5px; color: #4f5d75; line-height: 1.5; }
+    .results { display: flex; gap: 10px; margin-top: 16px; }
+    .res {
+      flex: 1; padding: 10px 12px;
+      background: rgba(191,69,32,0.05);
+      border: 1px solid rgba(191,69,32,0.22); border-radius: 6px;
+    }
+    .res-num {
+      font-family: 'Instrument Serif', serif; font-size: 24px;
+      color: #bf4520; display: block; margin-bottom: 2px;
+    }
+    .res-lbl { font-size: 11px; color: #4f5d75; line-height: 1.4; }
+
+    /* ── Slide 2 ── */
+    #s2 .body {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 12px 28px; overflow: hidden;
+    }
+    #s2 .body img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    /* ── Slide 3 ── */
+    #s3 .body {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 12px 32px;
+    }
+    #s3 .body svg { max-width: 100%; }
+    .caption {
+      margin-top: 14px; font-size: 11.5px; color: #4f5d75;
+      text-align: center; font-family: 'Geist Mono', monospace;
+      max-width: 680px; line-height: 1.5;
+    }
+
+    /* ── Slides 4 & 5 ── */
+    .half-slide .body {
+      flex: 1; display: flex;
+      align-items: center; justify-content: center;
+      overflow: hidden; padding: 12px 28px;
+    }
+    .half-slide .body img { max-height: 100%; }
+  </style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ── Slide 1 : Motivation + Proposed ── -->
+  <div class="slide active" id="s1">
+    <div class="slide-header">
+      <span class="eyebrow">MRSeg · MICCAI 2026</span>
+      <h1 class="stitle">Motivation &amp; Proposed Method</h1>
+    </div>
+    <div class="body">
+      <div class="col">
+        <div class="col-label">Problem</div>
+        <div class="prob">
+          <span class="prob-n">01</span>
+          <span class="prob-t">Existing methods improve <strong>where</strong> modalities interact, but apply the <strong>same adapter subspace</strong> to every image–text pair regardless of case.</span>
+        </div>
+        <div class="prob">
+          <span class="prob-n">02</span>
+          <span class="prob-t">Different cases demand <strong>different adaptation</strong>: a small unilateral opacity needs local texture sensitivity; widespread infection needs broader spatial context.</span>
+        </div>
+        <div class="prob">
+          <span class="prob-n">03</span>
+          <span class="prob-t"><strong>Granularity mismatch</strong>: clinical descriptions are semantic/regional, yet segmentation must be pixel-level — a single cross-attention step cannot bridge both.</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label">Proposed — MRSeg</div>
+        <div class="card">
+          <span class="card-icon">❄️</span>
+          <div>
+            <div class="card-title">Frozen Backbones + LoRA</div>
+            <div class="card-desc">ConvNeXt-Tiny + PubMedBERT. LoRA on later stages; normalization trainable. Pretrained priors preserved.</div>
+          </div>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔀</span>
+          <div>
+            <div class="card-title">Pair Adapter</div>
+            <div class="card-desc">Router derives sparse route α from GAP(f₄) + Mean(t). Same α controls 3 separate adapter banks for t, f₃, f₄ — shared route, feature-specific params.</div>
+          </div>
+        </div>
+        <div class="card">
+          <span class="card-icon">🗺️</span>
+          <div>
+            <div class="card-title">Region Bridge</div>
+            <div class="card-desc">Text queries aggregate dense visual tokens → latent regions → self-attn + text cross-attn → zero-init residual back to feature map.</div>
+          </div>
+        </div>
+        <div class="results">
+          <div class="res">
+            <span class="res-num">90.90%</span>
+            <span class="res-lbl">Dice · QaTa-COV19<br><strong>SOTA</strong></span>
+          </div>
+          <div class="res">
+            <span class="res-num">81.53%</span>
+            <span class="res-lbl">Dice · MosMedData+<br><strong>SOTA</strong></span>
+          </div>
+          <div class="res">
+            <span class="res-num">7.11M</span>
+            <span class="res-lbl">Trainable params<br>7.60 GFLOPs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Slide 2 : Overall Architecture ── -->
+  <div class="slide" id="s2">
+    <div class="slide-header">
+      <span class="eyebrow">MRSeg · Architecture</span>
+      <h1 class="stitle">Overall Architecture</h1>
+    </div>
+    <div class="body">
+      <img src="./mrseg.png" alt="MRSeg overall architecture">
+    </div>
+  </div>
+
+  <!-- ── Slide 3 : Medical Image Adapter ── -->
+  <div class="slide" id="s3">
+    <div class="slide-header">
+      <span class="eyebrow">MRSeg · Component</span>
+      <h1 class="stitle">Medical Image Adapter</h1>
+    </div>
+    <div class="body">
+
+      <svg viewBox="0 0 760 215" width="720" role="img"
+           aria-labelledby="adp-title adp-desc">
+        <title id="adp-title">Medical Image Adapter</title>
+        <desc  id="adp-desc">Residual adapter: I₃ = I_base + A_img(I_gray). Zero-initialized final Conv ensures identity at training start.</desc>
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6"
+                  refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#4f5d75"/>
+          </marker>
+          <marker id="arr-acc" markerWidth="8" markerHeight="6"
+                  refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#bf4520"/>
+          </marker>
+        </defs>
+
+        <!-- equation -->
+        <text x="380" y="20" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="12.5"
+              fill="#2d3142" font-weight="500">
+          I₃  =  I_base  +  A_img(I_gray)
+        </text>
+
+        <!-- ── CONNECTORS (behind boxes) ── -->
+
+        <!-- I_gray → branch point -->
+        <line x1="110" y1="100" x2="136" y2="100"
+              stroke="#4f5d75" stroke-width="1.5"/>
+
+        <!-- fork up: branch → 3-ch Replicate -->
+        <polyline points="138,100 138,68 174,68"
+                  fill="none" stroke="#4f5d75" stroke-width="1.5"
+                  marker-end="url(#arr)"/>
+
+        <!-- fork down: branch → correction branch -->
+        <polyline points="138,100 138,168 174,168"
+                  fill="none" stroke="#4f5d75" stroke-width="1.5"
+                  marker-end="url(#arr)"/>
+
+        <!-- 3-ch Replicate → long top horizontal → down into ⊕ -->
+        <line x1="312" y1="68" x2="638" y2="68"
+              stroke="#4f5d75" stroke-width="1.5"/>
+        <line x1="638" y1="68" x2="638" y2="85"
+              stroke="#4f5d75" stroke-width="1.5"
+              marker-end="url(#arr)"/>
+
+        <!-- inter-correction arrows -->
+        <line x1="250" y1="168" x2="264" y2="168"
+              stroke="#4f5d75" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="350" y1="168" x2="364" y2="168"
+              stroke="#4f5d75" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="428" y1="168" x2="442" y2="168"
+              stroke="#4f5d75" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="502" y1="168" x2="514" y2="168"
+              stroke="#4f5d75" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- last correction box → ⊕ from below -->
+        <line x1="610" y1="168" x2="638" y2="168"
+              stroke="#4f5d75" stroke-width="1.5"/>
+        <line x1="638" y1="168" x2="638" y2="117"
+              stroke="#4f5d75" stroke-width="1.5"
+              marker-end="url(#arr)"/>
+
+        <!-- ⊕ → I₃ -->
+        <line x1="654" y1="100" x2="666" y2="100"
+              stroke="#4f5d75" stroke-width="1.5"
+              marker-end="url(#arr)"/>
+
+        <!-- ── BOXES (above connectors) ── -->
+
+        <!-- I_gray -->
+        <rect x="20" y="78" width="90" height="44" rx="6"
+              fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="65" y="97" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="12.5"
+              font-weight="600" fill="#2d3142">I_gray</text>
+        <text x="65" y="113" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#4f5d75">H×W×1</text>
+
+        <!-- 3-ch Replicate -->
+        <rect x="174" y="48" width="138" height="40" rx="6"
+              fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="243" y="64" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="11.5"
+              font-weight="600" fill="#2d3142">3-ch Replicate</text>
+        <text x="243" y="80" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#4f5d75">I_base</text>
+
+        <!-- dashed correction branch outline -->
+        <rect x="170" y="140" width="444" height="56" rx="6"
+              fill="rgba(79,93,117,0.04)"
+              stroke="#bfc0c0" stroke-width="1"
+              stroke-dasharray="5,3"/>
+
+        <!-- Conv 1×1 -->
+        <rect x="174" y="148" width="76" height="40" rx="6"
+              fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="212" y="164" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="11"
+              font-weight="600" fill="#2d3142">Conv</text>
+        <text x="212" y="180" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#4f5d75">1×1</text>
+
+        <!-- DW Conv 3×3 -->
+        <rect x="264" y="148" width="86" height="40" rx="6"
+              fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="307" y="164" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="11"
+              font-weight="600" fill="#2d3142">DW Conv</text>
+        <text x="307" y="180" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#4f5d75">3×3</text>
+
+        <!-- Norm -->
+        <rect x="364" y="148" width="64" height="40" rx="6"
+              fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="396" y="164" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="11"
+              font-weight="600" fill="#2d3142">Norm</text>
+        <text x="396" y="180" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#4f5d75">BN/LN</text>
+
+        <!-- GELU -->
+        <rect x="442" y="148" width="60" height="40" rx="6"
+              fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="472" y="171" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="11"
+              font-weight="600" fill="#2d3142">GELU</text>
+
+        <!-- Conv 1×1  zero-init  (accent) -->
+        <rect x="514" y="148" width="96" height="40" rx="6"
+              fill="rgba(191,69,32,0.06)"
+              stroke="#bf4520" stroke-width="1.5"/>
+        <text x="562" y="164" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="11"
+              font-weight="600" fill="#bf4520">Conv 1×1</text>
+        <text x="562" y="180" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#bf4520">zero-init</text>
+
+        <!-- correction label below dashed rect -->
+        <text x="392" y="210" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#4f5d75">A_img(I_gray)  — correction branch</text>
+
+        <!-- ⊕ -->
+        <circle cx="638" cy="100" r="16"
+                fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="638" y="106" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="20"
+              fill="#2d3142">⊕</text>
+
+        <!-- I₃ output -->
+        <rect x="666" y="78" width="78" height="44" rx="6"
+              fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="705" y="97" text-anchor="middle"
+              font-family="Geist,sans-serif" font-size="12.5"
+              font-weight="600" fill="#2d3142">I₃</text>
+        <text x="705" y="113" text-anchor="middle"
+              font-family="Geist Mono,monospace" font-size="10"
+              fill="#4f5d75">H×W×3</text>
+      </svg>
+
+      <p class="caption">
+        Zero-initialized final Conv → identity at training start. Learns only the domain correction required for medical images without disturbing the pretrained 3-channel statistics.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Slide 4 : Pair Adapter ── -->
+  <div class="slide half-slide" id="s4">
+    <div class="slide-header">
+      <span class="eyebrow">MRSeg · Component</span>
+      <h1 class="stitle">Routed Multimodal Adaptation — Pair Adapter</h1>
+    </div>
+    <div class="body">
+      <!-- Show left ~50% of mrseg_core.png -->
+      <img src="./mrseg_core.png"
+           alt="Pair Adapter diagram"
+           style="max-height:100%; clip-path:inset(0 52% 0 0);">
+    </div>
+  </div>
+
+  <!-- ── Slide 5 : Region Bridge ── -->
+  <div class="slide half-slide" id="s5">
+    <div class="slide-header">
+      <span class="eyebrow">MRSeg · Component</span>
+      <h1 class="stitle">Text-Aware Region Bridge</h1>
+    </div>
+    <div class="body">
+      <!-- Show right ~50% of mrseg_core.png -->
+      <img src="./mrseg_core.png"
+           alt="Region Bridge diagram"
+           style="max-height:100%; clip-path:inset(0 0 0 48%);
+                  transform:translateX(-48%);">
+    </div>
+  </div>
+
+</div><!-- .deck -->
+
+<!-- Navigation -->
+<nav class="nav">
+  <button class="nav-btn" id="prev">‹</button>
+  <div class="dots">
+    <div class="dot active" data-i="0"></div>
+    <div class="dot"        data-i="1"></div>
+    <div class="dot"        data-i="2"></div>
+    <div class="dot"        data-i="3"></div>
+    <div class="dot"        data-i="4"></div>
+  </div>
+  <button class="nav-btn" id="next">›</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.dot');
+  let cur = 0;
+  function go(n) {
+    slides[cur].classList.remove('active');
+    dots[cur].classList.remove('active');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('active');
+    dots[cur].classList.add('active');
+  }
+  document.getElementById('prev').addEventListener('click', () => go(cur - 1));
+  document.getElementById('next').addEventListener('click', () => go(cur + 1));
+  dots.forEach(d => d.addEventListener('click', () => go(+d.dataset.i)));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(cur + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(cur - 1);
+  });
+</script>
+</body>
+</html>
