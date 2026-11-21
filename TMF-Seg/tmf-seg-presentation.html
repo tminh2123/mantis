@@ -136,7 +136,7 @@
       <h1 class="stitle">Image Encoder — VAE-style Convolutional Encoder</h1>
     </div>
     <div class="body" style="flex:1;display:flex;align-items:center;justify-content:center;padding:8px 20px;overflow:hidden;">
-      <svg viewBox="0 0 760 258" style="max-width:100%;max-height:100%;">
+      <svg viewBox="0 0 760 274" style="max-width:100%;max-height:100%;">
         <defs>
           <marker id="e1" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
             <path d="M0,0 L8,3 L0,6 Z" fill="#4f5d75"/>
@@ -144,84 +144,90 @@
         </defs>
 
         <!-- INPUT -->
-        <rect x="8" y="104" width="80" height="50" rx="6" fill="white" stroke="#2d3142" stroke-width="1.5"/>
+        <rect x="8" y="108" width="80" height="54" rx="6" fill="white" stroke="#2d3142" stroke-width="1.5"/>
         <text x="48" y="124" text-anchor="middle" font-family="Geist,sans-serif" font-size="11" font-weight="600" fill="#2d3142">Image</text>
-        <text x="48" y="138" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">3×256×256</text>
-        <text x="48" y="150" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">B×C×H×W</text>
+        <text x="48" y="138" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">B×3</text>
+        <text x="48" y="150" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">×256×256</text>
 
         <!-- Conv stem -->
-        <line x1="88" y1="129" x2="102" y2="129" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
-        <rect x="104" y="115" width="72" height="28" rx="4" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
-        <text x="140" y="128" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#2d3142">Conv 3×3</text>
-        <text x="140" y="140" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">3→128 ch</text>
+        <line x1="88" y1="135" x2="102" y2="135" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
+        <rect x="104" y="119" width="78" height="32" rx="4" fill="#ececec" stroke="#bfc0c0" stroke-width="1"/>
+        <text x="143" y="131" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#2d3142">Conv 3×3</text>
+        <text x="143" y="144" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">3→128ch</text>
+        <text x="143" y="156" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">→B×128×256×256</text>
 
         <!-- Level 1 -->
-        <line x1="176" y1="129" x2="190" y2="129" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
-        <rect x="192" y="80" width="104" height="98" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
-        <text x="244" y="97" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2e5aa8" letter-spacing="0.06em">LEVEL 1</text>
-        <text x="244" y="112" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResNet × 2</text>
-        <text x="244" y="126" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">128ch · 256×256</text>
-        <line x1="230" y1="134" x2="258" y2="134" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
-        <text x="244" y="148" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Downsample</text>
-        <text x="244" y="162" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">→ 128×128</text>
+        <line x1="184" y1="135" x2="196" y2="135" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
+        <rect x="198" y="82" width="106" height="106" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
+        <text x="251" y="97" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2e5aa8" letter-spacing="0.06em">LEVEL 1</text>
+        <text x="251" y="112" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock × 2</text>
+        <text x="251" y="125" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">B×128×256×256</text>
+        <line x1="234" y1="133" x2="268" y2="133" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="251" y="146" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Downsample ×½</text>
+        <text x="251" y="159" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">B×128×128×128</text>
+        <text x="251" y="181" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#5a6580">ch: 128, H/W: ×½</text>
 
         <!-- Level 2 -->
-        <line x1="296" y1="129" x2="310" y2="129" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
-        <rect x="312" y="66" width="104" height="126" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
-        <text x="364" y="83" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2e5aa8" letter-spacing="0.06em">LEVEL 2</text>
-        <text x="364" y="98" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResNet × 2</text>
-        <text x="364" y="112" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">256ch · 128×128</text>
-        <text x="364" y="126" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" fill="#3d7c4a">+ Self-Attn</text>
-        <line x1="350" y1="134" x2="378" y2="134" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
-        <text x="364" y="148" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Downsample</text>
-        <text x="364" y="162" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">→ 64×64</text>
-        <text x="364" y="178" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">ch × 2 → 256</text>
+        <line x1="306" y1="135" x2="318" y2="135" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
+        <rect x="320" y="62" width="106" height="146" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
+        <text x="373" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2e5aa8" letter-spacing="0.06em">LEVEL 2</text>
+        <text x="373" y="93" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock × 2</text>
+        <text x="373" y="106" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">B×256×128×128</text>
+        <text x="373" y="118" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#3d7c4a">ch: 128→256</text>
+        <line x1="354" y1="126" x2="392" y2="126" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="373" y="140" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Downsample ×½</text>
+        <text x="373" y="153" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">B×256×64×64</text>
+        <text x="373" y="175" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#5a6580">ch: 256, H/W: ×¼</text>
+        <text x="373" y="187" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#5a6580">of original</text>
 
         <!-- Level 3 -->
-        <line x1="416" y1="129" x2="430" y2="129" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
-        <rect x="432" y="52" width="104" height="154" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
-        <text x="484" y="69" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2e5aa8" letter-spacing="0.06em">LEVEL 3</text>
-        <text x="484" y="84" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResNet × 2</text>
-        <text x="484" y="98" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">512ch · 64×64</text>
-        <text x="484" y="112" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" fill="#3d7c4a">+ Self-Attn</text>
-        <line x1="470" y1="120" x2="498" y2="120" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
-        <text x="484" y="134" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Downsample</text>
-        <text x="484" y="148" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">→ 32×32</text>
-        <text x="484" y="162" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">ch × 2 → 512</text>
-        <text x="484" y="192" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResNet × 2</text>
-        <text x="484" y="206" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">512ch · 32×32</text>
+        <line x1="428" y1="135" x2="440" y2="135" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
+        <rect x="442" y="42" width="106" height="186" rx="6" fill="rgba(46,90,168,0.06)" stroke="#2e5aa8" stroke-width="1.5"/>
+        <text x="495" y="58" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#2e5aa8" letter-spacing="0.06em">LEVEL 3</text>
+        <text x="495" y="73" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock × 2</text>
+        <text x="495" y="86" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">B×512×64×64</text>
+        <text x="495" y="98" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#3d7c4a">ch: 256→512</text>
+        <text x="495" y="110" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" fill="#3d7c4a">+ Self-Attn</text>
+        <line x1="474" y1="118" x2="516" y2="118" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="495" y="132" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">Downsample ×½</text>
+        <text x="495" y="145" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">B×512×32×32</text>
+        <text x="495" y="160" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock × 2</text>
+        <text x="495" y="173" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">B×512×32×32</text>
+        <text x="495" y="185" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" fill="#3d7c4a">+ Self-Attn</text>
+        <text x="495" y="218" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#5a6580">ch: 512, H/W: ⅛</text>
 
         <!-- Middle -->
-        <line x1="536" y1="129" x2="550" y2="129" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
-        <rect x="552" y="66" width="108" height="126" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
-        <text x="606" y="83" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520" letter-spacing="0.06em">MIDDLE</text>
-        <text x="606" y="98" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResNet</text>
-        <text x="606" y="112" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">512ch · 32×32</text>
-        <text x="606" y="126" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" fill="#3d7c4a">Self-Attn</text>
-        <line x1="590" y1="134" x2="622" y2="134" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
-        <text x="606" y="148" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResNet</text>
-        <text x="606" y="162" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">512ch · 32×32</text>
-        <text x="606" y="178" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520">bottleneck</text>
+        <line x1="550" y1="135" x2="562" y2="135" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
+        <rect x="564" y="62" width="108" height="146" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="618" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#bf4520" letter-spacing="0.06em">MIDDLE</text>
+        <text x="618" y="93" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock</text>
+        <text x="618" y="106" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">B×512×32×32</text>
+        <text x="618" y="118" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" fill="#3d7c4a">Self-Attn</text>
+        <text x="618" y="130" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">B×512×32×32</text>
+        <line x1="596" y1="138" x2="640" y2="138" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="618" y="152" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#2d3142">ResBlock</text>
+        <text x="618" y="165" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">B×512×32×32</text>
+        <text x="618" y="195" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8" fill="#bf4520">bottleneck</text>
 
         <!-- Projection -->
-        <line x1="660" y1="129" x2="674" y2="129" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
-        <rect x="676" y="104" width="80" height="50" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
-        <text x="716" y="121" text-anchor="middle" font-family="Geist,sans-serif" font-size="10.5" font-weight="600" fill="#bf4520">Conv 1×1</text>
-        <text x="716" y="135" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">512→embed</text>
-        <text x="716" y="147" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">_dim (4ch)</text>
+        <line x1="674" y1="135" x2="686" y2="135" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#e1)"/>
+        <rect x="688" y="108" width="66" height="54" rx="6" fill="rgba(191,69,32,0.07)" stroke="#bf4520" stroke-width="1.5"/>
+        <text x="721" y="123" text-anchor="middle" font-family="Geist,sans-serif" font-size="10" font-weight="600" fill="#bf4520">Conv 1×1</text>
+        <text x="721" y="136" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">512→4ch</text>
+        <text x="721" y="149" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#4f5d75">embed_dim</text>
+        <text x="721" y="161" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#bf4520">B×4×32×32</text>
 
-        <!-- y_c output label -->
-        <text x="720" y="168" text-anchor="middle" font-family="Geist,sans-serif" font-size="13" font-weight="700" fill="#bf4520">y_c</text>
-        <text x="720" y="182" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="#4f5d75">B×4×32×32</text>
+        <!-- y_c label -->
+        <text x="724" y="176" text-anchor="middle" font-family="Geist,sans-serif" font-size="14" font-weight="700" fill="#bf4520">y_c</text>
 
         <!-- Bottom legend -->
-        <rect x="8" y="228" width="744" height="26" rx="4" fill="white" stroke="#bfc0c0" stroke-width="1"/>
-        <rect x="16" y="234" width="10" height="10" rx="2" fill="rgba(61,124,74,0.15)" stroke="#3d7c4a" stroke-width="1"/>
-        <text x="32" y="243" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Self-Attention at resolution ∈ attn_resolutions</text>
-        <rect x="280" y="234" width="10" height="10" rx="2" fill="rgba(191,69,32,0.15)" stroke="#bf4520" stroke-width="1"/>
-        <text x="296" y="243" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Bottleneck 32×32 (deepest)</text>
-        <rect x="500" y="234" width="10" height="10" rx="2" fill="rgba(46,90,168,0.15)" stroke="#2e5aa8" stroke-width="1"/>
-        <text x="516" y="243" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Downsampling levels (×½ each)</text>
+        <rect x="8" y="244" width="744" height="26" rx="4" fill="white" stroke="#bfc0c0" stroke-width="1"/>
+        <rect x="16" y="250" width="10" height="10" rx="2" fill="rgba(61,124,74,0.15)" stroke="#3d7c4a" stroke-width="1"/>
+        <text x="32" y="259" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">Self-Attn at resolutions ≤ 64×64</text>
+        <rect x="230" y="250" width="10" height="10" rx="2" fill="rgba(61,124,74,0.15)" stroke="#3d7c4a" stroke-width="1"/>
+        <text x="246" y="259" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">ch doubles per level: 128→256→512</text>
+        <rect x="470" y="250" width="10" height="10" rx="2" fill="rgba(191,69,32,0.15)" stroke="#bf4520" stroke-width="1"/>
+        <text x="486" y="259" font-family="Geist Mono,monospace" font-size="9" fill="#2d3142">spatial: 256→128→64→32 (÷2 each)</text>
       </svg>
     </div>
   </div>
