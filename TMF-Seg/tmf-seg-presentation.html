@@ -131,15 +131,16 @@
       <span><strong>Image I</strong> B×3×256×256</span>·
       <span>φ_θ →</span>
       <span><strong>y_c</strong> B×4×32×32</span>·
-      <span>BioBERT →</span>
+      <span>BioBERT (L=10) →</span>
       <span><strong>z_text</strong> B×10×768</span>·
-      <span>Cross-Attn →</span>
-      <span><strong>z_fused</strong> B×4×32×32</span>·
-      <span>TGME →</span>
-      <span><strong>z_enhanced</strong> B×4×32×32</span>·
-      <span>Concat(y_T, z_enh) →</span>
-      <span><strong>B×8×32×32</strong> → U-Net → ε̂ B×4×32×32 → D() →</span>
-      <span><strong>Ŝ</strong> B×1×256×256</span>
+      <br>
+      <span>Cross-Attn: Q=Linear(4→512)→<strong>B×1024×512</strong></span>·
+      <span>K,V=Linear(768→512)→<strong>B×10×512</strong></span>·
+      <span>Scores <strong>B×8×1024×10</strong></span>·
+      <span>Out→Linear(512→4)→ <strong>z_fused B×4×32×32</strong></span>·
+      <span>TGME → <strong>z_enhanced B×4×32×32</strong></span>·
+      <br>
+      <span>Concat(y_T,z_enh) → <strong>B×8×32×32</strong> → U-Net → ε̂ <strong>B×4×32×32</strong> → D() → <strong>Ŝ B×1×256×256</strong></span>
     </div>
   </div>
 
