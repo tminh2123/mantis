@@ -119,13 +119,13 @@
       max-width: 680px; line-height: 1.5;
     }
 
-    /* ── Slides 4 & 5 ── */
-    .half-slide .body {
+    /* ── Slides 4 & 5 (SVG) ── */
+    .svg-slide .body {
       flex: 1; display: flex;
       align-items: center; justify-content: center;
-      overflow: hidden; padding: 12px 28px;
+      overflow: hidden; padding: 8px 20px;
     }
-    .half-slide .body img { max-height: 100%; }
+    .svg-slide .body svg { max-width: 100%; max-height: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -386,31 +386,199 @@
   </div>
 
   <!-- ── Slide 4 : Pair Adapter ── -->
-  <div class="slide half-slide" id="s4">
+  <div class="slide svg-slide" id="s4">
     <div class="slide-header">
       <span class="eyebrow">MRSeg · Component</span>
       <h1 class="stitle">Routed Multimodal Adaptation — Pair Adapter</h1>
     </div>
     <div class="body">
-      <!-- Show left ~50% of mrseg_core.png -->
-      <img src="./mrseg_core.png"
-           alt="Pair Adapter diagram"
-           style="max-height:100%; clip-path:inset(0 52% 0 0);">
+      <svg viewBox="0 0 760 290" role="img" aria-labelledby="pa-t pa-d"
+           style="max-width:100%;max-height:100%;">
+        <title id="pa-t">Pair Adapter</title>
+        <desc id="pa-d">Same sparse route α applied to separate adapter banks for t, f₃, f₄.</desc>
+        <defs>
+          <marker id="p1" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#4f5d75"/>
+          </marker>
+          <marker id="p2" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#bf4520"/>
+          </marker>
+        </defs>
+
+        <!-- ── CONNECTIONS ── -->
+        <!-- t → router -->
+        <line x1="156" y1="52" x2="188" y2="52" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#p1)"/>
+        <!-- f₄ → router -->
+        <line x1="604" y1="52" x2="572" y2="52" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#p1)"/>
+        <!-- α fan-out left → bank_t -->
+        <polyline points="380,96 380,114 120,114 120,138" fill="none" stroke="#bf4520" stroke-width="2" marker-end="url(#p2)"/>
+        <!-- α fan-out center → bank_f₃ -->
+        <line x1="380" y1="96" x2="380" y2="138" stroke="#bf4520" stroke-width="2" marker-end="url(#p2)"/>
+        <!-- α fan-out right → bank_f₄ -->
+        <polyline points="380,96 380,114 640,114 640,138" fill="none" stroke="#bf4520" stroke-width="2" marker-end="url(#p2)"/>
+        <!-- banks → outputs -->
+        <line x1="120" y1="214" x2="120" y2="234" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#p1)"/>
+        <line x1="380" y1="214" x2="380" y2="234" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#p1)"/>
+        <line x1="640" y1="214" x2="640" y2="234" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#p1)"/>
+
+        <!-- ── BOXES ── -->
+
+        <!-- Input: t -->
+        <rect x="78" y="34" width="78" height="36" rx="6" fill="white" stroke="#bfc0c0" stroke-width="1.5"/>
+        <text x="117" y="49" text-anchor="middle" font-family="Geist,sans-serif" font-size="13" font-weight="600" fill="#2d3142">t</text>
+        <text x="117" y="63" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">tokens</text>
+
+        <!-- Input: f₄ -->
+        <rect x="604" y="34" width="78" height="36" rx="6" fill="white" stroke="#bfc0c0" stroke-width="1.5"/>
+        <text x="643" y="49" text-anchor="middle" font-family="Geist,sans-serif" font-size="13" font-weight="600" fill="#2d3142">f₄</text>
+        <text x="643" y="63" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">H/32×W/32</text>
+
+        <!-- Router -->
+        <rect x="190" y="16" width="380" height="80" rx="6" fill="#ececec" stroke="#bfc0c0" stroke-width="1.5"/>
+        <text x="210" y="34" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75" letter-spacing="0.08em">ROUTER</text>
+        <text x="380" y="55" text-anchor="middle" font-family="Geist,sans-serif" font-size="12.5" fill="#2d3142">Mean(t)  +  GAP(f₄)  →  Concat + MLP  →  r</text>
+        <text x="380" y="78" text-anchor="middle" font-family="Geist Mono,monospace" font-size="12.5" fill="#bf4520">α  =  TopKNorm( softmax(r) )   M=4,  K=2</text>
+
+        <!-- α label over central drop -->
+        <rect x="362" y="93" width="36" height="20" rx="2" fill="#f5f5f5"/>
+        <text x="380" y="107" text-anchor="middle" font-family="Geist Mono,monospace" font-size="13" font-weight="600" fill="#bf4520">α</text>
+        <!-- "shared route" label over horizontal -->
+        <rect x="318" y="118" width="124" height="16" rx="2" fill="#f5f5f5"/>
+        <text x="380" y="130" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#bf4520">shared route</text>
+
+        <!-- Bank for t -->
+        <rect x="20" y="138" width="200" height="76" rx="6" fill="rgba(79,93,117,0.05)" stroke="#4f5d75" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="40" y="156" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">BANK FOR  t</text>
+        <text x="120" y="178" text-anchor="middle" font-family="Geist,sans-serif" font-size="12.5" font-weight="600" fill="#2d3142">( A_m^t,  B_m^t ) × M</text>
+        <text x="40" y="204" font-family="Geist Mono,monospace" font-size="9.5" fill="#5a6580">← adapts full text tokens</text>
+
+        <!-- Bank for f₃ -->
+        <rect x="280" y="138" width="200" height="76" rx="6" fill="rgba(79,93,117,0.05)" stroke="#4f5d75" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="300" y="156" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">BANK FOR  f₃</text>
+        <text x="380" y="178" text-anchor="middle" font-family="Geist,sans-serif" font-size="12.5" font-weight="600" fill="#2d3142">( A_m^3,  B_m^3 ) × M</text>
+        <text x="300" y="204" font-family="Geist Mono,monospace" font-size="9.5" fill="#5a6580">← adapts f₃  (1/16 scale)</text>
+
+        <!-- Bank for f₄ -->
+        <rect x="540" y="138" width="200" height="76" rx="6" fill="rgba(79,93,117,0.05)" stroke="#4f5d75" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="560" y="156" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">BANK FOR  f₄</text>
+        <text x="640" y="178" text-anchor="middle" font-family="Geist,sans-serif" font-size="12.5" font-weight="600" fill="#2d3142">( A_m^4,  B_m^4 ) × M</text>
+        <text x="560" y="204" font-family="Geist Mono,monospace" font-size="9.5" fill="#5a6580">← adapts f₄  (1/32 scale)</text>
+
+        <!-- Output boxes -->
+        <rect x="20" y="234" width="200" height="40" rx="6" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="120" y="250" text-anchor="middle" font-family="Geist,sans-serif" font-size="13" font-weight="600" fill="#2d3142">t′</text>
+        <text x="120" y="266" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">adapted text tokens</text>
+
+        <rect x="280" y="234" width="200" height="40" rx="6" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="380" y="250" text-anchor="middle" font-family="Geist,sans-serif" font-size="13" font-weight="600" fill="#2d3142">f₃′</text>
+        <text x="380" y="266" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">adapted 1/16 feature</text>
+
+        <rect x="540" y="234" width="200" height="40" rx="6" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="640" y="250" text-anchor="middle" font-family="Geist,sans-serif" font-size="13" font-weight="600" fill="#2d3142">f₄′</text>
+        <text x="640" y="266" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">adapted 1/32 feature</text>
+
+        <!-- Formula -->
+        <text x="380" y="286" text-anchor="middle" font-family="Geist Mono,monospace" font-size="11" fill="#2d3142">h′ = h + (η/r) Σ αm Bm(Am LN(h))   for h ∈ {t, f₃, f₄}</text>
+      </svg>
     </div>
   </div>
 
   <!-- ── Slide 5 : Region Bridge ── -->
-  <div class="slide half-slide" id="s5">
+  <div class="slide svg-slide" id="s5">
     <div class="slide-header">
       <span class="eyebrow">MRSeg · Component</span>
       <h1 class="stitle">Text-Aware Region Bridge</h1>
     </div>
     <div class="body">
-      <!-- Show right ~50% of mrseg_core.png -->
-      <img src="./mrseg_core.png"
-           alt="Region Bridge diagram"
-           style="max-height:100%; clip-path:inset(0 0 0 48%);
-                  transform:translateX(-48%);">
+      <svg viewBox="0 0 760 190" role="img" aria-labelledby="rb-t rb-d"
+           style="max-width:100%;max-height:100%;">
+        <title id="rb-t">Region Bridge</title>
+        <desc id="rb-d">Text queries compress dense visual features into R region tokens, refine them, then reproject back to H×W.</desc>
+        <defs>
+          <marker id="r1" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#4f5d75"/>
+          </marker>
+          <marker id="r2" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#2e5aa8"/>
+          </marker>
+          <marker id="r3" markerWidth="8" markerHeight="6" refX="7.5" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#bfc0c0"/>
+          </marker>
+        </defs>
+
+        <!-- ── CONNECTIONS ── -->
+        <!-- arrows between boxes at y=106 (box center) -->
+        <line x1="182" y1="106" x2="198" y2="106" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#r1)"/>
+        <line x1="362" y1="106" x2="378" y2="106" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#r1)"/>
+        <line x1="542" y1="106" x2="558" y2="106" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#r1)"/>
+        <!-- output arrow after box4 -->
+        <line x1="722" y1="106" x2="744" y2="106" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#r1)"/>
+
+        <!-- t' skip: dashed, Box1-top → up → across → Box3-top -->
+        <polyline points="100,52 100,28 460,28 460,52"
+                  fill="none" stroke="#2e5aa8" stroke-width="1.5"
+                  stroke-dasharray="5,3" marker-end="url(#r2)"/>
+
+        <!-- N→R and R→N labels with masks (below the step arrows) -->
+        <!-- N→R between box1 and box2 -->
+        <rect x="162" y="112" width="56" height="16" rx="2" fill="#f5f5f5"/>
+        <text x="190" y="124" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">N → R</text>
+
+        <!-- R→N between box3 and box4 -->
+        <rect x="522" y="112" width="56" height="16" rx="2" fill="#f5f5f5"/>
+        <text x="550" y="124" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">R → N</text>
+
+        <!-- ── BOXES (drawn after arrows) ── -->
+
+        <!-- Box 1: Extract -->
+        <rect x="20" y="52" width="162" height="108" rx="6" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="40" y="69" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">EXTRACT</text>
+        <text x="101" y="88" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10.5" fill="#2d3142">Q = Wq Mean(t′)</text>
+        <text x="101" y="103" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">R×D queries</text>
+        <text x="101" y="120" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10.5" fill="#2d3142">Z = Wf · F</text>
+        <text x="101" y="135" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">N×D,  N = H×W</text>
+        <text x="101" y="151" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#5a6580">R  &lt;&lt;  N</text>
+
+        <!-- t' label above Box1 (source of skip) -->
+        <text x="40" y="45" font-family="Geist Mono,monospace" font-size="10" fill="#2e5aa8">t′ →</text>
+        <!-- "also for cross-attn" label above skip midpoint -->
+        <rect x="195" y="20" width="140" height="16" rx="2" fill="#f5f5f5"/>
+        <text x="265" y="32" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#2e5aa8">t′  (also for cross-attn)</text>
+
+        <!-- Box 2: Aggregate -->
+        <rect x="200" y="52" width="162" height="108" rx="6" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="220" y="69" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">AGGREGATE</text>
+        <text x="281" y="88" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10.5" fill="#2d3142">A = softmax(QZ^T/√D)</text>
+        <text x="281" y="103" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">R×N assignment</text>
+        <text x="281" y="120" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10.5" fill="#2d3142">G = A · Z</text>
+        <text x="281" y="135" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">R×D region tokens</text>
+        <text x="281" y="151" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#5a6580">text selects regions</text>
+
+        <!-- Box 3: Refine -->
+        <rect x="380" y="52" width="162" height="108" rx="6" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="400" y="69" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">REFINE</text>
+        <text x="461" y="88" text-anchor="middle" font-family="Geist,sans-serif" font-size="11.5" fill="#2d3142">Self-Attn( G )</text>
+        <text x="461" y="105" text-anchor="middle" font-family="Geist,sans-serif" font-size="11.5" fill="#2e5aa8">Cross-Attn( G, t′ )</text>
+        <text x="461" y="122" text-anchor="middle" font-family="Geist,sans-serif" font-size="11.5" fill="#2d3142">FFN</text>
+        <text x="461" y="139" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">→ Ĝ   R×D refined</text>
+        <!-- t' skip enters here from above -->
+        <text x="461" y="153" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#2e5aa8">↑ t′ via skip above</text>
+
+        <!-- Box 4: Reproject -->
+        <rect x="560" y="52" width="162" height="108" rx="6" fill="#f5f5f5" stroke="#2d3142" stroke-width="1.5"/>
+        <text x="580" y="69" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">REPROJECT</text>
+        <text x="641" y="88" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10.5" fill="#2d3142">A^T · Ĝ → N×D</text>
+        <text x="641" y="104" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#4f5d75">reshape → H×W×C</text>
+        <text x="641" y="122" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10.5" fill="#bf4520">F′ = F + γ·Conv₁ₓ₁(·)</text>
+        <text x="641" y="137" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10" fill="#bf4520">(zero-init Conv)</text>
+        <text x="641" y="152" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9.5" fill="#5a6580">identity at init</text>
+
+        <!-- Output label -->
+        <text x="750" y="111" font-family="Geist,sans-serif" font-size="14" font-weight="600" fill="#2d3142">F′</text>
+
+        <!-- Bottom annotation -->
+        <text x="380" y="182" text-anchor="middle" font-family="Geist Mono,monospace" font-size="10.5" fill="#4f5d75">compress  N→R  ·  refine with text  ·  expand  R→N  ·  residual</text>
+      </svg>
     </div>
   </div>
 
