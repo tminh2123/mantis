@@ -481,10 +481,8 @@
         <text x="94" y="242" text-anchor="middle" font-family="Geist Mono,monospace" font-size="9" fill="white">ENC L3  ·  768ch  ·  4×4</text>
         <text x="94" y="260" text-anchor="middle" font-family="Geist Mono,monospace" font-size="8.5" fill="#2d3142">ResBlock×2 + Attn  ⊕t</text>
 
-        <!-- enc L3 → bottleneck (via implicit L4 step) -->
+        <!-- enc L3 → bottleneck (L4 implicit in channel_mult) -->
         <polyline points="94,268 94,275 296,275" fill="none" stroke="#4f5d75" stroke-width="1.5" marker-end="url(#u1)"/>
-        <rect x="96" y="268" width="104" height="12" rx="2" fill="#f5f5f5"/>
-        <text x="148" y="278" font-family="Geist Mono,monospace" font-size="7.5" fill="#4f5d75">→L4: 768ch·2×2, no Attn</text>
 
         <!-- ── BOTTLENECK (center bottom) ── -->
         <rect x="296" y="258" width="168" height="30" rx="6" fill="#2d3142"/>
