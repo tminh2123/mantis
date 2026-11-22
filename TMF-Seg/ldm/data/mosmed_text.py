@@ -265,8 +265,8 @@ class MosMedBase(Dataset):
             if mask_img is None:
                 raise ValueError(f"Failed to read mask: {mask_path}")
 
-            # 如果mask是单通道灰度图，直接使用
-            segmentation = Image.fromarray(mask_img)
+            # 转为RGB格式（与first_stage_model kl-f8 3通道兼容）
+            segmentation = Image.fromarray(cv2.cvtColor(mask_img, cv2.COLOR_GRAY2RGB))
 
             # 读取CT图像
             img_img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)

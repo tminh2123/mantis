@@ -105,6 +105,7 @@ data:
         use_text: true
         num_classes: 2
         mask_type: infection  # 或 "lung"
+        text_source: data/QaTa-COV19/train/texts.json
     validation:
       target: ldm.data.Qata-cov19_text.QaTaCovidValidation
       params:
@@ -112,6 +113,7 @@ data:
         use_text: true
         num_classes: 2
         mask_type: infection
+        text_source: data/QaTa-COV19/val/texts.json
     test:
       target: ldm.data.Qata-cov19_text.QaTaCovidTest
       params:
@@ -119,6 +121,7 @@ data:
         use_text: true
         num_classes: 2
         mask_type: infection
+        text_source: data/QaTa-COV19/test/texts.json
 
 lightning:
   callbacks:

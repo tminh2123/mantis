@@ -158,7 +158,7 @@ class QaTaCovidBase(Dataset):
                         break
 
                 # 查找text列
-                for col in ['text_description', 'text', 'description', 'caption', 'label',
+                for col in ['text_description', 'text', 'description', 'Description', 'caption', 'label',
                             'findings', 'report', 'Text', 'clinical_findings', 'diagnosis']:
                     if col in df.columns:
                         text_col = col
@@ -299,7 +299,7 @@ class QaTaCovidBase(Dataset):
             if mask_img is None:
                 raise ValueError(f"Failed to read mask: {mask_path}")
 
-            segmentation = Image.fromarray(mask_img)
+            segmentation = Image.fromarray(cv2.cvtColor(mask_img, cv2.COLOR_GRAY2RGB))
 
             # 读取CT图像
             img_img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)

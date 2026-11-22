@@ -222,6 +222,9 @@ __marimo__/
 *.
 checkpoints/*.pth
 *.pth
+*.ckpt
+TMF-Seg/logs/
+TMF-Seg/data/
 
 
 .DS_Store

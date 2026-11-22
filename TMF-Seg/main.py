@@ -4,6 +4,14 @@ import time
 t0 = time.time()
 import argparse, os, sys, datetime, glob, importlib, csv
 import numpy as np
+if not hasattr(np, "Inf"):
+    np.Inf = np.inf
+if not hasattr(np, "float"):
+    np.float = float
+if not hasattr(np, "int"):
+    np.int = int
+if not hasattr(np, "bool"):
+    np.bool = bool
 import torch
 import torchvision
 # import faulthandler
@@ -272,7 +280,7 @@ class SetupCallback(Callback):
             # ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
             # trainer.save_checkpoint(ckpt_path)
 
-    def on_pretrain_routine_start(self, trainer, pl_module):
+    def on_fit_start(self, trainer, pl_module):
         if trainer.global_rank == 0:
             # Create logdirs and save configs
             os.makedirs(self.logdir, exist_ok=True)
@@ -313,7 +321,7 @@ class ImageLogger(Callback):
         self.batch_freq = batch_frequency
         self.max_images = max_images
         self.logger_log_images = {
-            pl.loggers.TestTubeLogger: self._testtube,
+            pl.loggers.TensorBoardLogger: self._testtube,
         }
         self.log_steps = [2 ** n for n in range(int(np.log2(self.batch_freq)) + 1)]
         if not increase_log_steps:
@@ -454,11 +462,11 @@ class ImageLogger(Callback):
             return True
         return False
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx=0):
         if not self.disabled and (pl_module.global_step > 0 or self.log_first_step):
             self.log_img(pl_module, batch, batch_idx, split="train")
 
-    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx=0):
         if not self.disabled and pl_module.global_step > 0:
             self.log_img(pl_module, batch, batch_idx, split="val")
         if hasattr(pl_module, 'calibrate_grad_norm'):
@@ -468,15 +476,18 @@ class ImageLogger(Callback):
 
 class CUDACallback(Callback):
     # see https://github.com/SeanNaren/minGPT/blob/master/mingpt/callback.py
+    def _gpu(self, trainer):
+        return getattr(trainer, "root_gpu", None) or getattr(trainer.strategy, "root_device", 0)
+
     def on_train_epoch_start(self, trainer, pl_module):
         # Reset the memory use counter
-        torch.cuda.reset_peak_memory_stats(trainer.root_gpu)
-        torch.cuda.synchronize(trainer.root_gpu)
+        torch.cuda.reset_peak_memory_stats(self._gpu(trainer))
+        torch.cuda.synchronize(self._gpu(trainer))
         self.start_time = time.time()
 
-    def on_train_epoch_end(self, trainer, pl_module, outputs):
-        torch.cuda.synchronize(trainer.root_gpu)
-        max_memory = torch.cuda.max_memory_allocated(trainer.root_gpu) / 2 ** 20
+    def on_train_epoch_end(self, trainer, pl_module, outputs=None):
+        torch.cuda.synchronize(self._gpu(trainer))
+        max_memory = torch.cuda.max_memory_allocated(self._gpu(trainer)) / 2 ** 20
         epoch_time = time.time() - self.start_time
 
         try:
@@ -635,7 +646,7 @@ if __name__ == "__main__":
                 }
             },
             "testtube": {
-                "target": "pytorch_lightning.loggers.TestTubeLogger",
+                "target": "pytorch_lightning.loggers.TensorBoardLogger",
                 "params": {
                     "name": "testtube",
                     "save_dir": logdir,

@@ -551,7 +551,7 @@ class LatentDiffusion(DDPM):
         self.cond_ids[:self.num_timesteps_cond] = ids
 
     @torch.no_grad()
-    def on_train_batch_start(self, batch, batch_idx, dataloader_idx):
+    def on_train_batch_start(self, batch, batch_idx, dataloader_idx=0):
         # only for very first batch
         if self.current_epoch == 0 and self.global_step == 0 and batch_idx == 0:  # and not self.restarted_from_ckpt:
             if self.scale_by_std:
