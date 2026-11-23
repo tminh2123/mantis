@@ -1,0 +1,34 @@
+project:
+  dataset: qata
+  seed: 42
+
+data:
+  train_dir: ../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+  val_dir:   ../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+  test_dir:  ../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
+  image_size: 224
+  num_workers: 4
+
+model:
+  convnext_path: pretrained_models/convnext-tiny-224
+  bert_path:     pretrained_models/pubmedbert
+  max_token_len: 24
+  lora_rank: 8
+  lora_scale: 16.0
+  lora_dropout: 0.05
+  router_num_adapters: 4
+  router_topk: 2
+  pair_adapter_rank: 8
+  pair_adapter_eta: 16.0
+  num_regions_f3: 12
+  num_regions_f4: 6
+  decoder_dim: 192
+  img_adapter_channels: 64
+
+train:
+  epochs: 200
+  batch_size: 8
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  grad_clip: 1.0
+  patience: 60
