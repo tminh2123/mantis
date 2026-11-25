@@ -3,9 +3,9 @@ project:
   seed: 42
 
 data:
-  train_dir: ../../dataset/MosMedDataPlus/Train_Folder
-  val_dir:   ../../dataset/MosMedDataPlus/Val_Folder
-  test_dir:  ../../dataset/MosMedDataPlus/Test_Folder
+  train_dir: ../../../dataset/MosMedDataPlus/Train_Folder
+  val_dir:   ../../../dataset/MosMedDataPlus/Val_Folder
+  test_dir:  ../../../dataset/MosMedDataPlus/Test_Folder
   image_size: 224
   num_workers: 4
 

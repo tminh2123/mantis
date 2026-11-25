@@ -3,9 +3,9 @@ project:
   seed: 42
 
 data:
-  train_dir: ../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
-  val_dir:   ../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
-  test_dir:  ../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
+  train_dir: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+  val_dir:   ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+  test_dir:  ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
   image_size: 224
   num_workers: 4
 
