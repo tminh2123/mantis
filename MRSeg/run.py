@@ -44,6 +44,11 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
 
+def unwrap_model(model: nn.Module) -> nn.Module:
+    """Return the underlying model, unwrapping DataParallel if needed."""
+    return model.module if isinstance(model, nn.DataParallel) else model
+
+
 def setup_logger(log_file: str, append: bool = False) -> logging.Logger:
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     logger = logging.getLogger("mrseg")
@@ -121,7 +126,7 @@ def train(cfg, model, device, logger, resume=None):
     warmup_epochs = tcfg.get("warmup_epochs", 5)
 
     encoder_params, new_params = [], []
-    for n, p in model.named_parameters():
+    for n, p in unwrap_model(model).named_parameters():
         if not p.requires_grad:
             continue
         if "visual_enc" in n or "text_enc" in n:
@@ -162,7 +167,7 @@ def train(cfg, model, device, logger, resume=None):
 
     if resume:
         ckpt = torch.load(resume, map_location="cpu")
-        model.load_state_dict(ckpt["model"])
+        unwrap_model(model).load_state_dict(ckpt["model"])
         optimizer.load_state_dict(ckpt["optimizer"])
         scheduler.load_state_dict(ckpt["scheduler"])
         if "scaler" in ckpt:
@@ -190,7 +195,7 @@ def train(cfg, model, device, logger, resume=None):
             scaler.scale(loss).backward()
             if tcfg.get("grad_clip", 1.0) > 0:
                 scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(params, tcfg["grad_clip"])
+                torch.nn.utils.clip_grad_norm_(encoder_params + new_params, tcfg["grad_clip"])
             scaler.step(optimizer)
             scaler.update()
             loss_m.update(loss.item(), images.size(0))
@@ -209,7 +214,7 @@ def train(cfg, model, device, logger, resume=None):
             best_dice  = metrics["dice"]
             no_improve = 0
             save_checkpoint(
-                {"epoch": epoch+1, "model": model.state_dict(), "best_dice": best_dice},
+                {"epoch": epoch+1, "model": unwrap_model(model).state_dict(), "best_dice": best_dice},
                 str(ckpt_dir / "best.pth"),
             )
             logger.info(f"  → Saved best (Dice={best_dice:.2f}%)")
@@ -217,7 +222,7 @@ def train(cfg, model, device, logger, resume=None):
             no_improve += 1
 
         save_checkpoint(
-            {"epoch": epoch+1, "model": model.state_dict(),
+            {"epoch": epoch+1, "model": unwrap_model(model).state_dict(),
              "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(),
              "scaler": scaler.state_dict(),
              "best_dice": best_dice, "no_improve": no_improve},
@@ -237,7 +242,7 @@ def full_evaluate(cfg, model, device, logger):
     logger.info("=" * 60)
     ckpt_path = cfg.get("checkpoint_path", "")
     if ckpt_path and Path(ckpt_path).exists():
-        load_checkpoint(ckpt_path, model)
+        load_checkpoint(ckpt_path, unwrap_model(model))
         logger.info(f"Loaded: {ckpt_path}")
     test_loader = get_dataloader(
         cfg["data"]["test_dir"], batch_size=cfg["train"]["batch_size"],
@@ -262,6 +267,7 @@ def parse_args():
     p.add_argument("--epochs",  type=int,       help="Override epochs")
     p.add_argument("--batch",   type=int,       help="Override batch size")
     p.add_argument("--output",  default="output", help="Output root dir")
+    p.add_argument("--gpu",     default=None,     help="GPU IDs to use, e.g. '0' or '0,1,2'")
     return p.parse_args()
 
 
@@ -287,17 +293,28 @@ def main():
 
     seed = cfg.get("project", {}).get("seed", 42)
     set_seed(seed)
+
+    # GPU setup
+    if args.gpu is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     device = get_device()
+    gpu_ids = list(range(torch.cuda.device_count())) if device.type == "cuda" else []
+
     os.makedirs(cfg["checkpoint_dir"], exist_ok=True)
 
     logger = setup_logger(log_file, append=(args.mode == "eval"))
     logger.info(f"Experiment : {exp_name}")
     logger.info(f"Device     : {device}")
-    if torch.cuda.is_available():
-        logger.info(f"GPU        : {torch.cuda.get_device_name(0)}")
+    if gpu_ids:
+        names = [torch.cuda.get_device_name(i) for i in gpu_ids]
+        logger.info(f"GPU(s)     : {', '.join(names)}")
 
     model = build_mrseg(cfg).to(device)
-    num_params = sum(p.numel() for p in model.parameters())
+    if len(gpu_ids) > 1:
+        model = nn.DataParallel(model, device_ids=gpu_ids)
+        logger.info(f"DataParallel: {len(gpu_ids)} GPUs")
+
+    num_params = sum(p.numel() for p in unwrap_model(model).parameters())
     logger.info(f"Encoders   : ConvNeXt-Tiny (LoRA) + BiomedBERT (LoRA)")
     logger.info(f"Parameters : {num_params:,}")
     logger.info("")
