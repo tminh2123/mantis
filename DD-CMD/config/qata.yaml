@@ -26,7 +26,7 @@ TRAIN:
   min_epochs: 1
   max_epochs: 200
   patience: 20
-  device: [0, 1, 2]
+  device: 1
   seed: 42
 
   ckpt_monitor: val_dice
