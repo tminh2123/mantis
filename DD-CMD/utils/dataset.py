@@ -5,6 +5,10 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
+# Fix monai seed overflow bug
+import monai
+monai.utils.set_determinism(seed=42)
+
 from monai.transforms import (
     Compose,
     LoadImaged,
