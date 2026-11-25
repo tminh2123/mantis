@@ -132,6 +132,7 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
         num_workers=dcfg.get("num_workers", 4),
         pin_memory=True,
         drop_last=True,
+        persistent_workers=True,
     )
 
     # Val only on main process
@@ -209,6 +210,8 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
             logger.info(f"Resumed from {resume} at epoch {start_epoch} (best Dice={best_dice:.2f}%)")
 
     for epoch in range(start_epoch, tcfg["epochs"]):
+        if is_ddp:
+            dist.barrier()   # sync before each epoch
         if train_sampler is not None:
             train_sampler.set_epoch(epoch)   # ensures different shuffle per epoch
 
