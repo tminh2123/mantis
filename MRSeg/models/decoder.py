@@ -50,12 +50,12 @@ class MRSegDecoder(nn.Module):
         self.proj4 = nn.Conv2d(768, dim, 1)
         self.proj3 = nn.Conv2d(384, dim, 1)
         self.proj1 = nn.Conv2d(96, dim, 1)
-        self.proj_skip1 = nn.Conv2d(32, dim, 1)
-        self.proj_skip2 = nn.Conv2d(16, dim, 1)
 
         # f2 is already 192 channels (matches decoder dim); no proj needed
-        self.gated2 = GatedFuse(dim, dim)
-        self.gated1 = GatedFuse(dim, dim)
+        self.gated2 = GatedFuse(dim, dim)      # for f2
+        self.gated1 = GatedFuse(dim, dim)      # for f1
+        self.gated_skip1 = GatedFuse(dim, 32)  # for skip1 (H/2)
+        self.gated_skip2 = GatedFuse(dim, 16)  # for skip2 (H)
 
         # Prediction heads
         self.coarse_head = nn.Conv2d(dim, 1, 1)
@@ -74,8 +74,8 @@ class MRSegDecoder(nn.Module):
         x1 = self.up(self.proj4(f4pp)) + self.proj3(f3pp)   # (B, 192, H/16)
         x2 = self.gated2(self.up(x1), f2)                   # (B, 192, H/8)
         x3 = self.gated1(self.up(x2), self.proj1(f1))       # (B, 192, H/4)
-        x4 = self.up(x3) + self.proj_skip1(skip1)           # (B, 192, H/2)
-        x5 = self.up(x4) + self.proj_skip2(skip2)           # (B, 192, H)
+        x4 = self.gated_skip1(self.up(x3), skip1)           # (B, 192, H/2)
+        x5 = self.gated_skip2(self.up(x4), skip2)           # (B, 192, H)
 
         coarse = self.coarse_head(x5)
         detail = self.detail_head(self.detail_dw(x5))
