@@ -88,7 +88,7 @@ class MRSegModel(nn.Module):
 
         self.decoder = MRSegDecoder(decoder_dim)
 
-    def forward(self, x: torch.Tensor, texts: List[str]) -> Dict[str, torch.Tensor]:
+    def forward(self, x: torch.Tensor, texts) -> Dict[str, torch.Tensor]:
         # Accept 3-channel input (convert to grayscale)
         if x.shape[1] == 3:
             x = 0.299 * x[:, 0:1] + 0.587 * x[:, 1:2] + 0.114 * x[:, 2:3]
@@ -99,8 +99,11 @@ class MRSegModel(nn.Module):
         # Visual features
         f1, f2, f3, f4 = self.visual_enc(i3)
 
-        # Text features
-        z_text = self.text_enc(texts, x.device)
+        # Text features — accept pre-computed tensor (B,L,D) or raw strings
+        if isinstance(texts, torch.Tensor):
+            z_text = texts
+        else:
+            z_text = self.text_enc(texts, x.device)
 
         # Routing
         alpha = self.router(f4, z_text)

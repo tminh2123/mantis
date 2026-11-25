@@ -79,7 +79,8 @@ def evaluate(model, loader, device, threshold=0.5):
         images = batch["image"].to(device)
         masks  = batch["mask"].to(device)
         texts  = batch["text"]
-        out    = model(images, texts)
+        z_text = unwrap_model(model).text_enc(texts, device)
+        out    = model(images, z_text)
         pred   = out["pred"]
         m = compute_metrics_per_sample(pred, masks, threshold)
         all_dice.append(m["dice"])
@@ -189,7 +190,8 @@ def train(cfg, model, device, logger, resume=None):
             masks  = batch["mask"].to(device)
             texts  = batch["text"]
             with autocast(enabled=use_amp):
-                out  = model(images, texts)
+                z_text = unwrap_model(model).text_enc(texts, device)
+                out  = model(images, z_text)
                 loss = criterion(out["pred"], masks)
             optimizer.zero_grad()
             scaler.scale(loss).backward()
