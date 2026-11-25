@@ -21,6 +21,8 @@ class GatedFuse(nn.Module):
             else nn.Identity()
         )
         self.gate_conv = nn.Conv2d(up_channels * 2, up_channels, 1)
+        nn.init.zeros_(self.gate_conv.weight)
+        nn.init.zeros_(self.gate_conv.bias)
 
     def forward(self, x_up: torch.Tensor, f_skip: torch.Tensor) -> torch.Tensor:
         f = self.skip_proj(f_skip)
