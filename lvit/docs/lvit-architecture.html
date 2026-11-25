@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LViT Architecture — Language meets Vision Transformer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Geist', system-ui, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #4f5d75;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      color: #2d3142;
+      margin-bottom: 32px;
+    }
+    .diagram-wrapper {
+      overflow-x: auto;
+    }
+    svg {
+      display: block;
+      min-width: 1100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="eyebrow">Medical Image Segmentation</p>
+    <h1>LViT — Language meets Vision Transformer</h1>
+    <div class="diagram-wrapper">
+      <svg viewBox="0 0 1100 820" role="img" aria-labelledby="lvit-title lvit-desc">
+        <title id="lvit-title">LViT Architecture</title>
+        <desc id="lvit-desc">U-Net style encoder-decoder with parallel Vision Transformer branches and text guidance via BERT embeddings for medical image segmentation.</desc>
+        
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+          </marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#bf4520"/>
+          </marker>
+          <marker id="arrow-muted" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#5a6580"/>
+          </marker>
+        </defs>
+        
+        <!-- Background -->
+        <rect width="100%" height="100%" fill="#f5f5f5"/>
+        
+        <!-- ============ ZONE: Text Branch ============ -->
+        <rect x="30" y="30" width="180" height="180" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <rect x="70" y="34" width="100" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="120" y="44" fill="#5a6580" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">TEXT BRANCH</text>
+        
+        <!-- Input Text -->
+        <rect x="50" y="60" width="140" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="50" y="60" width="140" height="44" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+        <text x="120" y="86" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Text Input</text>
+        <text x="120" y="98" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">medical descriptions</text>
+        
+        <!-- BERT Embedding -->
+        <rect x="50" y="130" width="140" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="50" y="130" width="140" height="44" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="120" y="156" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">BERT Embedding</text>
+        <text x="120" y="168" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">[B, 10, 768]</text>
+        
+        <!-- Text to BERT arrow -->
+        <line x1="120" y1="104" x2="120" y2="130" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        
+        <!-- ============ ZONE: CNN Encoder ============ -->
+        <rect x="240" y="30" width="150" height="500" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <rect x="265" y="34" width="100" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="315" y="44" fill="#5a6580" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">CNN ENCODER</text>
+        
+        <!-- Input Image -->
+        <rect x="260" y="60" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="260" y="60" width="110" height="44" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+        <text x="315" y="86" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Image Input</text>
+        <text x="315" y="98" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">[B, 3, 224, 224]</text>
+        
+        <!-- Conv Block 1 -->
+        <rect x="260" y="130" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="260" y="130" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="315" y="156" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Conv Block 1</text>
+        <text x="315" y="168" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">64ch, 224×224</text>
+        
+        <!-- Down Block 1 -->
+        <rect x="260" y="200" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="260" y="200" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="315" y="226" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Down Block 1</text>
+        <text x="315" y="238" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">128ch, 112×112</text>
+        
+        <!-- Down Block 2 -->
+        <rect x="260" y="270" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="260" y="270" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="315" y="296" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Down Block 2</text>
+        <text x="315" y="308" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">256ch, 56×56</text>
+        
+        <!-- Down Block 3 -->
+        <rect x="260" y="340" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="260" y="340" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="315" y="366" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Down Block 3</text>
+        <text x="315" y="378" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">512ch, 28×28</text>
+        
+        <!-- Bottleneck -->
+        <rect x="260" y="410" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="260" y="410" width="110" height="44" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <text x="315" y="436" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Bottleneck</text>
+        <text x="315" y="448" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">512ch, 14×14</text>
+        
+        <!-- CNN encoder arrows -->
+        <line x1="315" y1="104" x2="315" y2="130" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="315" y1="174" x2="315" y2="200" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="315" y1="244" x2="315" y2="270" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="315" y1="314" x2="315" y2="340" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="315" y1="384" x2="315" y2="410" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        
+        <!-- ============ ZONE: Vision Transformer Branch ============ -->
+        <rect x="420" y="30" width="200" height="570" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <rect x="445" y="34" width="150" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="520" y="44" fill="#5a6580" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">VISION TRANSFORMER</text>
+        
+        <!-- Text Modules (Conv1D projections) -->
+        <rect x="440" y="60" width="160" height="36" rx="6" fill="#f5f5f5"/>
+        <rect x="440" y="60" width="160" height="36" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="520" y="82" fill="#2d3142" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Text Projection (Conv1D)</text>
+        
+        <!-- ViT Block 1 -->
+        <rect x="440" y="130" width="160" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="440" y="130" width="160" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="448" y="136" width="26" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="461" y="145" fill="rgba(45,49,66,0.8)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VIT</text>
+        <text x="520" y="156" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">DownViT (64d)</text>
+        <text x="520" y="168" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">patch=16, 196 tokens</text>
+        
+        <!-- ViT Block 2 -->
+        <rect x="440" y="200" width="160" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="440" y="200" width="160" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="448" y="206" width="26" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="461" y="215" fill="rgba(45,49,66,0.8)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VIT</text>
+        <text x="520" y="226" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">DownViT (128d)</text>
+        <text x="520" y="238" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">patch=8, 196 tokens</text>
+        
+        <!-- ViT Block 3 -->
+        <rect x="440" y="270" width="160" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="440" y="270" width="160" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="448" y="276" width="26" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="461" y="285" fill="rgba(45,49,66,0.8)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VIT</text>
+        <text x="520" y="296" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">DownViT (256d)</text>
+        <text x="520" y="308" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">patch=4, 196 tokens</text>
+        
+        <!-- ViT Block 4 -->
+        <rect x="440" y="340" width="160" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="440" y="340" width="160" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="448" y="346" width="26" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="461" y="355" fill="rgba(45,49,66,0.8)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VIT</text>
+        <text x="520" y="366" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">DownViT (512d)</text>
+        <text x="520" y="378" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">patch=2, 196 tokens</text>
+        
+        <!-- UpViT Blocks -->
+        <rect x="440" y="410" width="160" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="440" y="410" width="160" height="44" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="520" y="436" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">UpViT Blocks</text>
+        <text x="520" y="448" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">512→256→128→64</text>
+        
+        <!-- Reconstruct -->
+        <rect x="440" y="480" width="160" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="440" y="480" width="160" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="520" y="506" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Reconstruct</text>
+        <text x="520" y="518" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">tokens → feature maps</text>
+        
+        <!-- ViT internal arrows -->
+        <line x1="520" y1="96" x2="520" y2="130" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="520" y1="174" x2="520" y2="200" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="520" y1="244" x2="520" y2="270" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="520" y1="314" x2="520" y2="340" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="520" y1="384" x2="520" y2="410" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="520" y1="454" x2="520" y2="480" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        
+        <!-- ============ ZONE: CNN Decoder ============ -->
+        <rect x="650" y="30" width="150" height="500" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <rect x="675" y="34" width="100" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="725" y="44" fill="#5a6580" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">CNN DECODER</text>
+        
+        <!-- Segmentation Output -->
+        <rect x="670" y="60" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="670" y="60" width="110" height="44" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="725" y="86" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Segmentation</text>
+        <text x="725" y="98" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">[B, 1, 224, 224]</text>
+        
+        <!-- Output Conv -->
+        <rect x="670" y="130" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="670" y="130" width="110" height="44" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <text x="725" y="156" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Output Conv</text>
+        <text x="725" y="168" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">1×1 → sigmoid</text>
+        
+        <!-- Up Block 1 -->
+        <rect x="670" y="200" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="670" y="200" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="725" y="226" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Up Block 1</text>
+        <text x="725" y="238" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">64ch, 224×224</text>
+        
+        <!-- Up Block 2 -->
+        <rect x="670" y="270" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="670" y="270" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="725" y="296" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Up Block 2</text>
+        <text x="725" y="308" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">128ch, 112×112</text>
+        
+        <!-- Up Block 3 -->
+        <rect x="670" y="340" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="670" y="340" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="725" y="366" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Up Block 3</text>
+        <text x="725" y="378" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">256ch, 56×56</text>
+        
+        <!-- Up Block 4 -->
+        <rect x="670" y="410" width="110" height="44" rx="6" fill="#f5f5f5"/>
+        <rect x="670" y="410" width="110" height="44" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="725" y="436" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Up Block 4</text>
+        <text x="725" y="448" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">512ch, 28×28</text>
+        
+        <!-- Decoder arrows (going UP) -->
+        <line x1="725" y1="410" x2="725" y2="384" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="725" y1="340" x2="725" y2="314" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="725" y1="270" x2="725" y2="244" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="725" y1="200" x2="725" y2="174" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="725" y1="130" x2="725" y2="104" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        
+        <!-- ============ ZONE: Pixel-Level Attention ============ -->
+        <rect x="830" y="200" width="180" height="180" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <rect x="860" y="204" width="120" height="14" rx="2" fill="#f5f5f5"/>
+        <text x="920" y="214" fill="#5a6580" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">PIXEL-LEVEL ATTN</text>
+        
+        <!-- PixLevelModule -->
+        <rect x="850" y="235" width="140" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="850" y="235" width="140" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="920" y="259" fill="#2d3142" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">PixLevelModule</text>
+        <text x="920" y="273" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Avg + Max pooling</text>
+        <text x="920" y="285" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">MLP bottleneck</text>
+        
+        <!-- Spatial Attention -->
+        <rect x="850" y="305" width="140" height="56" rx="6" fill="#f5f5f5"/>
+        <rect x="850" y="305" width="140" height="56" rx="6" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="920" y="329" fill="#2d3142" font-size="11" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Spatial Attention</text>
+        <text x="920" y="343" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">Weighted skip</text>
+        <text x="920" y="355" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">connections</text>
+        
+        <!-- ============ Cross-connections (drawn before boxes) ============ -->
+        
+        <!-- Text to ViT Text Projection (text guidance) - accent color -->
+        <path d="M 190,152 H 225 Q 233,152 233,144 V 115 Q 233,107 241,107 H 407 Q 415,107 415,99 V 88 Q 415,78 425,78 H 432" fill="none" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        
+        <!-- CNN Encoder to ViT skip connections (dashed) -->
+        <path d="M 370,152 H 432" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow-muted)"/>
+        <path d="M 370,222 H 432" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow-muted)"/>
+        <path d="M 370,292 H 432" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow-muted)"/>
+        <path d="M 370,362 H 432" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow-muted)"/>
+        
+        <!-- ViT Reconstruct to CNN Decoder - Feature fusion (accent) - direct horizontal -->
+        <path d="M 600,222 H 662" fill="none" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <path d="M 600,292 H 662" fill="none" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <path d="M 600,362 H 662" fill="none" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <path d="M 600,432 H 662" fill="none" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        
+        <!-- Bottleneck to ViT UpViT -->
+        <path d="M 370,432 H 410 Q 418,432 418,440 V 502 Q 418,510 426,510 H 432" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        
+        <!-- Pixel attention to decoder -->
+        <path d="M 850,333 H 788 Q 780,333 780,341 V 355 Q 780,363 780,363" fill="none" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4"/>
+        
+        <!-- ============ Legend ============ -->
+        <line x1="30" y1="620" x2="1000" y2="620" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <text x="30" y="642" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+        
+        <!-- Legend items -->
+        <rect x="100" y="632" width="24" height="16" rx="4" fill="rgba(191,69,32,0.08)" stroke="#bf4520" stroke-width="1"/>
+        <text x="132" y="643" fill="#4f5d75" font-size="9" font-family="'Geist', sans-serif">Focal / Key module</text>
+        
+        <rect x="280" y="632" width="24" height="16" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="312" y="643" fill="#4f5d75" font-size="9" font-family="'Geist', sans-serif">Standard block</text>
+        
+        <rect x="440" y="632" width="24" height="16" rx="4" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <text x="472" y="643" fill="#4f5d75" font-size="9" font-family="'Geist', sans-serif">Bottleneck / Output</text>
+        
+        <line x1="620" y1="640" x2="650" y2="640" stroke="#bf4520" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <text x="658" y="643" fill="#4f5d75" font-size="9" font-family="'Geist', sans-serif">Feature fusion</text>
+        
+        <line x1="780" y1="640" x2="810" y2="640" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow-muted)"/>
+        <text x="818" y="643" fill="#4f5d75" font-size="9" font-family="'Geist', sans-serif">Skip connection</text>
+        
+        <!-- ============ Key Features Summary ============ -->
+        <rect x="30" y="670" width="310" height="105" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+        <text x="50" y="694" fill="#2d3142" font-size="11" font-weight="600" font-family="'Geist', sans-serif">Key Innovations</text>
+        <text x="50" y="712" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• Parallel CNN + ViT encoder branches</text>
+        <text x="50" y="728" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• BERT text embeddings for guidance</text>
+        <text x="50" y="744" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• Pixel-level attention in decoder</text>
+        <text x="50" y="760" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• Multi-scale feature fusion</text>
+        
+        <rect x="360" y="670" width="330" height="105" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+        <text x="380" y="694" fill="#2d3142" font-size="11" font-weight="600" font-family="'Geist', sans-serif">Architecture Details</text>
+        <text x="380" y="712" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• Input: 224×224×3 image + text description</text>
+        <text x="380" y="728" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• Base channels: 64 (×2 per down block)</text>
+        <text x="380" y="744" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• ViT: 4 heads, 4 layers per block</text>
+        <text x="380" y="760" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• Output: 224×224 binary segmentation</text>
+        
+        <rect x="710" y="670" width="300" height="105" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+        <text x="730" y="694" fill="#2d3142" font-size="11" font-weight="600" font-family="'Geist', sans-serif">Performance (QaTa-COV19)</text>
+        <text x="730" y="712" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• LViT-T Dice: 83.66%</text>
+        <text x="730" y="728" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• LViT-T IoU: 75.11%</text>
+        <text x="730" y="744" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• vs U-Net baseline: +4.6% Dice</text>
+        <text x="730" y="760" fill="#4f5d75" font-size="10" font-family="'Geist', sans-serif">• Published: IEEE TMI 2023</text>
+        
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

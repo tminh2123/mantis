@@ -70,11 +70,8 @@ class Router(nn.Module):
         self.topk = topk
         self.num_adapters = num_adapters
 
-        self.mlp = nn.Sequential(
-            nn.Linear(visual_dim + text_dim, visual_dim),
-            nn.GELU(),
-            nn.Linear(visual_dim, num_adapters),
-        )
+        # Single linear: (768+768) → 4 = ~6K params
+        self.gate = nn.Linear(visual_dim + text_dim, num_adapters)
 
     def forward(self, f4: torch.Tensor, z_text: torch.Tensor) -> torch.Tensor:
         """
@@ -84,7 +81,7 @@ class Router(nn.Module):
         """
         v_pool = F.adaptive_avg_pool2d(f4, 1).flatten(1)   # (B, 768)
         t_mean = z_text.mean(1)                             # (B, 768)
-        r = self.mlp(torch.cat([v_pool, t_mean], dim=1))   # (B, M)
+        r = self.gate(torch.cat([v_pool, t_mean], dim=1))  # (B, M)
         s = F.softmax(r, dim=1)                            # (B, M)
 
         # TopKNorm: keep top-k, zero the rest, renormalize
