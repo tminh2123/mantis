@@ -27,8 +27,8 @@ model:
 
 train:
   epochs: 200
-  batch_size: 64
-  lr: 3.0e-4
+  batch_size: 128
+  lr: 4.0e-4
   encoder_lr_scale: 0.1
   warmup_epochs: 5
   weight_decay: 1.0e-4
