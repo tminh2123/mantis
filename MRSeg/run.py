@@ -13,6 +13,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 import torch
 import torch.nn as nn
+from torch.cuda.amp import GradScaler, autocast
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -130,16 +131,22 @@ def train(cfg, model, device, logger, resume=None):
     no_improve = 0
     start_epoch = 0
     patience   = tcfg.get("patience", 60)
+    use_amp    = device.type == "cuda"
+    scaler     = GradScaler(enabled=use_amp)
 
     if resume:
         ckpt = torch.load(resume, map_location="cpu")
         model.load_state_dict(ckpt["model"])
         optimizer.load_state_dict(ckpt["optimizer"])
         scheduler.load_state_dict(ckpt["scheduler"])
+        if "scaler" in ckpt:
+            scaler.load_state_dict(ckpt["scaler"])
         start_epoch = ckpt["epoch"]
         best_dice   = ckpt["best_dice"]
         no_improve  = ckpt["no_improve"]
         logger.info(f"Resumed from {resume} at epoch {start_epoch} (best Dice={best_dice:.2f}%)")
+
+    logger.info(f"AMP: {'enabled' if use_amp else 'disabled'}")
 
     for epoch in range(start_epoch, tcfg["epochs"]):
         model.train()
@@ -150,13 +157,16 @@ def train(cfg, model, device, logger, resume=None):
             images = batch["image"].to(device)
             masks  = batch["mask"].to(device)
             texts  = batch["text"]
-            out    = model(images, texts)
-            loss   = criterion(out["pred"], masks)
+            with autocast(enabled=use_amp):
+                out  = model(images, texts)
+                loss = criterion(out["pred"], masks)
             optimizer.zero_grad()
-            loss.backward()
+            scaler.scale(loss).backward()
             if tcfg.get("grad_clip", 1.0) > 0:
+                scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(params, tcfg["grad_clip"])
-            optimizer.step()
+            scaler.step(optimizer)
+            scaler.update()
             loss_m.update(loss.item(), images.size(0))
             pbar.set_postfix({"loss": f"{loss.item():.4f}"})
         scheduler.step()
@@ -182,6 +192,7 @@ def train(cfg, model, device, logger, resume=None):
         save_checkpoint(
             {"epoch": epoch+1, "model": model.state_dict(),
              "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(),
+             "scaler": scaler.state_dict(),
              "best_dice": best_dice, "no_improve": no_improve},
             str(ckpt_dir / "last.pth"),
         )

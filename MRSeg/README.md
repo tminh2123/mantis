@@ -40,36 +40,35 @@ We thank **Li et al.** for making these resources publicly available.
 
 ## Configuration
 
-Model and training settings can be modified in:
+Model and training settings can be modified in `configs/qata.yaml` or `configs/mosmed.yaml`.
 
-```bash
-config/train.yaml
-```
-
-Please ensure the dataset paths and runtime options are correctly configured before training or evaluation.
+Please ensure the dataset paths are correctly configured before training or evaluation.
 
 ## Training
 
-Run:
-
 ```bash
-python train.py --config ./config/train.yaml
+# QaTa-COV19
+python run.py --config configs/qata.yaml --tag exp1
+
+# MosMedData+
+python run.py --config configs/mosmed.yaml --tag exp1
+
+# Resume from last checkpoint
+python run.py --config configs/qata.yaml --tag exp1 --resume output/checkpoints/qata_exp1/last.pth
 ```
 
 ## Evaluation
 
 Pretrained checkpoints will be publicly shared later.
 
-### MosMedData+
-
 ```bash
-python evaluate.py --config ./config/train.yaml --ckpt ./pretrained_models/MRSeg_MosMedplus.ckpt
-```
+# QaTa-COV19
+python run.py --config configs/qata.yaml --tag exp1 --mode eval \
+    --resume output/checkpoints/qata_exp1/best.pth
 
-### QaTa-COV19
-
-```bash
-python evaluate.py --config ./config/train.yaml --ckpt ./pretrained_models/MRSeg_QaTa-Covid19.ckpt
+# MosMedData+
+python run.py --config configs/mosmed.yaml --tag exp1 --mode eval \
+    --resume output/checkpoints/mosmed_exp1/best.pth
 ```
 
 ## Results
