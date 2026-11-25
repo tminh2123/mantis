@@ -131,7 +131,6 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
         num_workers=dcfg.get("num_workers", 4),
         pin_memory=True,
         drop_last=True,
-        persistent_workers=True,
     )
 
     # Val only on main process
