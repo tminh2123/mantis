@@ -7,6 +7,10 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 import numpy as np
+
+# Fix monai seed overflow bug
+np.random.seed(42)
+
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
