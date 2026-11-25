@@ -8,8 +8,9 @@ from pathlib import Path
 from datetime import datetime
 import numpy as np
 
-# Fix monai seed overflow bug
-np.random.seed(42)
+# Fix monai seed overflow bug - must set before importing monai
+import monai
+monai.utils.set_determinism(seed=42)
 
 import pytorch_lightning as pl
 import torch
