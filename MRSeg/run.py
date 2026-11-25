@@ -123,12 +123,15 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
     per_gpu_batch = tcfg["batch_size"] // world_size
     train_dataset = MRSegDataset(dcfg["train_dir"], image_size=dcfg["image_size"], augment=True)
     train_sampler = DistributedSampler(train_dataset, shuffle=True) if is_ddp else None
+    # With DDP, forking DataLoader workers after NCCL init causes deadlock
+    num_workers = 0 if is_ddp else dcfg.get("num_workers", 4)
+
     train_loader  = DataLoader(
         train_dataset,
         batch_size=per_gpu_batch,
         sampler=train_sampler,
         shuffle=(train_sampler is None),
-        num_workers=dcfg.get("num_workers", 4),
+        num_workers=num_workers,
         pin_memory=True,
         drop_last=True,
     )
