@@ -18,8 +18,8 @@ DATALOADER:
   num_workers: 4
 
 MODEL:
-  vision_type: pretrained_models/convnext-tiny-224
-  bert_type: pretrained_models/pubmedbert
+  vision_type: ../MRSeg/pretrained_models/convnext-tiny-224
+  bert_type: ../MRSeg/pretrained_models/pubmedbert
 
 TRAIN:
   lr: 0.0005
