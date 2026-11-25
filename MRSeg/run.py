@@ -380,7 +380,7 @@ def main():
     model = build_mrseg(cfg).to(device)
 
     if is_ddp:
-        model = DDP(model, device_ids=[device.index])
+        model = DDP(model, device_ids=[device.index], gradient_as_bucket_view=True)
 
     if is_main:
         num_params = sum(p.numel() for p in unwrap_model(model).parameters())
