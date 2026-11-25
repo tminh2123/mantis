@@ -113,6 +113,7 @@ class MRSegDataset(Dataset):
         mean = image.mean()
         std  = image.std() + 1e-6
         image = (image - mean) / std
+        image = image.clamp(-3.0, 3.0)
 
         return {'image': image, 'mask': mask, 'text': text, 'path': str(img_path)}
 
