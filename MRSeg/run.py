@@ -4,6 +4,7 @@ Adapted from iris/run.py
 """
 import argparse
 import logging
+import math
 import os
 import time
 from datetime import datetime
@@ -14,7 +15,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import torch
 import torch.nn as nn
 from torch.cuda.amp import GradScaler, autocast
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -114,7 +115,11 @@ def train(cfg, model, device, logger, resume=None):
 
     criterion = DiceBCELoss(bce_weight=1.0)
 
-    # Param groups: encoder LoRA / new modules (adapters, region bridge, decoder)
+    # Differential LR: encoder LoRA gets lower LR, new modules get full LR
+    base_lr      = tcfg["lr"]
+    encoder_lr   = base_lr * tcfg.get("encoder_lr_scale", 0.1)
+    warmup_epochs = tcfg.get("warmup_epochs", 5)
+
     encoder_params, new_params = [], []
     for n, p in model.named_parameters():
         if not p.requires_grad:
@@ -124,18 +129,24 @@ def train(cfg, model, device, logger, resume=None):
         else:
             new_params.append(p)
 
-    params = encoder_params + new_params
-    optimizer = torch.optim.AdamW(
-        params, lr=tcfg["lr"], weight_decay=tcfg.get("weight_decay", 1e-4)
-    )
-    scheduler = CosineAnnealingLR(
-        optimizer, T_max=tcfg["epochs"], eta_min=tcfg["lr"] * 1e-2
-    )
+    optimizer = torch.optim.AdamW([
+        {"params": encoder_params, "lr": encoder_lr},
+        {"params": new_params,     "lr": base_lr},
+    ], weight_decay=tcfg.get("weight_decay", 1e-4))
 
-    logger.info(f"LR: {tcfg['lr']:.1e}")
+    # Warmup (linear) + cosine annealing
+    def lr_lambda(epoch):
+        if epoch < warmup_epochs:
+            return (epoch + 1) / warmup_epochs
+        progress = (epoch - warmup_epochs) / max(1, tcfg["epochs"] - warmup_epochs)
+        return 1e-2 + 0.5 * (1 - 1e-2) * (1 + math.cos(math.pi * progress))
+
+    scheduler = LambdaLR(optimizer, lr_lambda)
+
+    logger.info(f"LR: encoder={encoder_lr:.1e} | new_modules={base_lr:.1e} | warmup={warmup_epochs} epochs")
     logger.info(f"Encoder LoRA params: {sum(p.numel() for p in encoder_params):,}")
     logger.info(f"New module params:   {sum(p.numel() for p in new_params):,}")
-    logger.info(f"Total trainable:     {sum(p.numel() for p in params):,}")
+    logger.info(f"Total trainable:     {sum(p.numel() for p in encoder_params + new_params):,}")
     logger.info(f"Train: {len(train_loader.dataset)} | Val: {len(val_loader.dataset)}")
     logger.info("-" * 60)
 
@@ -187,10 +198,11 @@ def train(cfg, model, device, logger, resume=None):
         scheduler.step()
 
         metrics = evaluate(model, val_loader, device)
+        cur_lr = optimizer.param_groups[1]["lr"]
         logger.info(
             f"Epoch [{epoch+1}/{tcfg['epochs']}] Loss: {loss_m.avg:.4f} | "
             f"Dice: {metrics['dice']:.2f}% | IoU: {metrics['iou']:.2f}% | "
-            f"Time: {time.time()-t0:.1f}s"
+            f"LR: {cur_lr:.2e} | Time: {time.time()-t0:.1f}s"
         )
 
         if metrics["dice"] > best_dice:
