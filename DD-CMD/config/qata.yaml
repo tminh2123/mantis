@@ -1,0 +1,38 @@
+DATA:
+  # QaTa-Covid19
+  train_csv_path: data/qata/train.csv
+  val_csv_path: data/qata/val.csv
+  test_csv_path: data/qata/test.csv
+
+  train_root_path: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/train
+  val_root_path: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/val
+  test_root_path: ../../../dataset/QaTa-COV19/QaTa-COV19-v2/c2seg/test
+
+  image_size: [224, 224]
+  input_text_len: 24
+  dataset_name: QaTa-Covid19
+
+DATALOADER:
+  train_batch_size: 128
+  valid_batch_size: 64
+  num_workers: 4
+
+MODEL:
+  vision_type: pretrained_models/convnext-tiny-224
+  bert_type: pretrained_models/pubmedbert
+
+TRAIN:
+  lr: 0.0005
+  min_epochs: 1
+  max_epochs: 200
+  patience: 20
+  device: [0, 1, 2]
+  seed: 42
+
+  ckpt_monitor: val_dice
+  ckpt_mode: max
+  save_top_k: 1
+
+LOG:
+  model_save_path: ./output
+  model_save_filename: qata

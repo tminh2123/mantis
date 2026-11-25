@@ -1,0 +1,1 @@
+The pretrained model checkpoints are available and will be publicly shared soon.
