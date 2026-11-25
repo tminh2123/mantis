@@ -163,7 +163,7 @@ def train(cfg, model, device, logger, resume=None):
     no_improve = 0
     start_epoch = 0
     patience   = tcfg.get("patience", 60)
-    use_amp    = device.type == "cuda"
+    use_amp    = device.type == "cuda" and len(gpu_ids) <= 1
     scaler     = GradScaler(enabled=use_amp)
 
     if resume:
