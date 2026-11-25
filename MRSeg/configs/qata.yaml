@@ -33,4 +33,4 @@ train:
   warmup_epochs: 5
   weight_decay: 1.0e-4
   grad_clip: 1.0
-  patience: 60
+  patience: 30
