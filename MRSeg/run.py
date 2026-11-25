@@ -83,13 +83,14 @@ def setup_logger(log_file: str, append: bool = False) -> logging.Logger:
 # ---------------------------------------------------------------------------
 @torch.no_grad()
 def evaluate(model, loader, device, threshold=0.5):
-    model.eval()
+    _model = unwrap_model(model)   # bypass DDP to avoid sync issues
+    _model.eval()
     all_dice, all_iou = [], []
     for batch in loader:
         images = batch["image"].to(device)
         masks  = batch["mask"].to(device)
         texts  = batch["text"]
-        out  = model(images, texts)
+        out  = _model(images, texts)
         pred = out["pred"]
         m = compute_metrics_per_sample(pred, masks, threshold)
         all_dice.append(m["dice"])
@@ -211,8 +212,6 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
             logger.info(f"Resumed from {resume} at epoch {start_epoch} (best Dice={best_dice:.2f}%)")
 
     for epoch in range(start_epoch, tcfg["epochs"]):
-        if is_ddp:
-            dist.barrier()   # sync before each epoch
         if train_sampler is not None:
             train_sampler.set_epoch(epoch)   # ensures different shuffle per epoch
 
@@ -280,6 +279,7 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
         if is_ddp:
             stop = torch.tensor(int(no_improve >= patience), device=device)
             dist.broadcast(stop, src=0)
+            dist.barrier()   # ensure all ranks sync before next epoch
             if stop.item():
                 break
 
