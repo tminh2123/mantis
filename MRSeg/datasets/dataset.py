@@ -92,7 +92,7 @@ class MRSegDataset(Dataset):
         image = cv2.resize(image, (self.size, self.size))
 
         mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
-        mask = cv2.resize(mask, (self.size, self.size))
+        mask = cv2.resize(mask, (self.size, self.size), interpolation=cv2.INTER_NEAREST)
         mask[mask <= 0] = 0
         mask[mask > 0] = 1
 

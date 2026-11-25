@@ -47,7 +47,7 @@ def save_checkpoint(state: dict, path: str):
     torch.save(state, path)
 
 
-def load_checkpoint(path: str, model, strict: bool = False):
+def load_checkpoint(path: str, model, strict: bool = True):
     ckpt = torch.load(path, map_location='cpu')
     if 'model_state_dict' in ckpt:
         model.load_state_dict(ckpt['model_state_dict'], strict=strict)

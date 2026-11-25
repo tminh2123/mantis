@@ -84,7 +84,7 @@ def evaluate(model, loader, device, threshold=0.5):
 # ---------------------------------------------------------------------------
 # Training
 # ---------------------------------------------------------------------------
-def train(cfg, model, device, logger):
+def train(cfg, model, device, logger, resume=None):
     dcfg = cfg["data"]
     tcfg = cfg["train"]
 
@@ -128,9 +128,20 @@ def train(cfg, model, device, logger):
 
     best_dice  = 0.0
     no_improve = 0
+    start_epoch = 0
     patience   = tcfg.get("patience", 60)
 
-    for epoch in range(tcfg["epochs"]):
+    if resume:
+        ckpt = torch.load(resume, map_location="cpu")
+        model.load_state_dict(ckpt["model"])
+        optimizer.load_state_dict(ckpt["optimizer"])
+        scheduler.load_state_dict(ckpt["scheduler"])
+        start_epoch = ckpt["epoch"]
+        best_dice   = ckpt["best_dice"]
+        no_improve  = ckpt["no_improve"]
+        logger.info(f"Resumed from {resume} at epoch {start_epoch} (best Dice={best_dice:.2f}%)")
+
+    for epoch in range(start_epoch, tcfg["epochs"]):
         model.train()
         loss_m = AverageMeter()
         t0 = time.time()
@@ -167,9 +178,16 @@ def train(cfg, model, device, logger):
             logger.info(f"  → Saved best (Dice={best_dice:.2f}%)")
         else:
             no_improve += 1
-            if no_improve >= patience:
-                logger.info(f"Early stopping at epoch {epoch+1}")
-                break
+
+        save_checkpoint(
+            {"epoch": epoch+1, "model": model.state_dict(),
+             "optimizer": optimizer.state_dict(), "scheduler": scheduler.state_dict(),
+             "best_dice": best_dice, "no_improve": no_improve},
+            str(ckpt_dir / "last.pth"),
+        )
+        if no_improve >= patience:
+            logger.info(f"Early stopping at epoch {epoch+1}")
+            break
 
     logger.info(f"Training done. Best Dice: {best_dice:.2f}%")
     return model
@@ -199,7 +217,7 @@ def parse_args():
     p.add_argument("--config",  required=True, help="YAML config file")
     p.add_argument("--tag",     required=True, help="Experiment tag")
     p.add_argument("--mode",    default="train", choices=["train", "eval"])
-    p.add_argument("--resume",  default=None,   help="Resume checkpoint path")
+    p.add_argument("--resume",  default=None,   help="train: last.pth to resume from; eval: checkpoint to evaluate")
     p.add_argument("--lr",      type=float,     help="Override learning rate")
     p.add_argument("--epochs",  type=int,       help="Override epochs")
     p.add_argument("--batch",   type=int,       help="Override batch size")
@@ -221,7 +239,10 @@ def main():
     exp_name = f"{dataset}_{args.tag}"
     cfg["exp_name"]        = exp_name
     cfg["checkpoint_dir"]  = f"{args.output}/checkpoints/{exp_name}"
-    cfg["checkpoint_path"] = args.resume or f"{cfg['checkpoint_dir']}/best.pth"
+    # train: --resume continues training (from last.pth); final test always uses best.pth
+    # eval : --resume is the checkpoint to evaluate
+    best_path = f"{cfg['checkpoint_dir']}/best.pth"
+    cfg["checkpoint_path"] = args.resume if (args.mode == "eval" and args.resume) else best_path
     log_file               = f"{args.output}/logs/{exp_name}.log"
 
     seed = cfg.get("project", {}).get("seed", 42)
@@ -239,7 +260,7 @@ def main():
     logger.info(f"Model built. Total params: {sum(p.numel() for p in model.parameters()):,}")
 
     if args.mode == "train":
-        train(cfg, model, device, logger)
+        train(cfg, model, device, logger, resume=args.resume)
         full_evaluate(cfg, model, device, logger)
     else:
         full_evaluate(cfg, model, device, logger)
