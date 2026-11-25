@@ -296,11 +296,15 @@ def main():
     seed = cfg.get("project", {}).get("seed", 42)
     set_seed(seed)
 
-    # GPU setup
+    # GPU setup — use physical GPU IDs directly (no CUDA_VISIBLE_DEVICES)
     if args.gpu is not None:
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-    device = get_device()
-    gpu_ids = list(range(torch.cuda.device_count())) if device.type == "cuda" else []
+        gpu_ids = [int(g) for g in args.gpu.split(",")]
+    elif torch.cuda.is_available():
+        gpu_ids = [0]
+    else:
+        gpu_ids = []
+
+    device = torch.device(f"cuda:{gpu_ids[0]}") if gpu_ids else torch.device("cpu")
 
     os.makedirs(cfg["checkpoint_dir"], exist_ok=True)
 
@@ -313,8 +317,8 @@ def main():
 
     model = build_mrseg(cfg).to(device)
     if len(gpu_ids) > 1:
-        model = nn.DataParallel(model, device_ids=gpu_ids)
-        logger.info(f"DataParallel: {len(gpu_ids)} GPUs")
+        model = nn.DataParallel(model, device_ids=gpu_ids, output_device=gpu_ids[0])
+        logger.info(f"DataParallel: {len(gpu_ids)} GPUs {gpu_ids}")
 
     num_params = sum(p.numel() for p in unwrap_model(model).parameters())
     logger.info(f"Encoders   : ConvNeXt-Tiny (LoRA) + BiomedBERT (LoRA)")
