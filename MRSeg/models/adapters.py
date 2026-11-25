@@ -33,10 +33,6 @@ class MedImageAdapter(nn.Module):
         nn.init.zeros_(self.a_conv2.weight)
         nn.init.zeros_(self.a_conv2.bias)
 
-        # ImageNet normalization stats (applied to i3 before backbone)
-        self.register_buffer('imgnet_mean', torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
-        self.register_buffer('imgnet_std',  torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
-
         # Stem branches for skip connections
         self.stem_half = nn.Sequential(
             nn.Conv2d(3, 32, 3, stride=2, padding=1),
@@ -53,8 +49,6 @@ class MedImageAdapter(nn.Module):
         i_base = x_gray.repeat(1, 3, 1, 1)
         a_out = self.a_conv2(self.a_act(self.a_norm(self.a_dw(self.a_conv1(x_gray)))))
         i3 = i_base + a_out
-        # Normalize to ImageNet stats before backbone and skip convs
-        i3 = (i3 - self.imgnet_mean) / self.imgnet_std
         skip1 = self.stem_half(i3)   # (B, 32, H/2, W/2)
         skip2 = self.stem_full(i3)   # (B, 16, H, W)
         return i3, skip1, skip2

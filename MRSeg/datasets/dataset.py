@@ -96,20 +96,55 @@ class MRSegDataset(Dataset):
         mask[mask <= 0] = 0
         mask[mask > 0] = 1
 
-        image = torch.from_numpy(image).unsqueeze(0).float() / 255.0   # (1, H, W)
+        image = torch.from_numpy(image).unsqueeze(0).float() / 255.0   # (1, H, W) in [0,1]
         mask = torch.from_numpy(mask).float().unsqueeze(0)              # (1, H, W)
 
         if self.augment:
             if random.random() > 0.5:
+                image, mask = self._random_crop(image, mask)
+            if random.random() > 0.5:
                 image, mask, text = self._random_rot_flip(image, mask, text)
             if random.random() > 0.5:
                 image, mask = self._random_rotate(image, mask)
+            if random.random() > 0.5:
+                image = self._random_jitter(image)
+
+        # Per-image channel-wise normalization (z-score)
+        mean = image.mean()
+        std  = image.std() + 1e-6
+        image = (image - mean) / std
 
         return {'image': image, 'mask': mask, 'text': text, 'path': str(img_path)}
 
     def _swap_left_right(self, text: str) -> str:
         text = text.replace('left', '__LEFT__').replace('right', '__RIGHT__')
         return text.replace('__LEFT__', 'right').replace('__RIGHT__', 'left')
+
+    def _random_crop(
+        self, image: torch.Tensor, mask: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        import torchvision.transforms.functional as TF
+        _, H, W = image.shape
+        scale    = random.uniform(0.75, 1.0)
+        crop_h   = int(H * scale)
+        crop_w   = int(W * scale)
+        top      = random.randint(0, H - crop_h)
+        left     = random.randint(0, W - crop_w)
+        image = TF.crop(image, top, left, crop_h, crop_w)
+        mask  = TF.crop(mask,  top, left, crop_h, crop_w)
+        image = TF.resize(image, [H, W], interpolation=TF.InterpolationMode.BILINEAR, antialias=True)
+        mask  = TF.resize(mask,  [H, W], interpolation=TF.InterpolationMode.NEAREST)
+        return image, mask
+
+    def _random_jitter(self, image: torch.Tensor) -> torch.Tensor:
+        # Brightness: add uniform offset
+        brightness = random.uniform(-0.15, 0.15)
+        image = image + brightness
+        # Contrast: scale around mean
+        contrast = random.uniform(0.75, 1.25)
+        mean = image.mean()
+        image = (image - mean) * contrast + mean
+        return image.clamp(0.0, 1.0)
 
     def _random_rot_flip(
         self, image: torch.Tensor, mask: torch.Tensor, text: str
