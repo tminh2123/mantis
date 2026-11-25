@@ -53,10 +53,12 @@ def setup_logger(log_file: str, append: bool = False) -> logging.Logger:
     sh = logging.StreamHandler(); sh.setFormatter(fmt_short); logger.addHandler(sh)
     fh = logging.FileHandler(log_file, mode="a" if append else "w")
     fh.setFormatter(fmt_long); logger.addHandler(fh)
+    logger.info("")
     logger.info("=" * 60)
     logger.info("MRSeg")
     logger.info(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
+    logger.info("")
     return logger
 
 
@@ -89,12 +91,15 @@ def train(cfg, model, device, logger, resume=None):
     dcfg = cfg["data"]
     tcfg = cfg["train"]
 
-    logger.info("Configuration:")
+    logger.info("=" * 60)
+    logger.info("CONFIGURATION")
+    logger.info("=" * 60)
     for sec, vals in cfg.items():
         if isinstance(vals, dict):
-            logger.info(f"  [{sec}]")
+            logger.info(f"[{sec}]")
             for k, v in vals.items():
-                logger.info(f"    {k}: {v}")
+                logger.info(f"  {k}: {v}")
+    logger.info("=" * 60)
 
     train_loader = get_dataloader(
         dcfg["train_dir"], batch_size=tcfg["batch_size"],
@@ -109,8 +114,17 @@ def train(cfg, model, device, logger, resume=None):
 
     criterion = DiceBCELoss(bce_weight=1.0)
 
-    # Param groups: trainable params only
-    params = [p for p in model.parameters() if p.requires_grad]
+    # Param groups: encoder LoRA / new modules (adapters, region bridge, decoder)
+    encoder_params, new_params = [], []
+    for n, p in model.named_parameters():
+        if not p.requires_grad:
+            continue
+        if "visual_enc" in n or "text_enc" in n:
+            encoder_params.append(p)
+        else:
+            new_params.append(p)
+
+    params = encoder_params + new_params
     optimizer = torch.optim.AdamW(
         params, lr=tcfg["lr"], weight_decay=tcfg.get("weight_decay", 1e-4)
     )
@@ -118,9 +132,10 @@ def train(cfg, model, device, logger, resume=None):
         optimizer, T_max=tcfg["epochs"], eta_min=tcfg["lr"] * 1e-2
     )
 
-    trainable = sum(p.numel() for p in params)
-    total     = sum(p.numel() for p in model.parameters())
-    logger.info(f"Trainable: {trainable:,} / Total: {total:,}")
+    logger.info(f"LR: {tcfg['lr']:.1e}")
+    logger.info(f"Encoder LoRA params: {sum(p.numel() for p in encoder_params):,}")
+    logger.info(f"New module params:   {sum(p.numel() for p in new_params):,}")
+    logger.info(f"Total trainable:     {sum(p.numel() for p in params):,}")
     logger.info(f"Train: {len(train_loader.dataset)} | Val: {len(val_loader.dataset)}")
     logger.info("-" * 60)
 
@@ -173,9 +188,9 @@ def train(cfg, model, device, logger, resume=None):
 
         metrics = evaluate(model, val_loader, device)
         logger.info(
-            f"[{epoch+1:3d}/{tcfg['epochs']}] loss={loss_m.avg:.4f} | "
-            f"Dice={metrics['dice']:.2f}% | IoU={metrics['iou']:.2f}% | "
-            f"{time.time()-t0:.0f}s"
+            f"Epoch [{epoch+1}/{tcfg['epochs']}] Loss: {loss_m.avg:.4f} | "
+            f"Dice: {metrics['dice']:.2f}% | IoU: {metrics['iou']:.2f}% | "
+            f"Time: {time.time()-t0:.1f}s"
         )
 
         if metrics["dice"] > best_dice:
@@ -205,7 +220,9 @@ def train(cfg, model, device, logger, resume=None):
 
 
 def full_evaluate(cfg, model, device, logger):
-    logger.info("=" * 60 + "\nEVALUATION\n" + "=" * 60)
+    logger.info("=" * 60)
+    logger.info("EVALUATION")
+    logger.info("=" * 60)
     ckpt_path = cfg.get("checkpoint_path", "")
     if ckpt_path and Path(ckpt_path).exists():
         load_checkpoint(ckpt_path, model)
@@ -268,7 +285,10 @@ def main():
         logger.info(f"GPU        : {torch.cuda.get_device_name(0)}")
 
     model = build_mrseg(cfg).to(device)
-    logger.info(f"Model built. Total params: {sum(p.numel() for p in model.parameters()):,}")
+    num_params = sum(p.numel() for p in model.parameters())
+    logger.info(f"Encoders   : ConvNeXt-Tiny (LoRA) + BiomedBERT (LoRA)")
+    logger.info(f"Parameters : {num_params:,}")
+    logger.info("")
 
     if args.mode == "train":
         train(cfg, model, device, logger, resume=args.resume)
@@ -276,7 +296,10 @@ def main():
     else:
         full_evaluate(cfg, model, device, logger)
 
-    logger.info(f"\nFinished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("")
+    logger.info("=" * 60)
+    logger.info(f"Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":
