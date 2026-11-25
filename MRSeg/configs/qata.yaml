@@ -27,10 +27,10 @@ model:
 
 train:
   epochs: 200
-  batch_size: 64
-  lr: 2.0e-4
+  batch_size: 128
+  lr: 5.0e-4
   encoder_lr_scale: 0.1
   warmup_epochs: 5
   weight_decay: 1.0e-4
   grad_clip: 1.0
-  patience: 30
+  patience: 20
