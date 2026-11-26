@@ -27,10 +27,11 @@ model:
 
 train:
   epochs: 200
-  batch_size: 64
-  lr: 2.0e-4
-  encoder_lr_scale: 0.1
-  warmup_epochs: 5
-  weight_decay: 1.0e-4
+  batch_size: 8           # Paper: batch=8
+  lr: 1.0e-4              # Paper: 1e-4
+  encoder_lr_scale: 1.0   # Paper: NO differential LR
+  warmup_epochs: 0        # Paper: NO warmup mentioned
+  weight_decay: 1.0e-4    # Paper: 1e-4
   grad_clip: 1.0
-  patience: 20
+  patience: 60            # Paper: patience=60
+  min_lr: 1.0e-6          # Paper: cosine annealing to 1e-6

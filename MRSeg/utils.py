@@ -127,22 +127,13 @@ class DiceLoss(nn.Module):
 
 
 class DiceBCELoss(nn.Module):
-    """Use MONAI DiceCELoss if available, else fallback to custom."""
+    """Paper: ℒ = ℒ_BCE + ℒ_Dice (equally weighted, BCE with logits + soft Dice)"""
     def __init__(self, dice_weight: float = 1.0, bce_weight: float = 1.0):
         super().__init__()
         self.dice_weight = dice_weight
         self.bce_weight = bce_weight
-        
-        if HAS_MONAI:
-            # MONAI DiceCELoss: combines Dice and CrossEntropy
-            self.loss_fn = MonaiDiceCELoss(sigmoid=True, lambda_dice=dice_weight, lambda_ce=bce_weight)
-            self.use_monai = True
-        else:
-            self.dice = DiceLoss()
-            self.bce = nn.BCEWithLogitsLoss()
-            self.use_monai = False
+        self.dice = DiceLoss()
+        self.bce = nn.BCEWithLogitsLoss()
 
     def forward(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        if self.use_monai:
-            return self.loss_fn(pred, target)
         return self.dice_weight * self.dice(pred, target) + self.bce_weight * self.bce(pred, target)

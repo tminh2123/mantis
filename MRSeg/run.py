@@ -22,7 +22,7 @@ import torch.distributed as dist
 import torch.nn as nn
 from torch.cuda.amp import GradScaler, autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.optim.lr_scheduler import LambdaLR
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
@@ -148,10 +148,12 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
 
     criterion = DiceBCELoss(bce_weight=1.0)
 
-    # Differential LR
+    # Differential LR (optional, can be disabled by setting encoder_lr_scale=1.0)
     base_lr       = tcfg["lr"]
-    encoder_lr    = base_lr * tcfg.get("encoder_lr_scale", 0.1)
-    warmup_epochs = tcfg.get("warmup_epochs", 5)
+    encoder_scale = tcfg.get("encoder_lr_scale", 1.0)
+    encoder_lr    = base_lr * encoder_scale
+    warmup_epochs = tcfg.get("warmup_epochs", 0)
+    min_lr        = tcfg.get("min_lr", 1e-6)
 
     encoder_params, new_params = [], []
     for n, p in unwrap_model(model).named_parameters():
@@ -162,21 +164,24 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
         else:
             new_params.append(p)
 
-    optimizer = torch.optim.AdamW([
-        {"params": encoder_params, "lr": encoder_lr},
-        {"params": new_params,     "lr": base_lr},
-    ], weight_decay=tcfg.get("weight_decay", 1e-4))
+    # If encoder_lr_scale == 1.0, use single param group for simplicity
+    if encoder_scale == 1.0:
+        optimizer = torch.optim.AdamW(
+            encoder_params + new_params,
+            lr=base_lr,
+            weight_decay=tcfg.get("weight_decay", 1e-4)
+        )
+    else:
+        optimizer = torch.optim.AdamW([
+            {"params": encoder_params, "lr": encoder_lr},
+            {"params": new_params,     "lr": base_lr},
+        ], weight_decay=tcfg.get("weight_decay", 1e-4))
 
-    def lr_lambda(epoch):
-        if epoch < warmup_epochs:
-            return (epoch + 1) / warmup_epochs
-        progress = (epoch - warmup_epochs) / max(1, tcfg["epochs"] - warmup_epochs)
-        return 1e-2 + 0.5 * (1 - 1e-2) * (1 + math.cos(math.pi * progress))
-
-    scheduler = LambdaLR(optimizer, lr_lambda)
+    # Paper: CosineAnnealingLR to min_lr (1e-6)
+    scheduler = CosineAnnealingLR(optimizer, T_max=tcfg["epochs"], eta_min=min_lr)
 
     if is_main:
-        logger.info(f"LR: encoder={encoder_lr:.1e} | new_modules={base_lr:.1e} | warmup={warmup_epochs} epochs")
+        logger.info(f"LR: {base_lr:.1e} (encoder_scale={encoder_scale}) | min_lr={min_lr:.1e}")
         logger.info(f"Encoder LoRA params: {sum(p.numel() for p in encoder_params):,}")
         logger.info(f"New module params:   {sum(p.numel() for p in new_params):,}")
         logger.info(f"Total trainable:     {sum(p.numel() for p in encoder_params + new_params):,}")
