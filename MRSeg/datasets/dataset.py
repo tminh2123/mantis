@@ -109,11 +109,11 @@ class MRSegDataset(Dataset):
             if random.random() > 0.5:
                 image = self._random_jitter(image)
 
-        # Per-image channel-wise normalization (z-score)
+        # Channel-wise normalization (like MONAI NormalizeIntensityd)
+        # For grayscale (1 channel): normalize per-image
         mean = image.mean()
         std  = image.std() + 1e-6
         image = (image - mean) / std
-        image = image.clamp(-3.0, 3.0)
 
         return {'image': image, 'mask': mask, 'text': text, 'path': str(img_path)}
 
