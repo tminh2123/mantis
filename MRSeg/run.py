@@ -250,7 +250,7 @@ def train(cfg, model, device, logger, resume=None, is_main=True, world_size=1):
         # Evaluate and save only on main process
         if is_main:
             metrics = evaluate(model, val_loader, device)
-            cur_lr  = optimizer.param_groups[1]["lr"]
+            cur_lr  = optimizer.param_groups[-1]["lr"]  # last group (or only group)
             logger.info(
                 f"Epoch [{epoch+1}/{tcfg['epochs']}] Loss: {loss_m.avg:.4f} | "
                 f"Dice: {metrics['dice']:.2f}% | IoU: {metrics['iou']:.2f}% | "
