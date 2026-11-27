@@ -2,7 +2,7 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import time
 t0 = time.time()
-import argparse, os, sys, datetime, glob, importlib, csv
+import argparse, os, sys, datetime, glob, importlib, csv, logging
 import numpy as np
 if not hasattr(np, "Inf"):
     np.Inf = np.inf
@@ -500,6 +500,125 @@ class CUDACallback(Callback):
             pass
 
 
+class IrisStyleLogger(Callback):
+    """Epoch-level console & file logger styled after iris/run.py."""
+
+    def __init__(self, logdir: str, eval_split: str = "validation", eval_every_n_epochs: int = 1):
+        super().__init__()
+        self.logdir = logdir
+        self.eval_split = eval_split
+        self.eval_every_n_epochs = max(1, int(eval_every_n_epochs))
+        self.logger = None
+        self.best_dice = 0.0
+        self.loss_sum = 0.0
+        self.sample_count = 0
+        self.epoch_start = None
+
+    def _setup_logger(self):
+        log_file = os.path.join(self.logdir, "train.log")
+        os.makedirs(self.logdir, exist_ok=True)
+
+        logger = logging.getLogger(f"tmfseg_{id(self)}")
+        logger.setLevel(logging.INFO)
+        logger.propagate = False
+        logger.handlers = []
+
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        console.setFormatter(logging.Formatter("%(asctime)s - %(message)s", "%H:%M:%S"))
+        logger.addHandler(console)
+
+        file_handler = logging.FileHandler(log_file, mode="a")
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+        logger.addHandler(file_handler)
+
+        return logger
+
+    @rank_zero_only
+    def on_fit_start(self, trainer, pl_module):
+        self.logger = self._setup_logger()
+        self.logger.info("")
+        self.logger.info("=" * 60)
+        self.logger.info("TMF-Seg")
+        self.logger.info(f"Started: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        self.logger.info("=" * 60)
+        datasets = getattr(trainer.datamodule, "datasets", {})
+        n_train = len(datasets["train"]) if "train" in datasets else 0
+        n_val = len(datasets[self.eval_split]) if self.eval_split in datasets else 0
+        self.logger.info(f"Train: {n_train} | Val ({self.eval_split}): {n_val}")
+        self.logger.info("-" * 60)
+
+    @rank_zero_only
+    def on_train_epoch_start(self, trainer, pl_module):
+        self.loss_sum = 0.0
+        self.sample_count = 0
+        self.epoch_start = time.time()
+
+    @rank_zero_only
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx=0):
+        loss_val = None
+        if isinstance(outputs, dict) and "loss" in outputs:
+            loss_val = outputs["loss"]
+        elif isinstance(outputs, torch.Tensor):
+            loss_val = outputs
+
+        if loss_val is not None:
+            if isinstance(loss_val, torch.Tensor):
+                loss_val = loss_val.detach().item()
+            bs = batch["image"].shape[0] if isinstance(batch, dict) and "image" in batch else 1
+            self.loss_sum += float(loss_val) * bs
+            self.sample_count += bs
+
+    @rank_zero_only
+    def on_train_epoch_end(self, trainer, pl_module, outputs=None):
+        if self.logger is None:
+            return
+
+        epoch_time = time.time() - self.epoch_start if self.epoch_start is not None else 0.0
+        avg_loss = self.loss_sum / max(self.sample_count, 1)
+        epoch_num = trainer.current_epoch + 1
+        max_epochs = trainer.max_epochs if trainer.max_epochs and trainer.max_epochs > 0 else None
+        epoch_str = f"Epoch [{epoch_num}/{max_epochs}]" if max_epochs else f"Epoch [{epoch_num}]"
+
+        if (epoch_num % self.eval_every_n_epochs == 0) and hasattr(pl_module, "log_dice"):
+            is_train = pl_module.training
+            if is_train:
+                pl_module.eval()
+
+            with torch.no_grad():
+                metrics_dict, _ = pl_module.log_dice(split=self.eval_split, verbose=False)
+
+            if is_train:
+                pl_module.train()
+
+            dice_list = metrics_dict["val_avg_dice"]
+            iou_list = metrics_dict["val_avg_iou"]
+            mean_dice = sum(dice_list) / len(dice_list)
+            mean_iou = sum(iou_list) / len(iou_list)
+            dice_pct = mean_dice * 100.0
+            iou_pct = mean_iou * 100.0
+
+            if dice_pct > self.best_dice:
+                self.best_dice = dice_pct
+
+            pl_module.log("val_avg_dice", mean_dice, prog_bar=False, logger=True, on_step=False, on_epoch=True)
+            pl_module.log("val_avg_iou", mean_iou, prog_bar=False, logger=True, on_step=False, on_epoch=True)
+
+            self.logger.info(
+                f"{epoch_str} Loss: {avg_loss:.4f} | "
+                f"Dice: {dice_pct:.2f}% | IoU: {iou_pct:.2f}% | "
+                f"Time: {epoch_time:.1f}s"
+            )
+        else:
+            self.logger.info(f"{epoch_str} Loss: {avg_loss:.4f} | Time: {epoch_time:.1f}s")
+
+    @rank_zero_only
+    def on_fit_end(self, trainer, pl_module):
+        if self.logger is not None:
+            self.logger.info(f"Training done. Best Dice: {self.best_dice:.2f}%")
+
+
 if __name__ == "__main__":
     # # set multiprocessing method to 'spawn'
     # # this can prevent: "RuntimeError: DataLoader worker (pid 227340) is killed by signal: Aborted."
@@ -725,6 +844,14 @@ if __name__ == "__main__":
             },
             "cuda_callback": {
                 "target": "main.CUDACallback"
+            },
+            "iris_logger": {
+                "target": "main.IrisStyleLogger",
+                "params": {
+                    "logdir": logdir,
+                    "eval_split": "validation",
+                    "eval_every_n_epochs": 1,
+                }
             },
         }
         if version.parse(pl.__version__) >= version.parse('1.4.0'):

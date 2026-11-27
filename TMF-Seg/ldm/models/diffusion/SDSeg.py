@@ -1710,10 +1710,12 @@ class SDSeg(LatentDiffusion):
         return loss, loss_dict
     
     @torch.no_grad()
-    def log_dice(self, data=None, save_dir=None, ddim_steps=50):
+    def log_dice(self, data=None, save_dir=None, ddim_steps=50, split="test", verbose=True):
         
         if data is None: # if dataset is not None, means the call comes from inference script.
-            dataset = self.trainer.datamodule.datasets["test"]
+            datasets = self.trainer.datamodule.datasets
+            target_split = split if split in datasets else "test"
+            dataset = datasets[target_split]
             data = DataLoader(dataset, batch_size=1, shuffle=False, pin_memory=True)
 
         # self.model.eval()     # ImageLogger will handle this
@@ -1758,8 +1760,18 @@ class SDSeg(LatentDiffusion):
                             slice_label = label[:, :, idx]  # H W
                             input = torch.from_numpy(slice).unsqueeze(2).unsqueeze(0).repeat((1, 1, 1, 3)).float().cuda()
 
+                            if self.use_text_conditioning:
+                                text = prompts.get(self.text_stage_key, None)
+                                if isinstance(text, tuple):
+                                    text = list(text)
+                                cond_latent = self.get_learned_conditioning_with_text(
+                                    prepare_for_first_stage(input), text
+                                )
+                            else:
+                                cond_latent = self.get_learned_conditioning(prepare_for_first_stage(input))
+
                             c = dict(
-                                c_concat=[self.get_learned_conditioning(prepare_for_first_stage(input))],
+                                c_concat=[cond_latent],
                                 c_crossattn=[None]
                             )
                             samples_pred = list()
@@ -1874,8 +1886,18 @@ class SDSeg(LatentDiffusion):
                         input = torch.from_numpy(image).unsqueeze(0).float().cuda()
                         label = label[:, :, 0]
 
+                        if self.use_text_conditioning:
+                            text = prompts.get(self.text_stage_key, None)
+                            if isinstance(text, tuple):
+                                text = list(text)
+                            cond_latent = self.get_learned_conditioning_with_text(
+                                prepare_for_first_stage(input), text
+                            )
+                        else:
+                            cond_latent = self.get_learned_conditioning(prepare_for_first_stage(input))
+
                         c = dict(
-                            c_concat=[self.get_learned_conditioning(prepare_for_first_stage(input))],
+                            c_concat=[cond_latent],
                             c_crossattn=[None]
                         )
                         samples_pred = list()
@@ -2012,12 +2034,12 @@ class SDSeg(LatentDiffusion):
                     seg_label_pair = [list(), list()]
 
                 dice_list = dice_list / len(data)
-                for idx in range(1, self.num_classes):
-                    print(f"\033[31m[Mean Dice][cls {idx}]: {dice_list[idx-1]}\033[0m")
-
                 iou_list = iou_list / len(data)
-                for idx in range(1, self.num_classes):
-                    print(f"\033[31m[Mean  IoU][cls {idx}]: {iou_list[idx-1]}\033[0m")
+                if verbose:
+                    for idx in range(1, self.num_classes):
+                        print(f"\033[31m[Mean Dice][cls {idx}]: {dice_list[idx-1]}\033[0m")
+                    for idx in range(1, self.num_classes):
+                        print(f"\033[31m[Mean  IoU][cls {idx}]: {iou_list[idx-1]}\033[0m")
 
                 return dice_list, iou_list, seg_label_pair
 
