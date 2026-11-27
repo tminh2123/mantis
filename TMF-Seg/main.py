@@ -13,6 +13,8 @@ if not hasattr(np, "int"):
 if not hasattr(np, "bool"):
     np.bool = bool
 import torch
+if torch.cuda.is_available():
+    torch.set_float32_matmul_precision("high")
 import torchvision
 # import faulthandler
 # faulthandler.enable()
@@ -145,6 +147,33 @@ def get_parser(**parser_kwargs):
         const=True,
         default=True,
         help="scale base-lr by ngpu * batch_size * n_accumulate",
+    )
+    parser.add_argument(
+        "--freeze_text",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=None,
+        help="override text_encoder_config.freeze (e.g. --freeze_text true)",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=None,
+        help="override data.params.batch_size",
+    )
+    parser.add_argument(
+        "--eval_every_n_epochs",
+        type=int,
+        default=1,
+        help="run IrisStyleLogger Dice/IoU evaluation every N epochs",
+    )
+    parser.add_argument(
+        "--eval_split",
+        type=str,
+        default="validation",
+        choices=["validation", "test"],
+        help="dataset split for IrisStyleLogger Dice/IoU evaluation",
     )
     return parser
 
@@ -315,7 +344,7 @@ class SetupCallback(Callback):
 class ImageLogger(Callback):
     def __init__(self, batch_frequency, max_images, clamp=False, increase_log_steps=True,
                  rescale=True, disabled=False, log_on_batch_idx=False, log_first_step=True,
-                 log_images_kwargs=None, log_dice_frequency=None):
+                 log_images_kwargs=None, log_dice_frequency=None, enable_dice_log=False):
         super().__init__()
         self.rescale = rescale
         self.batch_freq = batch_frequency
@@ -332,6 +361,7 @@ class ImageLogger(Callback):
         self.log_images_kwargs = log_images_kwargs if log_images_kwargs else {}
         self.log_first_step = log_first_step
         self.log_dice_frequency = log_dice_frequency
+        self.enable_dice_log = enable_dice_log
 
     @rank_zero_only
     def _testtube(self, pl_module, images, batch_idx, split):
@@ -397,8 +427,9 @@ class ImageLogger(Callback):
             if is_train:
                 pl_module.train()
 
-        # log dice
-        if (self.log_dice_frequency and
+        # log dice (disabled by default when IrisStyleLogger handles epoch-end evaluation)
+        if (self.enable_dice_log and
+                self.log_dice_frequency and
                 check_idx % self.log_dice_frequency == 0 and  # batch_idx % self.batch_freq == 0
                 hasattr(pl_module, "log_dice") and
                 callable(pl_module.log_dice) and
@@ -602,8 +633,8 @@ class IrisStyleLogger(Callback):
             if dice_pct > self.best_dice:
                 self.best_dice = dice_pct
 
-            pl_module.log("val_avg_dice", mean_dice, prog_bar=False, logger=True, on_step=False, on_epoch=True)
-            pl_module.log("val_avg_iou", mean_iou, prog_bar=False, logger=True, on_step=False, on_epoch=True)
+            pl_module.log("val_avg_dice", mean_dice, prog_bar=False, logger=True, on_step=False, on_epoch=True, batch_size=1)
+            pl_module.log("val_avg_iou", mean_iou, prog_bar=False, logger=True, on_step=False, on_epoch=True, batch_size=1)
 
             self.logger.info(
                 f"{epoch_str} Loss: {avg_loss:.4f} | "
@@ -725,6 +756,12 @@ if __name__ == "__main__":
         configs = [OmegaConf.load(cfg) for cfg in opt.base]
         cli = OmegaConf.from_dotlist(unknown)
         config = OmegaConf.merge(*configs, cli)
+        if opt.batch_size is not None:
+            config.data.params.batch_size = opt.batch_size
+        if opt.freeze_text is not None:
+            cond_params = config.model.params.get("cond_stage_config", {}).get("params", {})
+            if "text_encoder_config" in cond_params:
+                cond_params.text_encoder_config.freeze = opt.freeze_text
         lightning_config = config.pop("lightning", OmegaConf.create())
         # config for datasets
         config.data.params.train.params.update({"num_classes": config.model.params.num_classes})
@@ -797,7 +834,8 @@ if __name__ == "__main__":
                 default_modelckpt_cfg["params"]["monitor"] = model.monitor
                 default_modelckpt_cfg["params"]["save_top_k"] = 1   # to save storage space
             elif model.monitor == "val_avg_dice":
-                default_modelckpt_cfg["params"]["every_n_train_steps"] = lightning_config.callbacks.image_logger.params.log_dice_frequency
+                default_modelckpt_cfg["params"]["every_n_epochs"] = opt.eval_every_n_epochs
+                default_modelckpt_cfg["params"]["save_on_train_epoch_end"] = True
                 default_modelckpt_cfg["params"]["monitor"] = model.monitor
                 default_modelckpt_cfg["params"]["save_top_k"] = 1   # to save storage space
                 default_modelckpt_cfg["params"]["mode"] = "max"
@@ -849,8 +887,8 @@ if __name__ == "__main__":
                 "target": "main.IrisStyleLogger",
                 "params": {
                     "logdir": logdir,
-                    "eval_split": "validation",
-                    "eval_every_n_epochs": 1,
+                    "eval_split": opt.eval_split,
+                    "eval_every_n_epochs": opt.eval_every_n_epochs,
                 }
             },
         }
@@ -955,8 +993,30 @@ if __name__ == "__main__":
                 melk()
                 print("end run")
                 raise
-        if not opt.no_test and not trainer.interrupted:
-            trainer.test(model, data)
+        if not opt.no_test and not trainer.interrupted and trainer.global_rank == 0:
+            if hasattr(model, "log_dice") and "test" in data.datasets:
+                best_ckpt = getattr(trainer.checkpoint_callback, "best_model_path", None)
+                if best_ckpt and os.path.exists(best_ckpt):
+                    sd = torch.load(best_ckpt, map_location="cpu")
+                    sd = sd.get("state_dict", sd)
+                    model.load_state_dict(sd, strict=False)
+                    print(f"Loaded best checkpoint for test: {best_ckpt}")
+                if not cpu:
+                    model = model.cuda()
+                model.eval()
+                with torch.no_grad():
+                    test_loader = DataLoader(data.datasets["test"], batch_size=1, shuffle=False, pin_memory=True)
+                    metrics_dict, _ = model.log_dice(data=test_loader, verbose=False)
+                dice_list = metrics_dict["val_avg_dice"]
+                iou_list = metrics_dict["val_avg_iou"]
+                test_dice = (sum(dice_list) / len(dice_list)) * 100.0
+                test_iou = (sum(iou_list) / len(iou_list)) * 100.0
+                test_msg = f"Test | Dice: {test_dice:.2f}% | IoU: {test_iou:.2f}%"
+                iris_cb = next((cb for cb in trainer.callbacks if isinstance(cb, IrisStyleLogger)), None)
+                if iris_cb is not None and iris_cb.logger is not None:
+                    iris_cb.logger.info(test_msg)
+                else:
+                    print(test_msg)
 
     except Exception:
         if opt.debug and trainer.global_rank == 0:

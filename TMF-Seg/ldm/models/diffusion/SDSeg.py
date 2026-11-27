@@ -369,12 +369,13 @@ class DDPM(pl.LightningModule):
 
     @torch.no_grad()
     def validation_step(self, batch, batch_idx):
+        bs = batch[self.first_stage_key].shape[0] if isinstance(batch, dict) and self.first_stage_key in batch else None
         _, loss_dict_no_ema = self.shared_step(batch)
         with self.ema_scope():
             _, loss_dict_ema = self.shared_step(batch)
             loss_dict_ema = {key + '_ema': loss_dict_ema[key] for key in loss_dict_ema}
-        self.log_dict(loss_dict_no_ema, prog_bar=False, logger=True, on_step=False, on_epoch=True)
-        self.log_dict(loss_dict_ema, prog_bar=False, logger=True, on_step=False, on_epoch=True)
+        self.log_dict(loss_dict_no_ema, prog_bar=False, logger=True, on_step=False, on_epoch=True, batch_size=bs)
+        self.log_dict(loss_dict_ema, prog_bar=False, logger=True, on_step=False, on_epoch=True, batch_size=bs)
 
     def on_train_batch_end(self, *args, **kwargs):
         if self.use_ema:
@@ -1480,17 +1481,18 @@ class SDSeg(LatentDiffusion):
                 print(f"\033[31m[Unexpected Keys]\033[0m: {unexpected}\n")
 
     def training_step(self, batch, batch_idx):
+        bs = batch[self.first_stage_key].shape[0] if isinstance(batch, dict) and self.first_stage_key in batch else None
         loss, loss_dict = self.shared_step(batch)
         loss_dict.pop("train/loss_vlb")
 
         self.log_dict(loss_dict, prog_bar=True,
-                      logger=True, on_step=True, on_epoch=False)
+                      logger=True, on_step=True, on_epoch=False, batch_size=bs)
         self.log("step", self.global_step,
-                 prog_bar=True, logger=True, on_step=True, on_epoch=False)
+                 prog_bar=True, logger=True, on_step=True, on_epoch=False, batch_size=bs)
 
         if self.use_scheduler:
             lr = self.optimizers().param_groups[0]['lr']
-            self.log('param/lr_abs', lr.item(), prog_bar=False, logger=True, on_step=True, on_epoch=False)
+            self.log('param/lr_abs', lr.item(), prog_bar=False, logger=True, on_step=True, on_epoch=False, batch_size=bs)
 
         return loss
     
@@ -1511,7 +1513,8 @@ class SDSeg(LatentDiffusion):
             print(f"setting self.scale_factor to {self.scale_factor}")
             print(f"### USING STD-RESCALING: \033[31m{self.scale_by_std}\033[0m ###")
             print(f"### USING TEXT CONDITIONING: \033[31m{self.use_text_conditioning}\033[0m ###")
-            self.log("val_avg_dice", 0, prog_bar=False, logger=True, on_step=True, on_epoch=False)
+            bs = batch[self.first_stage_key].shape[0] if isinstance(batch, dict) and self.first_stage_key in batch else None
+            self.log("val_avg_dice", 0.0, prog_bar=False, logger=True, on_step=True, on_epoch=False, batch_size=bs)
 
     def get_denoise_row_from_list(self, samples, desc='', force_no_decoder_quantization=False):
         denoise_row = []

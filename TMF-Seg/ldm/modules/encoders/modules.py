@@ -368,16 +368,14 @@ class MultiFrequencyChannelAttention(nn.Module):
         if H != self.dct_h or W != self.dct_w:
             x_pooled = torch.nn.functional.adaptive_avg_pool2d(x, (self.dct_h, self.dct_w))
 
-        multi_spectral_feature_avg, multi_spectral_feature_max, multi_spectral_feature_min = 0, 0, 0
-        for name, params in self.state_dict().items():
-            if 'dct_weight' in name:
-                x_pooled_spectral = x_pooled * params
-                multi_spectral_feature_avg += self.average_channel_pooling(x_pooled_spectral)
-                multi_spectral_feature_max += self.max_channel_pooling(x_pooled_spectral)
-                multi_spectral_feature_min += -self.max_channel_pooling(-x_pooled_spectral)
-        multi_spectral_feature_avg = multi_spectral_feature_avg / self.num_freq
-        multi_spectral_feature_max = multi_spectral_feature_max / self.num_freq
-        multi_spectral_feature_min = multi_spectral_feature_min / self.num_freq
+        dct_weights = torch.stack(
+            [getattr(self, f'dct_weight_{i}') for i in range(self.num_freq)], dim=0
+        )  # [F, C, dct_h, dct_w]
+        x_pooled_spectral = x_pooled.unsqueeze(1) * dct_weights.unsqueeze(0)  # [B, F, C, H, W]
+
+        multi_spectral_feature_avg = x_pooled_spectral.mean(dim=(-2, -1)).mean(dim=1).view(batch_size, C, 1, 1)
+        multi_spectral_feature_max = x_pooled_spectral.amax(dim=(-2, -1)).mean(dim=1).view(batch_size, C, 1, 1)
+        multi_spectral_feature_min = x_pooled_spectral.amin(dim=(-2, -1)).mean(dim=1).view(batch_size, C, 1, 1)
 
         multi_spectral_avg_map = self.fc(multi_spectral_feature_avg).view(batch_size, C, 1, 1)
         multi_spectral_max_map = self.fc(multi_spectral_feature_max).view(batch_size, C, 1, 1)
