@@ -137,7 +137,7 @@ def get_parser(**parser_kwargs):
         "-l",
         "--logdir",
         type=str,
-        default="logs",
+        default="outputs/logs",
         help="directory for logging dat shit",
     )
     parser.add_argument(
@@ -996,6 +996,8 @@ if __name__ == "__main__":
         if not opt.no_test and not trainer.interrupted and trainer.global_rank == 0:
             if hasattr(model, "log_dice") and "test" in data.datasets:
                 best_ckpt = getattr(trainer.checkpoint_callback, "best_model_path", None)
+                if not best_ckpt:
+                    best_ckpt = getattr(opt, "resume_from_checkpoint", None)
                 if best_ckpt and os.path.exists(best_ckpt):
                     sd = torch.load(best_ckpt, map_location="cpu")
                     sd = sd.get("state_dict", sd)
